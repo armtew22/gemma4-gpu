@@ -1,0 +1,120 @@
+{
+  "model": "google/gemma-4-E2B-it",
+  "gpu": "NVIDIA L4",
+  "torch": "2.8.0+cu128",
+  "dtype": "bfloat16",
+  "weights_gb": 10.209116672,
+  "decode_tokens": 64,
+  "trials": 10,
+  "warmup": 3,
+  "rows": [
+    {
+      "prompt_len": 128,
+      "batch_size": 1,
+      "status": "ok",
+      "ttft_ms": 64.22722060233355,
+      "prefill_tok_s": 1992.9244765629703,
+      "decode_tok_s_per_seq": 17.649715300465555,
+      "decode_tok_s_total": 17.649715300465555,
+      "peak_mem_gb": 10.236395008,
+      "ttft_ms_min": 62.518334947526455,
+      "ttft_ms_max": 67.34602339565754
+    },
+    {
+      "prompt_len": 128,
+      "batch_size": 4,
+      "status": "ok",
+      "ttft_ms": 69.15861926972866,
+      "prefill_tok_s": 7403.27099364326,
+      "decode_tok_s_per_seq": 17.409184931004038,
+      "decode_tok_s_total": 69.63673972401615,
+      "peak_mem_gb": 10.293164544,
+      "ttft_ms_min": 68.20106599479914,
+      "ttft_ms_max": 71.1721982806921
+    },
+    {
+      "prompt_len": 128,
+      "batch_size": 8,
+      "status": "ok",
+      "ttft_ms": 110.47011846676469,
+      "prefill_tok_s": 9269.474987555788,
+      "decode_tok_s_per_seq": 17.348506178749275,
+      "decode_tok_s_total": 138.7880494299942,
+      "peak_mem_gb": 10.368160256,
+      "ttft_ms_min": 109.05928537249565,
+      "ttft_ms_max": 111.12720146775246
+    },
+    {
+      "prompt_len": 512,
+      "batch_size": 1,
+      "status": "ok",
+      "ttft_ms": 72.856439743191,
+      "prefill_tok_s": 7027.518800050209,
+      "decode_tok_s_per_seq": 17.379989031764683,
+      "decode_tok_s_total": 17.379989031764683,
+      "peak_mem_gb": 10.293426688,
+      "ttft_ms_min": 71.30392827093601,
+      "ttft_ms_max": 75.18262229859829
+    },
+    {
+      "prompt_len": 512,
+      "batch_size": 4,
+      "status": "ok",
+      "ttft_ms": 236.03831510990858,
+      "prefill_tok_s": 8676.55744384708,
+      "decode_tok_s_per_seq": 16.836657187661547,
+      "decode_tok_s_total": 67.34662875064619,
+      "peak_mem_gb": 10.520379904,
+      "ttft_ms_min": 235.09267903864384,
+      "ttft_ms_max": 237.1796416118741
+    },
+    {
+      "prompt_len": 512,
+      "batch_size": 8,
+      "status": "ok",
+      "ttft_ms": 503.2680439762771,
+      "prefill_tok_s": 8138.804060829811,
+      "decode_tok_s_per_seq": 16.648179798364822,
+      "decode_tok_s_total": 133.18543838691858,
+      "peak_mem_gb": 10.8182656,
+      "ttft_ms_min": 501.72922294586897,
+      "ttft_ms_max": 504.96174953877926
+    },
+    {
+      "prompt_len": 2048,
+      "batch_size": 1,
+      "status": "ok",
+      "ttft_ms": 270.46520775184035,
+      "prefill_tok_s": 7572.138453679037,
+      "decode_tok_s_per_seq": 17.130580436251837,
+      "decode_tok_s_total": 17.130580436251837,
+      "peak_mem_gb": 10.523263488,
+      "ttft_ms_min": 269.461496733129,
+      "ttft_ms_max": 271.29392698407173
+    },
+    {
+      "prompt_len": 2048,
+      "batch_size": 4,
+      "status": "ok",
+      "ttft_ms": 1387.0983473025262,
+      "prefill_tok_s": 5905.853767276765,
+      "decode_tok_s_per_seq": 16.710630862539045,
+      "decode_tok_s_total": 66.84252345015618,
+      "peak_mem_gb": 11.422163456,
+      "ttft_ms_min": 1384.4097573310137,
+      "ttft_ms_max": 1390.3938094154
+    },
+    {
+      "prompt_len": 2048,
+      "batch_size": 8,
+      "status": "ok",
+      "ttft_ms": 2841.295699123293,
+      "prefill_tok_s": 5766.383275438536,
+      "decode_tok_s_per_seq": 16.66995065981581,
+      "decode_tok_s_total": 133.3596052785265,
+      "peak_mem_gb": 12.621701632,
+      "ttft_ms_min": 2835.4940731078386,
+      "ttft_ms_max": 2843.2981809601188
+    }
+  ]
+}

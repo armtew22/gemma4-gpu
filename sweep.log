@@ -1,0 +1,15 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  16%|█▌        | 310/1951 [00:00<00:00, 3089.36it/s]Loading weights:  32%|███▏      | 619/1951 [00:00<00:00, 2617.14it/s]Loading weights:  45%|████▌     | 886/1951 [00:01<00:02, 424.27it/s] Loading weights:  53%|█████▎    | 1040/1951 [00:02<00:02, 326.55it/s]Loading weights:  58%|█████▊    | 1141/1951 [00:02<00:02, 299.01it/s]Loading weights:  62%|██████▏   | 1214/1951 [00:03<00:02, 288.54it/s]Loading weights:  65%|██████▌   | 1271/1951 [00:03<00:02, 277.29it/s]Loading weights:  70%|██████▉   | 1361/1951 [00:03<00:01, 338.54it/s]Loading weights:  84%|████████▎ | 1630/1951 [00:03<00:00, 627.49it/s]Loading weights:  97%|█████████▋| 1892/1951 [00:03<00:00, 924.99it/s]Loading weights: 100%|██████████| 1951/1951 [00:03<00:00, 527.06it/s]
+gpu=NVIDIA L4  torch=2.8.0+cu128  weights=10.21 GB
+
+prompt=  128 batch= 1  ttft=   64.2ms  prefill=  1992.9 tok/s  decode=  17.6 tok/s/seq     17.6 tok/s total  peak=10.24 GB
+prompt=  128 batch= 4  ttft=   69.2ms  prefill=  7403.3 tok/s  decode=  17.4 tok/s/seq     69.6 tok/s total  peak=10.29 GB
+prompt=  128 batch= 8  ttft=  110.5ms  prefill=  9269.5 tok/s  decode=  17.3 tok/s/seq    138.8 tok/s total  peak=10.37 GB
+prompt=  512 batch= 1  ttft=   72.9ms  prefill=  7027.5 tok/s  decode=  17.4 tok/s/seq     17.4 tok/s total  peak=10.29 GB
+prompt=  512 batch= 4  ttft=  236.0ms  prefill=  8676.6 tok/s  decode=  16.8 tok/s/seq     67.3 tok/s total  peak=10.52 GB
+prompt=  512 batch= 8  ttft=  503.3ms  prefill=  8138.8 tok/s  decode=  16.6 tok/s/seq    133.2 tok/s total  peak=10.82 GB
+prompt= 2048 batch= 1  ttft=  270.5ms  prefill=  7572.1 tok/s  decode=  17.1 tok/s/seq     17.1 tok/s total  peak=10.52 GB
+prompt= 2048 batch= 4  ttft= 1387.1ms  prefill=  5905.9 tok/s  decode=  16.7 tok/s/seq     66.8 tok/s total  peak=11.42 GB
+prompt= 2048 batch= 8  ttft= 2841.3ms  prefill=  5766.4 tok/s  decode=  16.7 tok/s/seq    133.4 tok/s total  peak=12.62 GB
+
+wrote results.json

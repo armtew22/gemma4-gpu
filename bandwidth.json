@@ -1,0 +1,8 @@
+{
+  "copy_gb_s": 230.10536688021892,
+  "read_gb_s": 261.2047533667086,
+  "triad_gb_s": 231.76088871669324,
+  "achieved_peak_gb_s": 261.2047533667086,
+  "gpu": "NVIDIA L4",
+  "dense_roofline_tok_s": 25.5581950456662
+}
