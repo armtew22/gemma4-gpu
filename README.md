@@ -12,18 +12,26 @@ moved per token rather than arithmetic performed.
 | | |
 | --- | --- |
 | Measured memory bandwidth | **261.2 GB/s** (spec claims ~300) |
-| Weights read per decode step | 10.2 GB (bf16) |
-| Dense roofline | 261.2 / 10.2 = **25.6 tok/s** |
-| Measured decode, batch 1 | **17.6 tok/s** — 69% of roofline |
+| Resident weights | 10.21 GB (bf16) |
+| **Bytes genuinely read per decode step** | **4.56 GB** — only 45% of resident |
+| **Corrected roofline** | 261.2 / 4.56 = **57.3 tok/s** |
+| Measured decode, batch 1 | **18.4 tok/s** — **32% of roofline** |
 | Batch-8 aggregate | **138.8 tok/s** — 7.89x, 99% scaling efficiency |
 
-Consequence: kernel optimization at batch 1 is bounded above by ~45% (17.6 → 25.6). The
-roofline itself only moves by reducing bytes per token, i.e. quantization. Batching is
-nearly free and 10 GB of the 23 GB card is unused at the largest config tested.
+The gap between resident and read bytes is the interesting part. `embed_tokens_per_layer`,
+the Per-Layer Embedding table that makes the E-series "effective 2B", is (262144, 8960) —
+4.7 GB resident, but *indexed*, so one token reads one 17,920-byte row. Charging decode for
+the full resident set gives a roofline of 25.6 tok/s and the false conclusion that the
+baseline is already at ~70% of achievable. Accounting for it properly puts the baseline at
+32%, with roughly **3x of headroom at batch 1 before changing precision at all**.
 
-A 4-bit Ollama build of the same model on an M3 Pro laptop reaches 49.1 tok/s — 2.8x the
-bf16 GPU baseline at batch 1 — which is direct evidence of the size of the quantization
-prize.
+The byte accounting (`bytes_per_token.py`) validates two ways: resident total comes out at
+10.209 GB against 10.209 GB measured by `torch.cuda.max_memory_allocated()` on the GPU, and
+the text-decoder bucket holds 2279.76 M params — Google's published "effective parameter"
+count for E2B, reproduced independently.
+
+For reference, a 4-bit Ollama build on an M3 Pro laptop reaches 49.1 tok/s, 2.7x the bf16
+GPU baseline at batch 1.
 
 ## Files
 
@@ -32,8 +40,9 @@ prize.
 | `report.md` | full methodology, 3x3 sweep results, analysis, environment notes |
 | `benchmark.py` | prefill/decode harness — warmup, medians, prompt-length × batch sweep |
 | `bandwidth.py` | STREAM-style bandwidth probe + roofline arithmetic |
+| `bytes_per_token.py` | meta-device parameter audit → bytes read per step, corrected roofline (no GPU needed) |
 | `run.py` | single-shot smoke test (superseded for measurement) |
-| `results.json`, `bandwidth.json`, `sweep.log` | raw output from the measured run |
+| `results.json`, `bandwidth.json`, `verify.json`, `bytes_per_token.json`, `sweep.log` | raw measured output |
 
 ## Running
 

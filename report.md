@@ -30,14 +30,12 @@ STREAM-style probe (`bandwidth.py`, bf16, 2 GB buffers, 20 trials, median):
 **Achieved peak 261.2 GB/s.** The L4's advertised spec is ~300 GB/s, so real achieved is
 ~87% of nameplate — normal. Use 261.2, not 300, for any roofline arithmetic.
 
-**Dense roofline: 25.6 tok/s** — the decode ceiling if every step reads the full 10.21 GB
-weight set (261.2 / 10.21). Measured batch-1 decode is 17.6 tok/s, i.e. **69% of that
-ceiling**, so ~31% of the bf16 batch-1 gap is addressable by better kernels. The ceiling
-itself can only move by reducing bytes-per-token (quantization).
-
-Note: decode never *exceeded* the dense roofline, so these measurements give no evidence
-that selective parameter activation reduces bytes-moved per decode step in this bf16 HF
-path. Earlier speculation that it might was not borne out.
+~~**Dense roofline: 25.6 tok/s**~~ — **superseded.** This assumed every decode step reads
+the full 10.21 GB resident weight set (261.2 / 10.21), which is wrong: 55% of resident
+bytes are lookup tables that are indexed, not multiplied. See
+[Bytes actually read per decode step](#bytes-actually-read-per-decode-step) for the
+corrected figure of **57.3 tok/s**. The 25.6 number is kept here only because the sweep
+analysis below was originally written against it.
 
 ## Sweep results
 
@@ -127,6 +125,68 @@ Optimization results should either clear 5% or be measured on a single pod in on
 Caveat: only the batch-1 config was re-verified. The other eight were not, though batch > 1
 is structurally less exposed — `generate()` runs until every sequence in the batch finishes.
 
+## Bytes actually read per decode step
+
+The dense roofline above charged every decode step for all 10.21 GB of resident weights.
+That is wrong. `bytes_per_token.py` builds the model on the meta device (no weights loaded,
+runs on a laptop in seconds), walks all 1973 parameters and buffers, and sorts each into
+one of three buckets by module prefix, failing loudly on anything unmatched.
+
+| bucket | tensors | params | resident | read/step |
+| --- | --- | --- | --- | --- |
+| `text_decoder` — attention, MLP, norms, `lm_head` | 543 | 2279.76 M | 3.754 GB | **4.560 GB** |
+| `lookup_tables` — `embed_tokens`, `embed_tokens_per_layer` | 4 | 2751.46 M | 5.503 GB | 0.000 GB |
+| `non_text` — vision/audio towers and projectors | 1426 | 475.73 M | 0.951 GB | 0.000 GB |
+| **TOTAL** | 1973 | 5506.95 M | **10.209 GB** | **4.560 GB** |
+
+Classification, for audit:
+
+```
+lm_head                                      -> text_decoder
+model.language_model                         -> text_decoder
+model.language_model.embed_tokens            -> lookup_tables
+model.language_model.embed_tokens_per_layer  -> lookup_tables
+model.audio_tower / embed_audio              -> non_text
+model.vision_tower / embed_vision            -> non_text
+```
+
+**Why the lookup tables don't count.** `embed_tokens_per_layer` — the Per-Layer Embedding
+table that makes the E-series "effective 2B" — is (262144, 8960): 4.698 GB resident, but it
+is *indexed*, so a single token reads one row, 17920 bytes. `embed_tokens` is (262144, 1536)
+and likewise reads 3072 bytes per token. Together they are 55% of resident bytes and
+essentially 0% of bytes read.
+
+**`lm_head` is tied** to `embed_tokens` (`_tied_weights_keys` confirms it). Its resident
+bytes are therefore counted once, under the embedding — which is what makes the total land
+on exactly 10.209 GB. But its *read* is charged in full, 0.805 GB, because the vocabulary
+projection touches the entire matrix every step.
+
+### Two independent validations
+
+- **Resident total is 10.209 GB** against the 10.209 GB that
+  `torch.cuda.max_memory_allocated()` reported on the pod. Exact match.
+- **`text_decoder` holds 2279.76 M params ≈ 2.3B**, which is precisely Google's published
+  "effective parameter" count for E2B. The bucketing reproduces their figure independently.
+
+### Corrected roofline
+
+| | |
+| --- | --- |
+| bytes read per decode step | **4.560 GB** (44.7% of resident) |
+| bandwidth | 261.2 GB/s |
+| **corrected roofline** | **57.3 tok/s** |
+| measured (batch 1) | 18.4 tok/s = **32.1% of corrected roofline** |
+| old dense roofline | 25.6 tok/s — wrong, assumed full resident read |
+
+**This overturns the earlier conclusion.** The baseline is not at 69–72% of ceiling with
+~1.4x of headroom; it is at **32%, with roughly 3x available**. Kernel work is a far more
+attractive target than the dense roofline implied, because the implementation is leaving
+about two thirds of achievable bandwidth unused.
+
+**Caveat:** KV cache reads are excluded. At 128-token prompts they are small relative to
+4.56 GB of weights, but they scale with context and batch, so 57.3 tok/s is optimistic for
+long sequences. Quantifying the KV term is the obvious next refinement.
+
 ## Comparison: local M3 Pro Mac, 4-bit
 
 `ollama run gemma4:e2b --verbose` (Q4_K_M, 5.6 GB on disk).
@@ -140,7 +200,7 @@ is structurally less exposed — `generate()` runs until every sequence in the b
 The laptop beats the rented GPU by **2.8x** at batch 1 (49.1 vs 17.6). Not a hardware
 result — two confounds, both favoring the Mac:
 
-1. **Precision.** The L4 run is bf16 (10.21 GB read per decode step). Ollama runs Q4_K_M,
+1. **Precision.** The L4 run is bf16 (4.56 GB read per decode step). Ollama runs Q4_K_M,
    roughly a quarter of the bytes. Decode is bandwidth-bound, so bytes-per-token dominates.
 2. **Runtime quality.** Ollama is llama.cpp — fused kernels, quantized matmul, Metal-tuned.
    HF `generate()` in eager mode is the unoptimized reference path.
@@ -152,16 +212,27 @@ phases are meant to do by hand. Note the L4 still wins decisively on aggregate t
 
 ## Implications for the optimization phases
 
-Ranked by expected payoff, from the data above:
+Re-ranked against the corrected 57.3 tok/s roofline. The dense-roofline version of this
+list under-rated kernel work badly:
 
-1. **Batching** — already 99% efficient and memory headroom is large. Free throughput, no
-   kernel work. Test batch 16/32/64 next.
-2. **Quantization** — the only lever that moves the 25.6 tok/s roofline itself, since it
-   cuts bytes-per-token. The Mac result is evidence of the size of this effect.
-3. **Kernel work (CUDA/Triton)** — bounded by the 31% gap between 17.6 and the 25.6 dense
-   roofline at batch 1. Real, but the smallest of the three unless it also enables (2).
-4. **Prefill / attention** — separate problem with its own bottleneck; matters for TTFT on
-   long prompts, not for decode throughput.
+1. **Kernel work (CUDA/Triton)** — the baseline uses only 32% of achievable bandwidth, so
+   there is ~3x of headroom at batch 1 *before* changing precision at all. This is now the
+   largest single opportunity, not the smallest. The target is the gap between 4.56 GB of
+   necessary reads and whatever the eager HF path actually moves; the likely culprits are
+   unfused elementwise work, per-layer PLE gather overhead, and kernel launch latency at
+   35 layers × batch 1.
+2. **Batching** — 99% efficient already, with ~10 GB VRAM unused. Still free aggregate
+   throughput; test batch 16/32/64. Cheap, but it improves aggregate, not per-sequence.
+3. **Quantization** — moves the roofline itself by cutting bytes-per-token. Note the prize
+   is smaller than the dense roofline suggested: only the 4.56 GB read actually shrinks, and
+   the 4.7 GB PLE table is already effectively free, so 4-bit does not buy a clean 4x.
+4. **Prefill / attention** — separate bottleneck, compute-bound, degrades 38% from 128→2048.
+   Matters for TTFT, not decode throughput. The better target if the goal is writing a
+   genuinely compute-bound kernel.
+
+**First diagnostic before any kernel work:** profile where the ~3x goes. 18.4 tok/s means
+54 ms per token while only 4.56 GB / 261.2 GB/s = 17 ms of that is necessary memory traffic.
+Finding what occupies the other 37 ms is the whole project.
 
 ## Benchmark harness
 
@@ -170,6 +241,13 @@ Ranked by expected payoff, from the data above:
   decode timed separately (per trial: a 1-token generate for TTFT, a full generate, decode
   is the difference), sweeps prompt length × batch size, records OOM instead of crashing.
 - `bandwidth.py` — STREAM-style bandwidth probe plus roofline arithmetic.
+- `bytes_per_token.py` — meta-device parameter audit: buckets every tensor and computes
+  bytes genuinely read per decode step, then the corrected roofline. Needs no GPU and no
+  weights; runs locally in seconds. Fails loudly on any unclassified tensor.
+
+`timed_generate` returns the number of tokens generated and asserts it equals
+`max_new_tokens` on every call, so early stopping cannot silently corrupt a run. Decode
+token counts are derived from that measurement rather than assumed.
 
 Prompts are built by slicing a tokenized filler string to an exact token count, which
 bypasses the chat template. Deliberate: a perf harness needs exact sequence lengths, and
@@ -218,20 +296,25 @@ SSH key must be registered on the account **before** the pod boots — keys are 
 startup. The external TCP port changes on every stop/start, and `ssh info` can return a
 stale port right after `start`.
 
-**Cost:** L4 bills at **$0.498/hr** as configured — $0.44 GPU plus ~$0.06 for the 60 GB
-container disk. Spend to date **$0.17** across two pods (2026-10-01): $0.05 smoke test,
-$0.10 sweep + bandwidth.
+**Cost:** L4 bills **$0.50–0.59/hr** as configured — the GPU plus ~$0.06 for the 60 GB
+container disk, and the hourly rate varies with the host drawn. Spend to date **~$0.26**
+across three pods: $0.05 smoke test, $0.10 sweep + bandwidth, ~$0.08 verification run.
 
 ## Status
 
 **Done:** model identified and verified on GPU; pod provisioning and teardown reproducible;
-benchmark harness written and executed; full 3×3 sweep collected; real memory bandwidth
-measured and roofline established; smoke-test number invalidated and replaced.
+benchmark harness written, hardened against early stopping, and executed; full 3×3 sweep
+collected; real memory bandwidth measured; per-token byte accounting completed and the
+roofline corrected; smoke-test number invalidated and replaced.
 
-**Baseline:** 17.6 tok/s decode at batch 1, 138.8 tok/s at batch 8, TTFT 64 ms at 128
-tokens, 69% of a 25.6 tok/s dense roofline.
+**Baseline:** 18.4 tok/s decode at batch 1 (17.6 on the original host), 138.8 tok/s at
+batch 8, TTFT ~62 ms at 128 tokens. **32% of a corrected 57.3 tok/s roofline**, against
+4.56 GB genuinely read per decode step.
 
-**Next:** (a) extend the batch sweep upward — 10 GB of headroom is unused and batching is
-the cheapest win; (b) confirm or kill the clock-throttling hypothesis with `nvidia-smi`
-sampling under sustained load; (c) begin the CUDA and Triton phases against the 31% batch-1
-gap.
+**Next:** (a) profile where the missing ~37 ms per token goes — 54 ms observed against 17 ms
+of necessary memory traffic; (b) extend the batch sweep to 16/32/64, ~10 GB VRAM unused;
+(c) add the KV cache term to the roofline so long-context numbers are honest; (d) confirm
+or kill the clock-throttling hypothesis with `nvidia-smi` sampling under sustained load.
+
+**Measurement standard:** cross-pod noise is ~5%. Any optimization claim must clear that, or
+be measured before/after on one pod in one session.
