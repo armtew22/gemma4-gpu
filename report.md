@@ -97,6 +97,36 @@ long run would confirm or kill it, at a couple of cents of pod time.
 
 Treat **17.6 tok/s batch-1 / 138.8 tok/s batch-8** as the project baseline. Discard 23.7.
 
+### Early-stopping fix and re-verification
+
+The original harness passed only `max_new_tokens=64` while dividing a hardcoded 63 tokens
+by the measured time. `generate()` can stop early at EOS, so any run that ended short would
+have been credited with 63 tokens over too little time — **inflating** the reported rate.
+Fixed by setting `min_new_tokens=max_new_tokens`, which makes the generated length exact.
+
+Re-ran the batch-1 / 128-token config with the fix (`verify.json`):
+
+| | Original (5.18.0) | Fixed (5.19.0) | Δ |
+| --- | --- | --- | --- |
+| decode tok/s | 17.6 | **18.4** | +4.5% |
+| TTFT | 64.2 ms | 61.5 ms | −4.2% |
+| peak memory | 10.24 GB | 10.24 GB | — |
+
+**The bug was not firing.** The fix can only ever *lower* a measured rate — it forces the
+full token count, lengthening the denominator. The number went *up* 4.5%, so the original
+run was already generating all 64 tokens. The sweep stands.
+
+The +4.5% is therefore run-to-run variance, not a correction. It came from a different
+physical host (drawn at $0.59/hr vs $0.498/hr) and transformers 5.19.0 vs 5.18.0, both
+uncontrolled.
+
+**Useful consequence: the measurement noise floor across pods is ~5%.** Any future
+optimization claiming less than that is indistinguishable from re-rolling the machine.
+Optimization results should either clear 5% or be measured on a single pod in one session.
+
+Caveat: only the batch-1 config was re-verified. The other eight were not, though batch > 1
+is structurally less exposed — `generate()` runs until every sequence in the batch finishes.
+
 ## Comparison: local M3 Pro Mac, 4-bit
 
 `ollama run gemma4:e2b --verbose` (Q4_K_M, 5.6 GB on disk).
