@@ -30,7 +30,12 @@ def build_inputs(tokenizer, prompt_len, batch_size, device):
 def timed_generate(model, inputs, max_new_tokens):
     torch.cuda.synchronize()
     t0 = time.perf_counter()
-    model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
+    model.generate(
+        **inputs,
+        max_new_tokens=max_new_tokens,
+        min_new_tokens=max_new_tokens,
+        do_sample=False,
+    )
     torch.cuda.synchronize()
     return time.perf_counter() - t0
 
