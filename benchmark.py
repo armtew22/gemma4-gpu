@@ -30,14 +30,21 @@ def build_inputs(tokenizer, prompt_len, batch_size, device):
 def timed_generate(model, inputs, max_new_tokens):
     torch.cuda.synchronize()
     t0 = time.perf_counter()
-    model.generate(
+    out = model.generate(
         **inputs,
         max_new_tokens=max_new_tokens,
         min_new_tokens=max_new_tokens,
         do_sample=False,
     )
     torch.cuda.synchronize()
-    return time.perf_counter() - t0
+    elapsed = time.perf_counter() - t0
+
+    n_new = out.shape[-1] - inputs["input_ids"].shape[-1]
+    assert n_new == max_new_tokens, (
+        f"expected {max_new_tokens} new tokens, got {n_new} - early stopping would make "
+        "every throughput number in this run wrong"
+    )
+    return elapsed, n_new
 
 
 def measure(model, inputs, decode_tokens, trials, warmup):
@@ -47,11 +54,11 @@ def measure(model, inputs, decode_tokens, trials, warmup):
 
     ttfts, decode_times = [], []
     for _ in range(trials):
-        ttft = timed_generate(model, inputs, 1)
-        full = timed_generate(model, inputs, decode_tokens)
+        ttft, n_ttft = timed_generate(model, inputs, 1)
+        full, n_full = timed_generate(model, inputs, decode_tokens)
         ttfts.append(ttft)
         decode_times.append(full - ttft)
-    return ttfts, decode_times
+    return ttfts, decode_times, n_full - n_ttft
 
 
 def main():
@@ -83,7 +90,7 @@ def main():
             inputs = build_inputs(processor.tokenizer, prompt_len, batch_size, model.device)
             torch.cuda.reset_peak_memory_stats()
             try:
-                ttfts, decode_times = measure(
+                ttfts, decode_times, decoded = measure(
                     model, inputs, args.decode_tokens, args.trials, args.warmup
                 )
             except torch.OutOfMemoryError:
@@ -94,7 +101,6 @@ def main():
 
             ttft = statistics.median(ttfts)
             decode_time = statistics.median(decode_times)
-            decoded = args.decode_tokens - 1
             row = {
                 "prompt_len": prompt_len,
                 "batch_size": batch_size,

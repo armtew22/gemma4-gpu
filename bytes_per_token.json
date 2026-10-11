@@ -1,0 +1,42 @@
+{
+  "model": "google/gemma-4-E2B-it",
+  "bytes_per_param": 2,
+  "prefix_map": {
+    "model.vision_tower": "non_text",
+    "model.language_model.embed_tokens": "lookup_tables",
+    "model.language_model": "text_decoder",
+    "model.language_model.embed_tokens_per_layer": "lookup_tables",
+    "model.audio_tower": "non_text",
+    "model.embed_vision": "non_text",
+    "model.embed_audio": "non_text",
+    "lm_head": "text_decoder"
+  },
+  "buckets": {
+    "text_decoder": {
+      "tensors": 543,
+      "params": 2279759907,
+      "resident_bytes": 3754213446,
+      "read_bytes": 4559519814
+    },
+    "lookup_tables": {
+      "tensors": 4,
+      "params": 2751463426,
+      "resident_bytes": 5502926852,
+      "read_bytes": 20996
+    },
+    "non_text": {
+      "tensors": 1426,
+      "params": 475729644,
+      "resident_bytes": 951459288,
+      "read_bytes": 0
+    }
+  },
+  "resident_bytes": 10208599586,
+  "read_bytes_per_step": 4559540810,
+  "bandwidth_gb_s": 261.2,
+  "corrected_roofline_tok_s": 57.28647047683734,
+  "measured_tok_s": 18.4,
+  "pct_of_corrected_roofline": 32.119276762633994,
+  "old_dense_roofline_tok_s": 25.6,
+  "kv_cache_excluded": true
+}
