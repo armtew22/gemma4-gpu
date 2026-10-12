@@ -7,6 +7,8 @@ import time
 
 import torch
 
+from hostinfo import print_host
+
 
 def bench(fn, bytes_moved, trials, warmup):
     for _ in range(warmup):
@@ -57,6 +59,7 @@ def main():
     achieved = max(results.values())
     results["achieved_peak_gb_s"] = achieved
     results["gpu"] = torch.cuda.get_device_name(0)
+    results["host"] = print_host()
 
     # Roofline if every decode step reads the full resident weight set.
     dense = achieved / args.weights_gb

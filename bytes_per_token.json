@@ -1,5 +1,18 @@
 {
   "model": "google/gemma-4-E2B-it",
+  "host": {
+    "hostname": "mac.lan",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "cpu_model": "Apple M3 Pro",
+    "vcpu_count": 11,
+    "gpu_name": "unknown",
+    "gpu_memory": "unknown",
+    "gpu_driver": "unknown",
+    "gpu_sm_clock_max": "unknown",
+    "gpu_power_limit": "unknown",
+    "torch": "2.14.1",
+    "transformers": "5.19.0"
+  },
   "bytes_per_param": 2,
   "prefix_map": {
     "model.vision_tower": "non_text",

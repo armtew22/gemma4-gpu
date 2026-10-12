@@ -1,0 +1,24 @@
+{
+  "model": "google/gemma-4-E2B-it",
+  "gpu": "NVIDIA L4",
+  "torch": "2.8.0+cu128",
+  "dtype": "bfloat16",
+  "weights_gb": 10.209116672,
+  "decode_tokens": 64,
+  "trials": 10,
+  "warmup": 3,
+  "rows": [
+    {
+      "prompt_len": 128,
+      "batch_size": 1,
+      "status": "ok",
+      "ttft_ms": 39.884232566691935,
+      "prefill_tok_s": 3209.2882766633747,
+      "decode_tok_s_per_seq": 32.37630745678669,
+      "decode_tok_s_total": 32.37630745678669,
+      "peak_mem_gb": 10.236395008,
+      "ttft_ms_min": 39.572125067934394,
+      "ttft_ms_max": 41.4411099627614
+    }
+  ]
+}

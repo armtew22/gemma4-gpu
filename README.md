@@ -15,8 +15,9 @@ moved per token rather than arithmetic performed.
 | Resident weights | 10.21 GB (bf16) |
 | **Bytes genuinely read per decode step** | **4.56 GB** — only 45% of resident |
 | **Corrected roofline** | 261.2 / 4.56 = **57.3 tok/s** |
-| Measured decode, batch 1 | **18.4 tok/s** — **32% of roofline** |
+| Measured decode, batch 1 | **17.6–32.4 tok/s**, host-dependent (see below) |
 | Batch-8 aggregate | **138.8 tok/s** — 7.89x, 99% scaling efficiency |
+| GPU busy during decode | 76.5% — 18.46 ms GEMV, 4.93 ms small kernels, 7.17 ms idle |
 
 The gap between resident and read bytes is the interesting part. `embed_tokens_per_layer`,
 the Per-Layer Embedding table that makes the E-series "effective 2B", is (262144, 8960) —
@@ -30,8 +31,23 @@ The byte accounting (`bytes_per_token.py`) validates two ways: resident total co
 the text-decoder bucket holds 2279.76 M params — Google's published "effective parameter"
 count for E2B, reproduced independently.
 
-For reference, a 4-bit Ollama build on an M3 Pro laptop reaches 49.1 tok/s, 2.7x the bf16
-GPU baseline at batch 1.
+For reference, a 4-bit Ollama build on an M3 Pro laptop reaches 49.1 tok/s — faster than the
+bf16 GPU baseline at batch 1.
+
+## Two findings that changed the plan
+
+**The matmuls are already optimal.** Profiling a decode step shows the dominant kernels are
+`gemvx` — matrix-*vector*, since batch 1 has no data reuse — running at **94.6% of achievable
+bandwidth** (18.46 ms against 17.46 ms of theoretically necessary traffic). A hand-written
+bf16 matmul kernel would gain nothing. The addressable time is elsewhere: **2031 tiny
+elementwise kernels per step** at ~1.4 µs each, plus **23.5% GPU idle** in launch gaps. That
+is a kernel-fusion and CUDA-graphs problem, not a matmul problem.
+
+**Two pods labelled "NVIDIA L4" differ 1.76x.** Identical code and config gave 17.6 tok/s on
+a 16-vCPU host and 32.4 tok/s on a 48-vCPU AMD EPYC 9254. At ~3085 kernel launches per decode
+step, host CPU throughput gates decode, so absolute numbers are meaningless without the host.
+Every results file now records CPU model and vCPU count (`hostinfo.py`), and before/after
+comparisons must run on one pod in one session.
 
 ## Files
 

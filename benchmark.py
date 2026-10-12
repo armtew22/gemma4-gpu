@@ -8,6 +8,8 @@ import time
 import torch
 from transformers import AutoProcessor, AutoModelForMultimodalLM
 
+from hostinfo import host_info, print_host
+
 MODEL_ID = "google/gemma-4-E2B-it"
 FILLER = (
     "The quick brown fox jumps over the lazy dog while the compiler emits vectorized "
@@ -80,9 +82,10 @@ def main():
     )
     model.eval()
 
+    host = print_host()
     gpu = torch.cuda.get_device_name(0)
     weights_gb = torch.cuda.memory_allocated() / 1e9
-    print(f"gpu={gpu}  torch={torch.__version__}  weights={weights_gb:.2f} GB\n")
+    print(f"torch={torch.__version__}  weights={weights_gb:.2f} GB\n")
 
     rows = []
     for prompt_len in args.prompt_lens:
@@ -127,6 +130,7 @@ def main():
         json.dump(
             {
                 "model": MODEL_ID,
+                "host": host,
                 "gpu": gpu,
                 "torch": torch.__version__,
                 "dtype": "bfloat16",

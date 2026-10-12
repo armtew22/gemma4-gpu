@@ -11,6 +11,8 @@ import json
 from accelerate import init_empty_weights
 from transformers import AutoConfig, AutoModelForMultimodalLM
 
+from hostinfo import host_info
+
 MODEL_ID = "google/gemma-4-E2B-it"
 BYTES_PER_PARAM = 2  # bf16, regardless of the meta dtype
 
@@ -153,6 +155,7 @@ def main():
         json.dump(
             {
                 "model": MODEL_ID,
+                "host": host_info(),
                 "bytes_per_param": BYTES_PER_PARAM,
                 "prefix_map": prefix_map,
                 "buckets": stats,
