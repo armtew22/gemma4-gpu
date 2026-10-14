@@ -1,12 +1,12 @@
 # Gemma 4 E2B — GPU inference baseline
 
 Working notes and measurements for the Gemma 4 E2B optimization project.
-Last updated 2026-10-01.
+Last updated 2026-10-13.
 
 ## Target
 
-`google/gemma-4-E2B-it` — Gemma 4, released 2026-07-02. 2.3B effective / 5.1B total
-parameters (selective parameter activation), 128K context, multimodal (text/image/audio),
+`google/gemma-4-E2B-it` — Gemma 4, released 2026-04-02. 2.3B effective / 5.1B total
+parameters via Per-Layer Embeddings (PLE), 128K context, multimodal (text/image/audio),
 Apache 2.0. **Not gated** — downloads without a Hugging Face token.
 
 Loads via `AutoProcessor` + `AutoModelForMultimodalLM` (transformers 5.x).
@@ -120,7 +120,8 @@ uncontrolled.
 
 ~~**Useful consequence: the measurement noise floor across pods is ~5%.**~~ **Wrong — see
 [Host variance](#host-variance-the-same-l4-differs-176x).** That 5% figure generalized from
-two hosts that happened to be similar. A third pod ran the identical config 1.76x faster.
+two hosts that happened to be similar. The profile pod, the third to produce a comparable
+decode number, ran the identical config 1.76x faster.
 Cross-host spread is up to **76%**, not 5%.
 
 Caveat: only the batch-1 config was re-verified. The other eight were not, though batch > 1
@@ -128,14 +129,31 @@ is structurally less exposed — `generate()` runs until every sequence in the b
 
 ## Host variance: the same L4 differs 1.76x
 
-Four pods were rented over this project, all requesting `--gpu-id "NVIDIA L4"`, all served
-an L4 with 23034 MiB and the same driver. Decode throughput on identical code:
+Six pods were rented over this project, all requesting `--gpu-id "NVIDIA L4"`, all served
+an L4 with 23034 MiB. Drivers were **not** uniform: 595.91.07 on the first pod,
+570.195.03 on both 2026-10-13 pods, unrecorded on the rest. Three pods produced a comparable
+decode measurement:
 
-| pod | vCPU | CPU | $/hr | decode (batch 1, 128-tok prompt) | TTFT |
-| --- | --- | --- | --- | --- | --- |
-| `jdeeuelkbgiur8` (sweep) | — | not recorded | 0.498 | 17.6 tok/s | 64.2 ms |
-| `x55xbyeb2m1yfe` (verify) | 16 | not recorded | 0.59 | 18.4 tok/s | 61.5 ms |
-| `bi4sgf93eyuu0n` (profile) | **48** | AMD EPYC 9254 | 0.59 | **32.4 tok/s** | **39.9 ms** |
+| pod | date | purpose | vCPU | CPU | $/hr | decode (batch 1, 128-tok) | TTFT |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `bcqy10mcg62h4i` | 10-01 | smoke test | 18 ᵃ | not recorded | — | ~~23.7~~ ᶜ | — |
+| `jdeeuelkbgiur8` | 10-01 | sweep + bandwidth | not recorded | not recorded | 0.498 | **17.6** | 64.2 ms |
+| `x55xbyeb2m1yfe` | 10-11 | early-stop verify | 16 ᵃ | not recorded | 0.59 | **18.4** | 61.5 ms |
+| `bi4sgf93eyuu0n` | 10-12 | profile | 48 ᵇ | AMD EPYC 9254 | 0.59 | **32.4** | **39.9 ms** |
+| `x73a0805a42pzl` | 10-13 | drift — **lost GPU** | 128 ᵇ | AMD EPYC 7542 | 0.59 | — | — |
+| `d6y0tgczjs289n` | 10-13 | drift | 128 ᵇ | AMD EPYC 7542 | 0.59 | — | — |
+
+ᵃ RunPod's allocated `vcpuCount`, from the create response.
+ᵇ `nproc` inside the container — **visible** cores, which can be the whole host rather than
+  the pod's allocation. 128 cores for a $0.59/hr L4 pod is almost certainly the host.
+ᶜ Invalidated: single trial, no warmup, uncontrolled token count. Not comparable.
+
+**The vCPU column mixes two measurements and cannot support a core-count comparison.**
+"16 vs 48" compares an allocation against a visible-core count, so it does not establish
+that the fast host had 3x the CPU. The CPU *model* (EPYC 9254 is a newer, higher-clocked
+part than the 7542) is the more defensible variable, and it was recorded on only one of the
+three comparable pods. `hostinfo.py` currently records `os.cpu_count()`, which has the same
+visible-core problem — recording the cgroup CPU quota (`/sys/fs/cgroup/cpu.max`) would fix it.
 
 Confirmed not to be a methodology artifact: the 64-token and 32-token configs were both run
 on the fast host and agree (32.4 vs 32.6 tok/s), so decode length is not the variable. Same
@@ -143,7 +161,7 @@ code, same config, same GPU model — **the host is the variable.**
 
 **Likely mechanism.** A decode step launches ~3085 CUDA kernels (see the profile below).
 Every launch is CPU work: Python → PyTorch → CUDA driver. The GPU executes only as fast as
-the CPU issues work, so host CPU throughput gates decode at batch 1. On the 48-vCPU host the
+the CPU issues work, so host CPU throughput gates decode at batch 1. On the EPYC 9254 host the
 GPU is 76.5% busy; if the slow hosts performed the same 23.39 ms of kernel work in 54.3 ms of
 wall time, they sat at ~43% busy — overhead-bound.
 
@@ -229,7 +247,7 @@ long sequences. Quantifying the KV term is the obvious next refinement.
 
 ## Where the decode time actually goes
 
-`profile_decode.py` on the fast host (AMD EPYC 9254, 48 vCPU, L4), batch 1, 128-token
+`profile_decode.py` on the fast host (AMD EPYC 9254, 48 visible cores, L4), batch 1, 128-token
 prompt, 32 decode tokens. Wall clock measured with the profiler detached (10 trials,
 median); kernel time measured under `torch.profiler` in a separate run, so profiler
 overhead does not leak into the busy% verdict.
@@ -271,6 +289,14 @@ that headroom exists and wrong about where it is.
 | GEMV — memory traffic | 18.46 | 60% | **No** — already 95% of bandwidth |
 | other kernels | 4.93 | 16% | Yes — kernel fusion |
 | GPU idle — launch gaps | 7.17 | 24% | Yes — CUDA graphs |
+
+**The `norm` category reads 0 — not because normalization is free, but because eager
+RMSNorm never launches a norm kernel.** It decomposes into generic ops the categorizer
+files elsewhere. The trace shows exactly **242 calls per step each** of `pow<float>`,
+`MeanOps<float>` (a `reduce_kernel`), `add<float>` and `rsqrt`, plus **471**
+`direct_copy` kernels that are `LoadWithCast<float>` — RMSNorm upcasting input and weight to
+fp32, ~2 per call. So RMSNorm's real cost is spread across "elementwise", "memory copies"
+and "other". At ~8 kernels per call, it is roughly **1,900 of the 3,085 launches per step**.
 
 **2031 elementwise kernels per step at ~1.4 µs each** is the finding. 35 layers each firing
 ~58 microscopic kernels where launch cost dominates execution, plus 471 `direct_copy`
@@ -384,7 +410,8 @@ uploaded to each pod. Ready for the week 3 compile staircase.
 | Prompt eval rate | 217.97 tok/s |
 | Load duration | 3.87 s |
 
-The laptop beats the rented GPU by **2.8x** at batch 1 (49.1 vs 17.6). Not a hardware
+The laptop beats the rented GPU by **1.5x–2.8x** at batch 1 depending on host (49.1 vs
+32.4–17.6 tok/s). Not a hardware
 result — two confounds, both favoring the Mac:
 
 1. **Precision.** The L4 run is bf16 (4.56 GB read per decode step). Ollama runs Q4_K_M,
@@ -429,10 +456,15 @@ Target the 12.1 ms of addressable time, in this order:
    optimization in itself. The default cache grows by one token per step, so shapes change
    every step and CUDA graphs cannot be captured — graphs require fixed shapes. Skipping
    this would produce little speedup and the wrong conclusion that compile does not help.
-   The 471 `direct_copy` kernels per step are partly cache churn and should drop here.
+   **Prediction: static cache alone will not reduce the 471 `direct_copy` kernels.** The
+   profile identifies them as `LoadWithCast<float>` — RMSNorm upcasting its input and weight
+   to fp32, ~2 per call — not cache traffic. (An earlier draft of this plan called them
+   "partly cache churn"; that was a guess, and the trace contradicts it.)
 2. **`torch.compile` on the decode path**, mode `reduce-overhead` (which enables CUDA
    graphs). Expect the 2031 elementwise kernels to collapse into a handful of fused ones and
-   the 7.17 ms idle to shrink with them.
+   the 7.17 ms idle to shrink with them. This step — or a hand-fused RMSNorm — is what
+   should eliminate the `LoadWithCast` kernels. RMSNorm is the single largest target:
+   ~242 calls × ~8 kernels ≈ **~1,900 of the 3,085 launches per step**.
 3. **Re-profile with `profile_decode.py`** and compare kernel count, busy%, and ms/step.
    Kernel count per step is the cleanest signal that fusion actually happened — if it stays
    near 3085, compile silently fell back to eager.
@@ -527,8 +559,9 @@ startup. The external TCP port changes on every stop/start, and `ssh info` can r
 stale port right after `start`.
 
 **Cost:** L4 bills **$0.50–0.59/hr** as configured — the GPU plus ~$0.06 for the 60 GB
-container disk, and the hourly rate varies with the host drawn. Spend to date **~$0.26**
-across three pods: $0.05 smoke test, $0.10 sweep + bandwidth, ~$0.08 verification run.
+container disk, and the hourly rate varies with the host drawn. Spend to date **$0.35**
+across six pods ($20.00 → $19.65 account balance), including one pod that lost its GPU
+mid-session and was discarded.
 
 ## Status
 
@@ -543,7 +576,7 @@ harness built and validated in both directions, with a 50k-token bf16 reference 
 KL 8.9e-4, top-1 98.9%. Every optimization is judged between those two.
 
 **Baseline:** **17.6–32.4 tok/s** at batch 1 depending on host — not a single number. On the
-fast host (48 vCPU EPYC): 32.4 tok/s, 30.56 ms/step, 76.5% GPU busy, 57% of the 57.3 tok/s
+fast host (EPYC 9254): 32.4 tok/s, 30.56 ms/step, 76.5% GPU busy, 57% of the 57.3 tok/s
 roofline. Batch-8 aggregate 138.8 tok/s on the slow host.
 
 **Time budget per decode step (fast host):** 18.46 ms GEMV at 94.6% of achievable bandwidth
@@ -590,7 +623,7 @@ Profiled a decode step and attributed the full time budget. Two findings, one ex
 one not. Expected: 2031 tiny elementwise kernels per step and 23.5% GPU idle — fusion and
 CUDA graphs are the lever. **Unexpected: the GEMV matmuls run at 94.6% of achievable
 bandwidth**, so a hand-written bf16 matmul kernel would gain nothing, which inverted the
-previous week's priority list. Separately, a third pod ran the identical config **1.76x
+previous week's priority list. Separately, the profile pod ran the identical config **1.76x
 faster** than the first two, revealing that "NVIDIA L4" pods differ enormously by host CPU.
 Retracted the ~5% noise-floor claim (wrong by an order of magnitude) and added `hostinfo.py`
 so CPU model and vCPU count are recorded in every results file from now on. Set the week 3

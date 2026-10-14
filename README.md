@@ -1,13 +1,15 @@
 # Gemma 4 E2B inference baseline — NVIDIA L4
 
-Week 1: establish a trustworthy performance baseline for `google/gemma-4-E2B-it` before
-attempting any optimization, and determine empirically where the bottleneck actually is.
+A measured performance baseline for `google/gemma-4-E2B-it`, built before attempting any
+optimization, to determine empirically where the bottleneck actually is — and an
+output-drift harness so every later optimization is judged on fidelity as well as speed.
 
 ## Finding
 
-Decode is **memory-bandwidth-bound**, not compute-bound. Generating one token requires
-reading the full 10.2 GB bf16 weight set out of VRAM, so throughput is governed by bytes
-moved per token rather than arithmetic performed.
+The decode matmuls are **memory-bandwidth-bound**, not compute-bound: generating one token
+reads 4.56 GB of bf16 weights out of VRAM, so their cost is governed by bytes moved rather
+than arithmetic performed. They are already near the bandwidth limit, so the recoverable
+time lies elsewhere — in kernel-launch overhead (see below).
 
 | | |
 | --- | --- |
@@ -24,7 +26,8 @@ the Per-Layer Embedding table that makes the E-series "effective 2B", is (262144
 4.7 GB resident, but *indexed*, so one token reads one 17,920-byte row. Charging decode for
 the full resident set gives a roofline of 25.6 tok/s and the false conclusion that the
 baseline is already at ~70% of achievable. Accounting for it properly puts the baseline at
-32%, with roughly **3x of headroom at batch 1 before changing precision at all**.
+**32–57% of roofline depending on host**, with roughly **1.8x–3x of headroom at batch 1**
+before changing precision at all.
 
 The byte accounting (`bytes_per_token.py`) validates two ways: resident total comes out at
 10.209 GB against 10.209 GB measured by `torch.cuda.max_memory_allocated()` on the GPU, and
@@ -43,11 +46,12 @@ bf16 matmul kernel would gain nothing. The addressable time is elsewhere: **2031
 elementwise kernels per step** at ~1.4 µs each, plus **23.5% GPU idle** in launch gaps. That
 is a kernel-fusion and CUDA-graphs problem, not a matmul problem.
 
-**Two pods labelled "NVIDIA L4" differ 1.76x.** Identical code and config gave 17.6 tok/s on
-a 16-vCPU host and 32.4 tok/s on a 48-vCPU AMD EPYC 9254. At ~3085 kernel launches per decode
-step, host CPU throughput gates decode, so absolute numbers are meaningless without the host.
-Every results file now records CPU model and vCPU count (`hostinfo.py`), and before/after
-comparisons must run on one pod in one session.
+**Pods labelled "NVIDIA L4" differ up to 1.76x.** Identical code and config gave 17.6 tok/s on
+a pod whose CPU was never recorded, 18.4 tok/s on a 16-vCPU pod, and 32.4 tok/s on an AMD EPYC
+9254. At ~3085 kernel launches per decode step, host CPU throughput plausibly gates decode, so
+absolute numbers are meaningless without the host. Every results file now records CPU model
+and core count (`hostinfo.py`), and before/after comparisons must run on one pod in one
+session.
 
 ## Files
 
@@ -57,17 +61,20 @@ comparisons must run on one pod in one session.
 | `benchmark.py` | prefill/decode harness — warmup, medians, prompt-length × batch sweep |
 | `bandwidth.py` | STREAM-style bandwidth probe + roofline arithmetic |
 | `bytes_per_token.py` | meta-device parameter audit → bytes read per step, corrected roofline (no GPU needed) |
+| `profile_decode.py` | per-decode-step kernel profile: GPU busy/idle %, kernel categories, top kernels |
+| `eval_drift.py` | output-drift harness — KL and top-1 agreement vs a bf16 reference, with a negative control |
+| `hostinfo.py` | host identity (CPU, cores, GPU, driver, versions) recorded into every results file |
 | `run.py` | single-shot smoke test (superseded for measurement) |
-| `results.json`, `bandwidth.json`, `verify.json`, `bytes_per_token.json`, `sweep.log` | raw measured output |
+| `results.json`, `bandwidth.json`, `verify.json`, `bytes_per_token.json`, `profile_decode.json`, `drift_*.json`, `host_epyc48_*.json`, `sweep.log` | raw measured output |
 
 ## Running
 
 Needs an NVIDIA GPU. Tested on a RunPod L4, template `runpod-torch-v280`
-(torch 2.8.0+cu128, transformers 5.18.0).
+(torch 2.8.0+cu128, transformers 5.18–5.19).
 
 ```bash
 python -m venv --system-site-packages /opt/venv     # image blocks plain pip (PEP 668)
-/opt/venv/bin/pip install -U transformers accelerate huggingface_hub
+/opt/venv/bin/pip install -U transformers accelerate huggingface_hub datasets
 
 /opt/venv/bin/python bandwidth.py --decode-tok-s 17.6
 /opt/venv/bin/python benchmark.py                   # full sweep -> results.json
