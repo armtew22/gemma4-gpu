@@ -6,11 +6,11 @@ import statistics
 import time
 
 import torch
-from transformers import AutoProcessor, AutoModelForMultimodalLM
+from transformers import AutoProcessor
 
 from hostinfo import host_info, print_host
+from variants import MODEL_ID, VARIANTS, build, finalize, resolve_max_cache_len
 
-MODEL_ID = "google/gemma-4-E2B-it"
 FILLER = (
     "The quick brown fox jumps over the lazy dog while the compiler emits vectorized "
     "instructions for the inner loop and the memory controller prefetches the next cache line. "
@@ -29,7 +29,7 @@ def build_inputs(tokenizer, prompt_len, batch_size, device):
     }
 
 
-def timed_generate(model, inputs, max_new_tokens):
+def timed_generate(model, inputs, max_new_tokens, gen_kwargs=None):
     torch.cuda.synchronize()
     t0 = time.perf_counter()
     out = model.generate(
@@ -37,6 +37,7 @@ def timed_generate(model, inputs, max_new_tokens):
         max_new_tokens=max_new_tokens,
         min_new_tokens=max_new_tokens,
         do_sample=False,
+        **(gen_kwargs or {}),
     )
     torch.cuda.synchronize()
     elapsed = time.perf_counter() - t0
@@ -49,15 +50,15 @@ def timed_generate(model, inputs, max_new_tokens):
     return elapsed, n_new
 
 
-def measure(model, inputs, decode_tokens, trials, warmup):
+def measure(model, inputs, decode_tokens, trials, warmup, gen_kwargs=None):
     """One trial = a 1-token run (prefill/TTFT) plus a full run; decode is the difference."""
     for _ in range(warmup):
-        timed_generate(model, inputs, decode_tokens)
+        timed_generate(model, inputs, decode_tokens, gen_kwargs)
 
     ttfts, decode_times = [], []
     for _ in range(trials):
-        ttft, n_ttft = timed_generate(model, inputs, 1)
-        full, n_full = timed_generate(model, inputs, decode_tokens)
+        ttft, n_ttft = timed_generate(model, inputs, 1, gen_kwargs)
+        full, n_full = timed_generate(model, inputs, decode_tokens, gen_kwargs)
         ttfts.append(ttft)
         decode_times.append(full - ttft)
     return ttfts, decode_times, n_full - n_ttft
@@ -71,21 +72,28 @@ def main():
     p.add_argument("--trials", type=int, default=10)
     p.add_argument("--warmup", type=int, default=3)
     p.add_argument("--out", default="results.json")
+    p.add_argument("--variant", default="eager", choices=sorted(VARIANTS))
+    p.add_argument("--max-cache-len", type=int, default=None,
+                   help="static-cache length for the whole sweep. Default: the largest "
+                        "prompt length + decode tokens, rounded up to a multiple of 128, so "
+                        "every config shares one cache size (generate() never shrinks it)")
     args = p.parse_args()
 
     if not torch.cuda.is_available():
         raise SystemExit("CUDA not available - this benchmark needs an NVIDIA GPU.")
 
-    processor = AutoProcessor.from_pretrained(MODEL_ID)
-    model = AutoModelForMultimodalLM.from_pretrained(
-        MODEL_ID, device_map="auto", dtype=torch.bfloat16
+    max_cache_len = resolve_max_cache_len(
+        args.variant, args.max_cache_len, max(args.prompt_lens), args.decode_tokens
     )
-    model.eval()
+    processor = AutoProcessor.from_pretrained(MODEL_ID)
+    model, gen_kwargs, meta = build(args.variant, max_cache_len)
 
     host = print_host()
     gpu = torch.cuda.get_device_name(0)
     weights_gb = torch.cuda.memory_allocated() / 1e9
-    print(f"torch={torch.__version__}  weights={weights_gb:.2f} GB\n")
+    print(f"torch={torch.__version__}  weights={weights_gb:.2f} GB")
+    print(f"variant={args.variant}  max_cache_len={meta['max_cache_len']}  "
+          f"compile_requested={meta['compile']['requested']}\n")
 
     rows = []
     for prompt_len in args.prompt_lens:
@@ -94,7 +102,7 @@ def main():
             torch.cuda.reset_peak_memory_stats()
             try:
                 ttfts, decode_times, decoded = measure(
-                    model, inputs, args.decode_tokens, args.trials, args.warmup
+                    model, inputs, args.decode_tokens, args.trials, args.warmup, gen_kwargs
                 )
             except torch.OutOfMemoryError:
                 torch.cuda.empty_cache()
@@ -126,10 +134,13 @@ def main():
                 f"peak={row['peak_mem_gb']:5.2f} GB"
             )
 
+    finalize(model, meta)
     with open(args.out, "w") as f:
         json.dump(
             {
                 "model": MODEL_ID,
+                "variant": args.variant,
+                "variant_meta": meta,
                 "host": host,
                 "gpu": gpu,
                 "torch": torch.__version__,

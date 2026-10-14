@@ -19,10 +19,11 @@ from collections import defaultdict
 
 import torch
 from torch.profiler import ProfilerActivity, profile, record_function
-from transformers import AutoProcessor, AutoModelForMultimodalLM
+from transformers import AutoProcessor
 
 from benchmark import MODEL_ID, build_inputs, timed_generate
 from hostinfo import print_host
+from variants import VARIANTS, build, finalize, resolve_max_cache_len
 
 # Checked in order; first match wins. Deliberately specific - the top-15 kernel listing
 # printed at the end is the audit for these rules.
@@ -166,31 +167,37 @@ def main():
     p.add_argument("--skip-decode-steps", type=int, default=2)
     p.add_argument("--trace", default="trace_decode.json")
     p.add_argument("--out", default="profile_decode.json")
+    p.add_argument("--variant", default="eager", choices=sorted(VARIANTS))
+    p.add_argument("--max-cache-len", type=int, default=None,
+                   help="static-cache length. Default: prompt length + decode tokens, "
+                        "rounded up to a multiple of 128")
     args = p.parse_args()
 
     if not torch.cuda.is_available():
         raise SystemExit("CUDA not available - this profile needs an NVIDIA GPU.")
 
-    processor = AutoProcessor.from_pretrained(MODEL_ID)
-    model = AutoModelForMultimodalLM.from_pretrained(
-        MODEL_ID, device_map="auto", dtype=torch.bfloat16
+    max_cache_len = resolve_max_cache_len(
+        args.variant, args.max_cache_len, args.prompt_len, args.decode_tokens
     )
-    model.eval()
+    processor = AutoProcessor.from_pretrained(MODEL_ID)
+    model, gen_kwargs, meta = build(args.variant, max_cache_len)
     inputs = build_inputs(processor.tokenizer, args.prompt_len, 1, model.device)
 
     host = print_host()
     gpu = torch.cuda.get_device_name(0)
     print(f"torch={torch.__version__}  "
-          f"prompt={args.prompt_len}  decode_tokens={args.decode_tokens}\n")
+          f"prompt={args.prompt_len}  decode_tokens={args.decode_tokens}")
+    print(f"variant={args.variant}  max_cache_len={meta['max_cache_len']}  "
+          f"compile_requested={meta['compile']['requested']}\n")
 
     for _ in range(args.warmup):
-        timed_generate(model, inputs, args.decode_tokens)
+        timed_generate(model, inputs, args.decode_tokens, gen_kwargs)
 
     # ---- Measurement 1: wall clock, profiler detached ----
     per_step = []
     for _ in range(args.trials):
-        ttft, _ = timed_generate(model, inputs, 1)
-        full, _ = timed_generate(model, inputs, args.decode_tokens)
+        ttft, _ = timed_generate(model, inputs, 1, gen_kwargs)
+        full, _ = timed_generate(model, inputs, args.decode_tokens, gen_kwargs)
         per_step.append((full - ttft) / (args.decode_tokens - 1))
     wall_ms = statistics.median(per_step) * 1000.0
     tok_s = 1000.0 / wall_ms
@@ -206,6 +213,7 @@ def main():
                 max_new_tokens=args.decode_tokens,
                 min_new_tokens=args.decode_tokens,
                 do_sample=False,
+                **gen_kwargs,
             )
     finally:
         for h in handles:
@@ -255,10 +263,13 @@ def main():
     print(f"\ntrace written to {args.trace} - open in ui.perfetto.dev and look at the "
           "gaps between kernels by eye")
 
+    finalize(model, meta)
     with open(args.out, "w") as f:
         json.dump(
             {
                 "model": MODEL_ID,
+                "variant": args.variant,
+                "variant_meta": meta,
                 "host": host,
                 "gpu": gpu,
                 "torch": torch.__version__,

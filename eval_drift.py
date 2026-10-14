@@ -7,8 +7,12 @@ Usage:
     # once, on the bf16 eager model
     python eval_drift.py --variant eager --save-reference ref.pt
 
-    # then for each optimized variant
-    python eval_drift.py --variant compile --reference ref.pt
+    # then for each variant that changes the forward pass itself
+    python eval_drift.py --variant <variant> --reference ref.pt
+
+Variants in variants.GENERATE_ONLY_VARIANTS (static, compile) are refused: their
+behaviour exists only inside generate(), and this harness scores with a plain forward
+pass, so they would be scored as eager and report a false PASS.
 
 Validating the harness itself - run both before trusting any variant's number, and
 always from a fresh process so nondeterminism and load-path differences are visible:
@@ -38,8 +42,8 @@ import time
 
 import torch
 
-from benchmark import MODEL_ID
 from hostinfo import host_info, print_host
+from variants import GENERATE_ONLY_VARIANTS, MODEL_ID, VARIANTS, build, resolve_max_cache_len
 
 # Positions per log_softmax chunk. This bounds only the float32 log-prob temporaries
 # (~256 x 262144 x 4 B = 268 MB). The forward pass still materialises the full bf16 logits
@@ -50,25 +54,6 @@ POSITION_CHUNK = 256
 # Current `datasets` requires a namespaced repo id; the bare "wikitext" no longer resolves.
 DATASET = "Salesforce/wikitext"
 DATASET_CONFIG = "wikitext-2-raw-v1"
-
-
-# --- model variants -------------------------------------------------------------------
-# One builder per variant. Adding "static" / "compile" / "fused_rmsnorm" later means
-# adding a function here and a line to VARIANTS; nothing else changes.
-
-def _build_eager(dtype):
-    from transformers import AutoModelForMultimodalLM
-
-    model = AutoModelForMultimodalLM.from_pretrained(
-        MODEL_ID, device_map="auto", dtype=dtype
-    )
-    model.eval()
-    return model, {}
-
-
-VARIANTS = {
-    "eager": _build_eager,
-}
 
 
 def perturb_one_layer(model, scale, seed, pattern):
@@ -96,15 +81,6 @@ def perturb_one_layer(model, scale, seed, pattern):
                 "norm_after": after,
             }
     raise SystemExit(f"no parameter matched {pattern!r} with dim >= 2")
-
-
-def build_model(variant, dtype=torch.bfloat16):
-    if variant not in VARIANTS:
-        raise SystemExit(
-            f"unknown variant {variant!r}; known: {sorted(VARIANTS)}. "
-            "Add a builder to VARIANTS."
-        )
-    return VARIANTS[variant](dtype)
 
 
 # --- evaluation set -------------------------------------------------------------------
@@ -263,6 +239,9 @@ def classify_band(kl, top1, pass_kl, pass_top1, fail_kl, fail_top1):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--variant", default="eager", choices=sorted(VARIANTS))
+    p.add_argument("--max-cache-len", type=int, default=None,
+                   help="accepted for interface parity with the other tools; only static-"
+                        "cache variants use it, and those are refused here")
     p.add_argument("--save-reference", metavar="PATH")
     p.add_argument("--reference", metavar="PATH")
     p.add_argument("--self-check", action="store_true",
@@ -309,6 +288,14 @@ def main():
 
     if not (args.save_reference or args.reference or args.self_check):
         raise SystemExit("pass --save-reference, --reference, or --self-check")
+    if args.variant in GENERATE_ONLY_VARIANTS:
+        raise SystemExit(
+            f"variant {args.variant!r} cannot be scored by this harness yet. Its static "
+            "cache and compiled decode step exist only inside generate(), but eval_drift "
+            "scores each window with one plain forward pass, so the variant would run as "
+            "plain eager and report KL 0 - a false PASS. Scoring it needs a decode-path "
+            "harness that goes through generate()'s cache and compiled step."
+        )
     if not torch.cuda.is_available():
         raise SystemExit("CUDA not available - this evaluation needs an NVIDIA GPU.")
 
@@ -329,8 +316,12 @@ def main():
     print(f"eval set: {settings['num_windows']} x {args.window} tokens, "
           f"bos={'yes' if add_bos else 'no'}, sha256={settings['eval_set_sha256'][:16]}\n")
 
-    model, variant_meta = build_model(args.variant)
-    print(f"variant: {args.variant}  {variant_meta if variant_meta else ''}")
+    model, _gen_kwargs, variant_meta = build(
+        args.variant,
+        resolve_max_cache_len(args.variant, args.max_cache_len, args.window, 0),
+    )
+    print(f"variant: {args.variant}  cache={variant_meta['cache']['class']}  "
+          f"compile_requested={variant_meta['compile']['requested']}")
 
     if args.perturb > 0:
         pert = perturb_one_layer(
