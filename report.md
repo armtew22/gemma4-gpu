@@ -1,7 +1,7 @@
 # Gemma 4 E2B — GPU inference baseline
 
 Working notes and measurements for the Gemma 4 E2B optimization project.
-Last updated 2026-10-13.
+Last updated 2026-10-14.
 
 ## Target
 
@@ -500,6 +500,78 @@ Target the 12.1 ms of addressable time, in this order:
 1.76x host variance, a cross-pod comparison could manufacture or hide the entire effect.
 Record `nproc` and CPU model with every number — `hostinfo.py` now does this automatically.
 
+Steps 1 and 2 are now `--variant static` and `--variant compile` on `benchmark.py` and
+`profile_decode.py` — see [Model variants](#model-variants).
+
+## Model variants
+
+`variants.py` is the single place every tool builds its model, so a variant name means the
+same weights, cache and `generate()` arguments in `benchmark.py`, `profile_decode.py` and
+`eval_drift.py`. Each tool takes `--variant` (default `eager`) and `--max-cache-len`, and every
+results JSON carries a `variant_meta` block recording what was actually built. Everything
+below was read from the installed transformers 5.19.0 source and checked locally on the meta
+config; nothing in this section has run on a GPU yet.
+
+| variant | cache | extra `generate()` arguments | compiled |
+| --- | --- | --- | --- |
+| `eager` | `DynamicCache` (transformers default) | none | no |
+| `static` | `StaticCache`, explicit length | `cache_implementation="static"`, `max_cache_len`, `disable_compile=True` | no — explicitly disabled |
+| `compile` | `StaticCache`, explicit length | as `static`, plus `compile_config=CompileConfig(mode="reduce-overhead")`, `disable_compile=False` | decode steps only |
+| `graph` | — | reserved: manual CUDA graph capture, no compile | not implemented |
+
+### The existing baselines really were eager
+
+Gemma 4's shipped generation config sets `cache_implementation=None`, so every run so far used
+the default `DynamicCache`, which transformers never auto-compiles. The `eager` variant is
+byte-for-byte the old path: the old and new code were run side by side against an
+instrumented model and made an identical `from_pretrained` + `eval()` call and identical
+`generate()` arguments at 1 and 64 new tokens. All earlier results remain comparable.
+
+### What transformers does with a static cache
+
+- **The class is always `StaticCache`.** The older `"hybrid"` and `"sliding_window"` cache
+  names are deprecated aliases; the sliding/full layout is inferred per layer inside
+  `StaticCache`. So the meaningful record is the per-layer composition, not the class name.
+- **On CUDA a static cache silently enables compilation.** `generate()` auto-compiles whenever
+  the cache is compileable unless `disable_compile=True`. Without that flag, a "static cache"
+  measurement would actually be static cache *plus* compile, and attribute the compile win to
+  the cache. The `static` variant sets it.
+- **Compilation covers decode steps only.** `get_compiled_call` is used inside the decode loop;
+  prefill calls the model directly and always runs eager.
+- **Static caches only grow within a process.** `generate()` stores the largest cache it has
+  built (`_previous_max_cache_length`) and never shrinks it, so a requested length is a floor,
+  not a guarantee. `finalize()` records the effective length after the run and flags any
+  mismatch.
+
+### Only 15 of the 35 layers own a KV cache
+
+Building the cache from the config gives **15 cache layers, not 35**: 12 sliding-window and 3
+full-attention. The config's `num_kv_shared_layers = 20` explains it — the last 20 layers
+reuse earlier layers' keys and values instead of storing their own. That is why the KV cache
+measured only 2.41 GB at batch 8 × 2048 tokens, and it makes the still-open KV term in the
+roofline smaller than a naive 35-layer estimate.
+
+In the static variants the 12 sliding layers cap at their **512-token window** and the 3 full
+layers take the requested `max_cache_len`. That is the hybrid behaviour the old `"hybrid"`
+cache name described, now recorded exactly in every results file.
+
+### Known gaps before these numbers can be trusted
+
+- **`eval_drift.py` refuses `static` and `compile`.** It scores each window with one plain
+  forward pass and never calls `generate()`, while both variants' behaviour exists only inside
+  `generate()`. Scoring them would run plain eager, report KL 0, and produce a false PASS. A
+  decode-path scorer that goes through the cache and compiled step is needed first.
+- **One cache length per sweep.** `benchmark.py` defaults to the largest prompt + decode
+  length, rounded up to 128, for every config, so the 128-token config decodes against a
+  2176-slot cache in the 3 full-attention layers. Isolate it with
+  `--prompt-lens 128 --max-cache-len 256`.
+- **`profile_decode.py` may not survive `compile`.** It labels decode steps with Python forward
+  hooks; inside a compiled, CUDA-graphed step those can be traced away or force graph breaks.
+  If so it fails loudly with "no gen_fwd_* annotations"; the wall-clock measurement is
+  unaffected.
+- **`fullgraph=False`** is transformers' default and is used as-is, so graph breaks are
+  silent. Kernel count per step is the check that compilation actually happened.
+
 ## Benchmark harness
 
 - `run.py` — single-shot smoke test. Superseded for measurement; keep for "does it load".
@@ -518,6 +590,9 @@ Record `nproc` and CPU model with every number — `hostinfo.py` now does this a
   than by wrapping `model.forward`, because transformers inspects the forward signature in
   `_validate_model_kwargs` and a wrapper hides it, making `generate()` reject
   `attention_mask`.
+- `variants.py` — builds every model variant (`eager`, `static`, `compile`) for all three
+  tools; `build(variant, max_cache_len)` returns the model, the extra `generate()` arguments,
+  and the meta dict, and `finalize()` records what actually happened at run time.
 - `hostinfo.py` — host identity recorded into every results file: CPU model, vCPU count, GPU
   name/memory/driver/clock/power, torch and transformers versions.
 
@@ -565,6 +640,9 @@ Things that cost time to rediscover:
 - **Launch long runs detached** (`nohup … &` with output to a log) and poll from a fresh
   connection. An interactive SSH holding the channel open will hang the caller.
 - No Hugging Face token needed for this model.
+- **The shipped generation config has `do_sample=True`.** Every `generate()` call here passes
+  `do_sample=False` explicitly; one that omitted it would sample, and its output would no
+  longer be deterministic.
 
 ## Reproducing the pod
 
@@ -607,17 +685,21 @@ roofline. Batch-8 aggregate 138.8 tok/s on the slow host.
 **Time budget per decode step (fast host):** 18.46 ms GEMV at 94.6% of achievable bandwidth
 (irreducible at bf16), 4.93 ms small kernels, 7.17 ms launch-gap idle. **12.1 ms addressable.**
 
-**Next (week 3):** static KV cache → `torch.compile` with CUDA graphs → re-profile →
-quantized dequant-GEMV Triton kernel. See the week 3 plan above. Each step is now scored
-on both axes: speed with `benchmark.py` / `profile_decode.py`, drift with `eval_drift.py`
-against `ref_50k_bos.pt`, same pod and session.
+**Next (week 3):** run `--variant static`, then `--variant compile`, through `benchmark.py`
+and `profile_decode.py` on one pod in one session → quantized dequant-GEMV Triton kernel. See
+the week 3 plan and Model variants above. Speed is measurable now; drift for these two
+variants is blocked until `eval_drift.py` gains a decode-path scorer.
 
 **Still open:** (a) confirm the CPU-starvation hypothesis by profiling a low-core host;
 (b) extend the batch sweep to 16/32/64, ~10 GB VRAM unused; (c) add the KV cache term to the
-roofline so long-context numbers are honest; (d) the sustained-load clock hypothesis is now
-largely superseded by host variance as the better explanation, but remains unmeasured;
-(e) confirm the drift reference is portable to a different host class; (f) score the base
-`gemma-4-E2B` once to explain the high absolute perplexity.
+roofline so long-context numbers are honest, now known to cover only 15 cache-owning layers;
+(d) the sustained-load clock hypothesis is now largely superseded by host variance as the
+better explanation, but remains unmeasured; (e) confirm the drift reference is portable to a
+different host class; (f) score the base `gemma-4-E2B` once to explain the high absolute
+perplexity; (g) a decode-path drift scorer so `static` and `compile` can be judged on
+fidelity; (h) check whether `profile_decode.py`'s step labels survive `compile`; (i) decide
+whether to run `compile` with `fullgraph=True` so graph breaks fail loudly; (j) record the
+cgroup CPU quota in `hostinfo.py` instead of visible cores.
 
 **Measurement standard:** host variance reaches 1.76x, so absolute throughput is meaningless
 without the host. Every before/after must run on one pod in one session. Every results file
@@ -666,7 +748,24 @@ so the zero is meaningful rather than the output of a comparison that cannot fai
 that perplexity moved only 0.009% under that same perturbation, which justifies building on
 KL and top-1. Saved a 49,152-position bf16 reference for the week 3 staircase. One pod lost its
 GPU mid-session (`Failed to initialize NVML`, container restarting); it was discarded rather
-than waited on, and its BOS numbers matched the replacement exactly.
+than waited on, and its BOS numbers matched the replacement exactly. Later the same day,
+corrected stale facts across the report and README (release date, PLE, a six-pod table, the
+`LoadWithCast` kernels) and pre-registered the pass/fail bands before any variant was run.
+*Commits: `fbf2f20`, `e38614a`, `d316da5`.*
+
+### 2026-10-14 — model variants, no GPU
+Built `variants.py` so `eager`, `static` and `compile` are constructed in one place and every
+tool measures the identical model. Read the transformers 5.19 source rather than assuming its
+behaviour, and found three things that would have quietly skewed week 3: a static cache on
+CUDA auto-compiles unless `disable_compile=True`, so a naive "static" run would have measured
+compile too; the cache class is always `StaticCache` with the sliding layout inferred per
+layer; and static caches never shrink within a process. Confirmed the earlier baselines were
+genuinely eager (`cache_implementation=None`, `DynamicCache`) and proved the `eager` variant
+identical to the old path by running both against an instrumented model. Found that only 15
+of 35 layers own a KV cache (`num_kv_shared_layers = 20`). Made `eval_drift.py` refuse the
+generate-only variants rather than score them as eager and report a false PASS. Everything
+today was verified on the Mac; the GPU checks are listed under Model variants.
+*Commit: `b6e5200`.*
 
 ### A note on corrections
 Four conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s
