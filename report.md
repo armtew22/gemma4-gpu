@@ -283,6 +283,97 @@ on the 57.3 tok/s roofline. The accounting closes.
 Full trace in `trace_decode.json` (217 MB, gitignored) — open in ui.perfetto.dev to see the
 launch gaps directly. Summary in `profile_decode.json`.
 
+## Output drift evaluation
+
+Speed is worthless if the outputs changed. Before any optimization lands, `eval_drift.py`
+establishes how to tell. It scores a fixed evaluation set — wikitext-2-raw-v1 test,
+non-overlapping 1024-token windows, BOS prepended — and compares any variant against a
+saved bf16 eager reference on two metrics:
+
+- **mean KL(reference ‖ current)**, approximated over the reference's top-100 tokens per
+  position with both distributions renormalized over that set. Full 262k-vocab logits for
+  50k positions would be ~26 GB, so the reference stores only top-100 ids and log-probs.
+- **top-1 agreement** — fraction of positions where the argmax is unchanged.
+
+Perplexity and top-100 coverage are reported alongside. The eval set is pinned by a
+sha256 over its tokens *and* window structure; a comparison refuses to run if any setting
+differs, since KL across different evaluation sets is meaningless.
+
+Run on an L4, AMD EPYC 7542, 128 vCPU, driver 570.195.03 (2026-10-13).
+
+### BOS is mandatory
+
+| | perplexity (4096 tokens) |
+| --- | --- |
+| BOS prepended | **212.0** |
+| no BOS | **15,713.7** |
+
+A **74x** difference. Gemma 4's tokenizer reports `add_bos_token=False`, and
+`add_special_tokens=True` empirically adds none — but that reflects the chat template
+supplying BOS, and this harness bypasses the chat template. Without BOS the model is
+far off-distribution, which would make every drift measurement describe a state the
+model never runs in. BOS is on by default; `--no-bos` exists only to reproduce this.
+
+The initial implementation defaulted BOS *off*, reasoning from the tokenizer config. That
+was literally correct and the wrong conclusion. Measured on the first pod run and
+reproduced to three decimals on a second.
+
+### The harness is validated in both directions
+
+| check | KL | top-1 | result |
+| --- | --- | --- | --- |
+| eager vs eager, **separate process** | **0.000e+00** | **100.0000%** | no drift, as required |
+| eager, one layer perturbed by 1e-3 | **8.879e-04** | **98.9014%** | drift detected, as required |
+
+**The noise floor is exactly zero.** bf16 eager decode is bitwise deterministic across
+processes on this setup. Any nonzero KL from a later variant is attributable entirely to
+that variant — e.g. fused kernels summing in a different order under `torch.compile` —
+with no baseline noise to subtract.
+
+**The negative control is what makes the zero meaningful.** A check that only confirms
+"KL is 0 when nothing changed" would also pass if the comparison were broken and always
+returned 0. Perturbing `layers.17.self_attn.q_proj.weight` (2048 × 1536) by gaussian noise
+at 1e-3 of its std moves KL clearly off zero and flips 1.1% of top-1 predictions. The
+harness can see a change, so its silence means something.
+
+Every variant should be read between these two numbers: 0 is identical, 8.9e-4 / 98.9% is
+what a deliberately damaged model looks like.
+
+### Perplexity is a poor drift metric
+
+The perturbation that flipped 1.1% of argmax predictions moved perplexity from 212.0098 to
+212.0292 — **0.009%**. Tracking perplexity alone, that damage is invisible. KL and top-1
+agreement caught it immediately. This is the measured justification for building the
+harness around them.
+
+### The top-100 approximation holds at bf16
+
+**Top-100 coverage is 98.9%**: the current model places 98.9% of its full-vocabulary
+probability mass on the reference's top-100 tokens, so the approximated KL is describing
+nearly all of the real distribution. This is the number to watch under 4-bit quantization —
+if coverage falls, the KL figure is measuring less of what changed.
+
+### The 50k reference
+
+`ref_50k_bos.pt`: 48 windows × 1024 tokens = **49,152 scored positions**, top-100,
+perplexity **184.56**, 39.9 MB, sha256 `49dab96ff948f95b…`. Gitignored for size; it must be
+uploaded to each pod. Ready for the week 3 compile staircase.
+
+### Caveats
+
+- **Absolute perplexity is high** — 184–212 on wikitext-2, where a model this size usually
+  lands around 10–30. Likely contributors: this is the instruction-tuned `-it` variant,
+  which typically scores worse on raw text than a base model; the 262k vocabulary makes
+  per-token perplexity incomparable with ~32k-vocab models; and each window is scored
+  independently with no carried-over context. None of this affects drift, which is relative
+  to the reference, but **184 should not be cited as a quality number.** Scoring the base
+  `gemma-4-E2B` once would isolate the instruction-tuning effect.
+- **Cross-pod portability of the reference is likely but unproven.** Two containers
+  reproduced the identical eval-set sha256 and perplexity 212.010 to three decimals, which
+  is good evidence. Both were EPYC 7542 / 128 vCPU hosts and may have been the same
+  physical machine. Until a different host class confirms it, run the `--expect no-drift`
+  floor check on any new pod before trusting comparisons against the shared reference.
+
 ## Comparison: local M3 Pro Mac, 4-bit
 
 `ollama run gemma4:e2b --verbose` (Q4_K_M, 5.6 GB on disk).
@@ -373,7 +464,13 @@ Record `nproc` and CPU model with every number — `hostinfo.py` now does this a
 - `hostinfo.py` — host identity recorded into every results file: CPU model, vCPU count, GPU
   name/memory/driver/clock/power, torch and transformers versions.
 
+- `eval_drift.py` — output-drift harness: mean KL over the reference top-100, top-1
+  agreement, perplexity and top-k coverage against a saved bf16 eager reference. Supports
+  `--expect no-drift|drift` assertions and `--perturb` as a negative control. Variants are
+  registered in one `VARIANTS` dict so `static`, `compile` and `fused_rmsnorm` drop in.
+
 Data files: `results.json` (3×3 sweep), `bandwidth.json`, `verify.json`,
+`drift_eager_floor.json` and `drift_perturb.json` (harness validation),
 `bytes_per_token.json`, `profile_decode.json`, and
 `host_epyc48_{64,32}tok.json` — the two runs on the fast host that established host variance.
 Those two predate `hostinfo.py`, so their host is recorded in the filename instead.
@@ -439,7 +536,11 @@ across three pods: $0.05 smoke test, $0.10 sweep + bandwidth, ~$0.08 verificatio
 benchmark harness written, hardened against early stopping, and executed; full 3×3 sweep
 collected; real memory bandwidth measured; per-token byte accounting completed and the
 roofline corrected; decode profiled and the time budget fully attributed; 1.76x host
-variance discovered and host identity now recorded in every results file.
+variance discovered and host identity now recorded in every results file; output-drift
+harness built and validated in both directions, with a 50k-token bf16 reference saved.
+
+**Drift baseline:** noise floor KL 0.000, top-1 100%; a deliberately damaged model reads
+KL 8.9e-4, top-1 98.9%. Every optimization is judged between those two.
 
 **Baseline:** **17.6–32.4 tok/s** at batch 1 depending on host — not a single number. On the
 fast host (48 vCPU EPYC): 32.4 tok/s, 30.56 ms/step, 76.5% GPU busy, 57% of the 57.3 tok/s
@@ -449,12 +550,16 @@ roofline. Batch-8 aggregate 138.8 tok/s on the slow host.
 (irreducible at bf16), 4.93 ms small kernels, 7.17 ms launch-gap idle. **12.1 ms addressable.**
 
 **Next (week 3):** static KV cache → `torch.compile` with CUDA graphs → re-profile →
-quantized dequant-GEMV Triton kernel. See the week 3 plan above.
+quantized dequant-GEMV Triton kernel. See the week 3 plan above. Each step is now scored
+on both axes: speed with `benchmark.py` / `profile_decode.py`, drift with `eval_drift.py`
+against `ref_50k_bos.pt`, same pod and session.
 
 **Still open:** (a) confirm the CPU-starvation hypothesis by profiling a low-core host;
 (b) extend the batch sweep to 16/32/64, ~10 GB VRAM unused; (c) add the KV cache term to the
 roofline so long-context numbers are honest; (d) the sustained-load clock hypothesis is now
-largely superseded by host variance as the better explanation, but remains unmeasured.
+largely superseded by host variance as the better explanation, but remains unmeasured;
+(e) confirm the drift reference is portable to a different host class; (f) score the base
+`gemma-4-E2B` once to explain the high absolute perplexity.
 
 **Measurement standard:** host variance reaches 1.76x, so absolute throughput is meaningless
 without the host. Every before/after must run on one pod in one session. Every results file
@@ -491,9 +596,25 @@ Retracted the ~5% noise-floor claim (wrong by an order of magnitude) and added `
 so CPU model and vCPU count are recorded in every results file from now on. Set the week 3
 plan: static KV cache, then CUDA graphs, then the quantized kernel.
 
+*Commit: `5a45118`.*
+
+### 2026-10-13 — drift harness built and validated
+Built `eval_drift.py` so every later optimization is judged on output fidelity, not just
+speed. Settled the BOS question with data: perplexity **212 with BOS, 15,714 without**, a 74x
+gap — overturning an initial default that had followed the tokenizer config literally.
+Validated the harness in both directions: a fresh-process eager-vs-eager run gives KL
+exactly 0 and 100% top-1, and a 1e-3 perturbation of one layer gives KL 8.9e-4 and 98.9% top-1,
+so the zero is meaningful rather than the output of a comparison that cannot fail. Found
+that perplexity moved only 0.009% under that same perturbation, which justifies building on
+KL and top-1. Saved a 49,152-position bf16 reference for the week 3 staircase. One pod lost its
+GPU mid-session (`Failed to initialize NVML`, container restarting); it was discarded rather
+than waited on, and its BOS numbers matched the replacement exactly.
+
 ### A note on corrections
-Three claims in this report have been retracted: the 23.7 tok/s baseline, the 25.6 tok/s
-dense roofline, and the ~5% noise floor. Each is struck through in place rather than deleted,
-with the reason, so the reasoning trail stays auditable. Two were analysis errors from
-reasoning ahead of the measurement; one was insufficient sampling. The pattern is worth
-noting: every correction came from measuring something that had previously been assumed.
+Four conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s
+dense roofline, the ~5% noise floor, and defaulting BOS off. The first three are struck
+through in place rather than deleted, with the reason, so the reasoning trail stays
+auditable; the BOS default was caught before it reached a commit. Two were analysis errors
+from reasoning ahead of the measurement, one was insufficient sampling, and one was trusting
+a config file over the model's known behaviour. The pattern holds: every correction came from
+measuring something that had previously been assumed.

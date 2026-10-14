@@ -1,0 +1,67 @@
+{
+  "variant": "eager",
+  "variant_meta": {
+    "perturb": {
+      "param": "model.language_model.layers.17.self_attn.q_proj.weight",
+      "shape": [
+        2048,
+        1536
+      ],
+      "scale": 0.001,
+      "seed": 0,
+      "weight_std": 0.033608268946409225,
+      "norm_before": 59.60831069946289,
+      "norm_after": 59.60830307006836
+    }
+  },
+  "host": {
+    "hostname": "595bdcd53da5",
+    "platform": "Linux-6.14.0-33-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "vcpu_count": 128,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "570.195.03",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "reference_host": {
+    "hostname": "595bdcd53da5",
+    "platform": "Linux-6.14.0-33-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "vcpu_count": 128,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "570.195.03",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "settings": {
+    "dataset": "Salesforce/wikitext/wikitext-2-raw-v1:test",
+    "join": "\\n\\n",
+    "window": 1024,
+    "num_windows": 4,
+    "tokens_requested": 4096,
+    "add_bos": true,
+    "bos_token_id": 2,
+    "corpus_tokens_available": 292282,
+    "eval_set_sha256": "e5c51085d9602c264d5571bc9ffb6e41a1525e32e748717b0ccbdfc23f15af85",
+    "topk": 100,
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16"
+  },
+  "reference_path": "ref_bos_4k.pt",
+  "wall_seconds": 1.134353406727314,
+  "tokens_scored": 4096,
+  "mean_kl": 0.0008879072593117598,
+  "top1_agreement_pct": 98.9013671875,
+  "perplexity": 212.02915954589844,
+  "mean_nll": 5.356723561882973,
+  "topk_coverage_pct": 98.90208505094051
+}
