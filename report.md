@@ -365,6 +365,31 @@ harness can see a change, so its silence means something.
 Every variant should be read between these two numbers: 0 is identical, 8.9e-4 / 98.9% is
 what a deliberately damaged model looks like.
 
+### Pre-registered pass/fail bands
+
+The eager floor is exactly zero, but zero is the wrong bar for an optimized variant.
+`torch.compile` and fused kernels change floating-point summation order, so their bf16
+outputs **cannot** be bitwise identical to eager even when they are correct. Demanding KL 0
+would fail every legitimate optimization; accepting "small" after the fact would let any
+result rationalize itself.
+
+So the verdict thresholds were fixed **before any variant was run**, anchored on the
+measured negative control, and are recorded in every `drift_*.json`:
+
+| verdict | rule |
+| --- | --- |
+| **PASS** | mean KL < 1e-4 **and** top-1 ≥ 99.5% |
+| **FAIL** | mean KL ≥ 8.9e-4 **or** top-1 ≤ 98.9% |
+| **INVESTIGATE** | anything in between |
+
+`--expect pass-band` exits 0 on PASS, 1 on FAIL, 2 on INVESTIGATE, so it can gate a script.
+The existing `no-drift` and `drift` modes are unchanged; they validate the harness, while
+`pass-band` judges a variant.
+
+FAIL is the negative control rounded to 8.9e-4 / 98.9%. In that rounding direction the
+control itself (8.879e-4 / 98.9014%) classifies as **INVESTIGATE**, by margins of 0.2% on
+KL and 0.0014 points on top-1. The eager floor classifies as PASS.
+
 ### Perplexity is a poor drift metric
 
 The perturbation that flipped 1.1% of argmax predictions moved perplexity from 212.0098 to

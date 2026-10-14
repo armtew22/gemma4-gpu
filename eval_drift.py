@@ -233,6 +233,31 @@ def score_against(model, windows, ref, topk):
     }
 
 
+# --- pre-registered pass/fail bands ---------------------------------------------------
+# The eager-vs-eager floor is exactly KL 0 / top-1 100%, but that cannot be the bar for an
+# optimized variant: torch.compile and fused kernels change floating-point summation order,
+# so their bf16 outputs cannot be bitwise identical to eager even when they are correct.
+# These bands give every variant a verdict that was fixed BEFORE any variant was run, so a
+# result cannot quietly move the goalposts. FAIL is set from the measured negative control
+# (one layer perturbed by 1e-3: KL 8.879e-4, top-1 98.9014%), rounded to 8.9e-4 / 98.9%.
+# Note the rounding direction: the control itself lands just inside INVESTIGATE, not FAIL.
+# PASS sits roughly an order of magnitude below the control on KL. The gap between them is
+# INVESTIGATE: not proven wrong, not trusted either.
+
+BAND_PASS_KL = 1e-4
+BAND_PASS_TOP1 = 99.5
+BAND_FAIL_KL = 8.9e-4
+BAND_FAIL_TOP1 = 98.9
+
+
+def classify_band(kl, top1, pass_kl, pass_top1, fail_kl, fail_top1):
+    if kl >= fail_kl or top1 <= fail_top1:
+        return "FAIL"
+    if kl < pass_kl and top1 >= pass_top1:
+        return "PASS"
+    return "INVESTIGATE"
+
+
 # --- main -----------------------------------------------------------------------------
 
 def main():
@@ -245,10 +270,22 @@ def main():
                         "smoke test only - a fresh-process --save-reference then "
                         "--reference run is the real check, since it also catches "
                         "nondeterminism and load-path differences.")
-    p.add_argument("--expect", choices=("none", "no-drift", "drift"), default="none",
+    p.add_argument("--expect", choices=("none", "no-drift", "drift", "pass-band"),
+                   default="none",
                    help="assert on the outcome. 'no-drift' requires KL <= tol and top-1 "
                         ">= min; 'drift' requires the opposite, which is what makes the "
-                        "harness falsifiable.")
+                        "harness falsifiable. 'pass-band' applies the pre-registered bands "
+                        "for optimized variants: exit 0 on PASS, 1 on FAIL, 2 on "
+                        "INVESTIGATE.")
+    p.add_argument("--band-pass-kl", type=float, default=BAND_PASS_KL,
+                   help="PASS requires mean KL strictly below this")
+    p.add_argument("--band-pass-top1", type=float, default=BAND_PASS_TOP1,
+                   help="PASS requires top-1 agreement %% at or above this")
+    p.add_argument("--band-fail-kl", type=float, default=BAND_FAIL_KL,
+                   help="FAIL if mean KL is at or above this (the negative control)")
+    p.add_argument("--band-fail-top1", type=float, default=BAND_FAIL_TOP1,
+                   help="FAIL if top-1 agreement %% is at or below this (the negative "
+                        "control)")
     p.add_argument("--perturb", type=float, default=0.0,
                    help="negative control: add this much relative gaussian noise to one "
                         "layer's weight before scoring (e.g. 1e-3)")
@@ -343,6 +380,19 @@ def main():
           f"(current model's mass inside the reference top-k)")
     print(f"wall                  {wall:.1f}s")
 
+    band = {
+        "pass_kl_below": args.band_pass_kl,
+        "pass_top1_at_least": args.band_pass_top1,
+        "fail_kl_at_least": args.band_fail_kl,
+        "fail_top1_at_most": args.band_fail_top1,
+        "verdict": classify_band(
+            result["mean_kl"], result["top1_agreement_pct"],
+            args.band_pass_kl, args.band_pass_top1,
+            args.band_fail_kl, args.band_fail_top1,
+        ),
+    }
+    print(f"band verdict          {band['verdict']}")
+
     out = args.out or f"drift_{args.variant}.json"
     with open(out, "w") as f:
         json.dump(
@@ -355,6 +405,7 @@ def main():
                 "reference_path": ref_path,
                 "wall_seconds": wall,
                 **result,
+                "band": band,
             },
             f,
             indent=2,
@@ -375,7 +426,7 @@ def main():
             assert ok_kl, f"expected no drift but KL is {kl:.3e}"
             assert ok_t1, f"expected no drift but top-1 is only {t1:.4f}%"
             print("EXPECT no-drift  PASS - reports zero drift when nothing changed")
-        else:
+        elif expect == "drift":
             ok_kl = kl > args.self_check_kl_tol
             ok_t1 = t1 < 100.0
             print(f"EXPECT drift     KL {kl:.3e} > {args.self_check_kl_tol:.0e}"
@@ -388,6 +439,18 @@ def main():
             )
             assert ok_t1, "expected drift but top-1 agreement is still 100%"
             print("EXPECT drift     PASS - reports nonzero drift when something changed")
+        elif expect == "pass-band":
+            print(f"PASS-BAND  PASS        KL < {band['pass_kl_below']:.0e} "
+                  f"and top-1 >= {band['pass_top1_at_least']}%")
+            print(f"PASS-BAND  FAIL        KL >= {band['fail_kl_at_least']:.1e} "
+                  f"or top-1 <= {band['fail_top1_at_most']}%   (negative control)")
+            print(f"PASS-BAND  INVESTIGATE anything in between")
+            print(f"PASS-BAND  measured    KL {kl:.3e}, top-1 {t1:.4f}%  ->  "
+                  f"{band['verdict']}")
+            if band["verdict"] == "FAIL":
+                raise SystemExit(1)
+            if band["verdict"] == "INVESTIGATE":
+                raise SystemExit(2)
 
 
 if __name__ == "__main__":
