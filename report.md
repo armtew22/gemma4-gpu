@@ -1,7 +1,7 @@
 # Gemma 4 E2B — GPU inference baseline
 
 Working notes and measurements for the Gemma 4 E2B optimization project.
-Last updated 2026-10-14.
+Last updated 2026-10-18.
 
 ## Target
 
@@ -425,6 +425,39 @@ uploaded to each pod. Ready for the week 3 compile staircase.
   physical machine. Until a different host class confirms it, run the `--expect no-drift`
   floor check on any new pod before trusting comparisons against the shared reference.
 
+### Decode mode
+
+`--mode prefill` (the default, unchanged) scores each window with one forward pass. That
+never enters `generate()`, so it cannot see the static cache, `torch.compile` or CUDA graphs,
+which exist only in `generate()`'s decode loop. `--mode decode` scores through the real
+`generate()` with **teacher forcing**: 8 windows × 256 tokens, prompt = BOS + 16 tokens, the
+other 240 generated. A logits processor records each step's **raw** distribution (top-100
+ids, log-probs, argmax) and only then sets every logit except the true next token to −inf,
+so greedy decoding stays on the evaluation text. After each window the generated tokens are
+asserted equal to the true ones. Step 0 of each window is produced by the prefill pass, so
+only the 239 decode steps per window are scored — 1,912 positions in all.
+
+**The recorder must run first, and transformers puts custom processors last.** With
+`min_new_tokens` set, `generate()` builds `MinNewTokensLengthLogitsProcessor`, which sets
+Gemma's EOS ids to −inf *before* any user processor sees the logits. A recorder passed the
+normal way would record distorted, renormalized log-probs. Decode mode therefore places the
+recorder at position 0 for the scoring call (the forward pass is untouched) and asserts it
+was first. Verified on a tiny model: placed normally, the recorder saw EOS at −inf; placed
+first, it matched an independent full forward pass to 4.8e-07.
+
+**A decode-mode eager reference is the baseline for `static` and `compile`, not the prefill
+reference.** Decode uses different kernels (GEMV rather than GEMM, cached attention), so it
+will not be bitwise equal to prefill. As a sanity check, `--prefill-reference` compares a
+decode run with the prefill reference on the 478 positions whose context is identical
+(decode windows 0 and 4, which start exactly where prefill windows start); the expected
+result is the PASS band, not 0. Decode references carry their own sha256, covering mode and
+prompt length, and comparisons refuse any mode or eval-set mismatch.
+
+Nothing in decode mode has run on a GPU yet. The planned validation, in order: decode-eager
+vs decode-eager in a fresh process (expect KL 0, top-1 100%), `--perturb 1e-3` (expect
+drift), the prefill sanity check (expect PASS), then `static` and `compile` against the
+decode-eager reference for their pass-band verdicts.
+
 ## Comparison: local M3 Pro Mac, 4-bit
 
 `ollama run gemma4:e2b --verbose` (Q4_K_M, 5.6 GB on disk).
@@ -557,10 +590,10 @@ cache name described, now recorded exactly in every results file.
 
 ### Known gaps before these numbers can be trusted
 
-- **`eval_drift.py` refuses `static` and `compile`.** It scores each window with one plain
-  forward pass and never calls `generate()`, while both variants' behaviour exists only inside
-  `generate()`. Scoring them would run plain eager, report KL 0, and produce a false PASS. A
-  decode-path scorer that goes through the cache and compiled step is needed first.
+- **Drift for `static` and `compile` needs `--mode decode`.** Prefill mode scores with one
+  plain forward pass and still refuses them, since it would run them as eager and report a
+  false PASS. Decode mode (see [Decode mode](#decode-mode)) scores through `generate()`, but
+  has not yet run on a GPU.
 - **One cache length per sweep.** `benchmark.py` defaults to the largest prompt + decode
   length, rounded up to 128, for every config, so the 128-token config decodes against a
   2176-slot cache in the 3 full-attention layers. Isolate it with
@@ -687,8 +720,9 @@ roofline. Batch-8 aggregate 138.8 tok/s on the slow host.
 
 **Next (week 3):** run `--variant static`, then `--variant compile`, through `benchmark.py`
 and `profile_decode.py` on one pod in one session → quantized dequant-GEMV Triton kernel. See
-the week 3 plan and Model variants above. Speed is measurable now; drift for these two
-variants is blocked until `eval_drift.py` gains a decode-path scorer.
+the week 3 plan and Model variants above. Speed is measurable now, and drift for these two
+variants is scored with `eval_drift.py --mode decode` against a decode-mode eager reference,
+once that mode has been validated on a GPU.
 
 **Still open:** (a) confirm the CPU-starvation hypothesis by profiling a low-core host;
 (b) extend the batch sweep to 16/32/64, ~10 GB VRAM unused; (c) add the KV cache term to the
@@ -696,8 +730,8 @@ roofline so long-context numbers are honest, now known to cover only 15 cache-ow
 (d) the sustained-load clock hypothesis is now largely superseded by host variance as the
 better explanation, but remains unmeasured; (e) confirm the drift reference is portable to a
 different host class; (f) score the base `gemma-4-E2B` once to explain the high absolute
-perplexity; (g) a decode-path drift scorer so `static` and `compile` can be judged on
-fidelity; (h) check whether `profile_decode.py`'s step labels survive `compile`; (i) decide
+perplexity; (g) validate decode mode on a GPU — fresh-process floor, perturbation, prefill
+sanity check — before trusting any `static` or `compile` drift verdict; (h) check whether `profile_decode.py`'s step labels survive `compile`; (i) decide
 whether to run `compile` with `fullgraph=True` so graph breaks fail loudly; (j) record the
 cgroup CPU quota in `hostinfo.py` instead of visible cores.
 
