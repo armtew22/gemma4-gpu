@@ -1,0 +1,12 @@
+01:26:14.140 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+01:26:14.143 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:26:14.379 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+01:26:21.979 Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split:  23%|██▎       | 1000/4358 [00:00<00:00, 7502.19 examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 19332.46 examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 17400.72 examples/s]
+01:26:22.945 Generating train split:   0%|          | 0/36718 [00:00<?, ? examples/s]Generating train split:   3%|▎         | 1000/36718 [00:00<00:06, 5601.26 examples/s]Generating train split:   8%|▊         | 3000/36718 [00:00<00:04, 7485.63 examples/s]Generating train split:  19%|█▉        | 7000/36718 [00:00<00:01, 16440.59 examples/s]Generating train split:  30%|██▉       | 11000/36718 [00:00<00:01, 17735.43 examples/s]Generating train split:  63%|██████▎   | 23000/36718 [00:00<00:00, 40412.50 examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 61100.59 examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 38031.67 examples/s]
+01:26:22.953 Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 3760/3760 [00:00<00:00, 508220.26 examples/s]
+01:26:24.299 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+01:26:24.304 
+01:26:37.564 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  17%|█▋        | 329/1951 [00:00<00:00, 3273.90it/s]Loading weights:  34%|███▎      | 657/1951 [00:00<00:00, 2795.94it/s]Loading weights:  48%|████▊     | 941/1951 [00:01<00:01, 598.60it/s] Loading weights:  57%|█████▋    | 1109/1951 [00:01<00:01, 608.94it/s]Loading weights:  63%|██████▎   | 1236/1951 [00:01<00:01, 580.35it/s]Loading weights:  68%|██████▊   | 1335/1951 [00:01<00:01, 607.92it/s]Loading weights:  83%|████████▎ | 1614/1951 [00:01<00:00, 929.02it/s]Loading weights:  98%|█████████▊| 1905/1951 [00:02<00:00, 1272.15it/s]Loading weights: 100%|██████████| 1951/1951 [00:02<00:00, 933.30it/s] 
+01:26:38.213 variant: eager  cache=DynamicCache  compile_requested=False
+01:28:26.003 reference saved to ref_decode_eager.pt: 1912 positions, top-100, perplexity 290.674
+01:28:26.007 wall 107.8s

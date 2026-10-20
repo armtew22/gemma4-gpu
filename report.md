@@ -1,7 +1,7 @@
 # Gemma 4 E2B — GPU inference baseline
 
 Working notes and measurements for the Gemma 4 E2B optimization project.
-Last updated 2026-10-18.
+Last updated 2026-10-19.
 
 ## Target
 
@@ -536,6 +536,53 @@ Record `nproc` and CPU model with every number — `hostinfo.py` now does this a
 Steps 1 and 2 are now `--variant static` and `--variant compile` on `benchmark.py` and
 `profile_decode.py` — see [Model variants](#model-variants).
 
+## Week 3 staircase — raw results (2026-10-19)
+
+Raw numbers only; the full writeup is a separate commit. One L4 pod, one session, every step
+in a fresh process: AMD EPYC 7542 (128 visible cores), driver 595.91.07, torch 2.8.0+cu128,
+transformers pinned to 5.19.0 (`pip -U` resolved 5.20.2; variants were verified against
+5.19.0). Batch 1, 128-token prompt, `--max-cache-len 256`. All files in
+`runs/2026-10-19_staircase/`.
+
+**Decode scorer validation** (`eval_drift.py --mode decode`, 1,912 positions):
+
+| check | KL | top-1 | result |
+| --- | --- | --- | --- |
+| eager vs eager, fresh process | 0.000 | 100.0000% | no drift ✓ |
+| `--perturb 1e-3` | 8.968e-4 | 99.1632% | drift ✓ (band: FAIL) |
+| decode vs prefill ref, 478 identical-context positions | 1.797e-3 | 98.3264% | **FAIL band — expected PASS** |
+| prefill-mode eager vs `ref_50k_bos.pt` (49,152 pos., Oct 13 pod) | 0.000 | 100.0000% | prefill ref is portable across pods/drivers ✓ |
+
+**Staircase** — tok/s from `benchmark.py` (64 tokens), the rest from `profile_decode.py`
+(32 tokens) and a read-only trace counter; KL/top-1 vs the decode-eager reference:
+
+| variant | tok/s | ms/step | GPU kernels/step | CPU launches/step | GPU busy | KL | top-1 | verdict | graph breaks | recompiles |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A eager | 17.58 | 56.85 | 3,085 | 3,084 | 41.3% | — | — | ref | 0 | 0 |
+| B static | 16.83 | 58.45 | 3,207 | 3,206 | 40.9% | 1.738e-3 | 98.80% | **FAIL** | 0 | 0 |
+| C compile | 17.05 | 58.05 | 1,936 | 1,931 ᵃ | 37.6% | 1.911e-3 | 98.85% | **FAIL** | 1 site ×16 | 17, 2 limit hits |
+| A eager (repeat) | 18.56 | 54.82 | 3,085 | 3,084 | 42.9% | — | — | — | 0 | 0 |
+
+ᵃ 1,752 `cudaLaunchKernel` + 179 `cudaGraphLaunch` per step.
+
+- **The two A runs differ by 4–6% in wall time** (17.58 vs 18.56 tok/s) on identical GPU work
+  (3,085 kernels, 23.50 ms). B and C fall inside that band: neither is faster than eager.
+- **Compile mostly fell back to eager.** One graph break at `modeling_gemma4.py:1677`
+  (`kwargs.pop("shared_kv_states", UserDict())`, Gemma 4's KV-sharing state, rebuilt every call)
+  and per-layer guards on the static cache's `cumulative_length_int` plus differing rotary
+  shapes (256 vs 512) drove both frames to `recompile_limit` (8). What stays compiled is ~179
+  one-kernel CUDA graphs per step. `variants.finalize()` still reports `engaged=True`.
+- **No compile time reached a timed run**: every recompile and both limit hits finished by
+  01:42:42, inside the first warmup generation, and are triggered per decode step.
+- **Static and compile FAIL the pre-registered bands** — and so does decode vs prefill on the
+  same weights. Three legitimate kernel-path changes all land at KL 1.7–1.9e-3, about 2× the
+  1e-3 perturbation that anchors FAIL. The verdicts stand as recorded; whether the bands need
+  recalibrating is an open decision, and any change now would be post hoc.
+- **This host is CPU-bound**: the same 23.5 ms of GPU work takes 56.9 ms here vs 30.6 ms on
+  the Oct 12 EPYC 9254, so the GPU is 41% busy — close to the ~43% predicted for slow hosts.
+  It has 128 visible cores, so per-core CPU speed, not core count, is the likely variable.
+- Cost ~$0.35–0.44 (one pod, ~44 min, including ~5 min idle after a bug in the stock watcher).
+
 ## Model variants
 
 `variants.py` is the single place every tool builds its model, so a variant name means the
@@ -800,6 +847,14 @@ of 35 layers own a KV cache (`num_kv_shared_layers = 20`). Made `eval_drift.py` 
 generate-only variants rather than score them as eager and report a false PASS. Everything
 today was verified on the Mac; the GPU checks are listed under Model variants.
 *Commit: `b6e5200`.*
+
+### 2026-10-19 — week 3 staircase run
+No L4 stock at first; a watcher took one at 21:19. Validated the decode scorer (floor 0,
+perturbation detected), showed the prefill reference reproduces bit-for-bit on a different
+pod and driver, then ran eager → static → compile → eager. Neither static nor compile was
+faster than eager; compile fell back to mostly eager on a Gemma 4 graph break and two
+recompile-limit hits, and both failed the drift bands at the same KL as decode vs prefill.
+Raw results only; see Week 3 staircase above.
 
 ### A note on corrections
 Four conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s

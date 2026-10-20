@@ -1,0 +1,78 @@
+{
+  "model": "google/gemma-4-E2B-it",
+  "variant": "eager",
+  "variant_meta": {
+    "cache": {
+      "class": "DynamicCache",
+      "source": "generate() default: cache_implementation is None -> DynamicCache(config=text_config)",
+      "compileable": false,
+      "num_cache_layers": 15,
+      "layer_classes": {
+        "DynamicSlidingWindowLayer": 12,
+        "DynamicLayer": 3
+      },
+      "layer_max_cache_len": {
+        "DynamicSlidingWindowLayer": [
+          null
+        ],
+        "DynamicLayer": [
+          null
+        ]
+      },
+      "max_cache_len_effective": null
+    },
+    "max_cache_len": null,
+    "compile": {
+      "requested": false,
+      "disable_compile": null,
+      "reason": "generate() auto-compiles only with a compileable cache; DynamicCache is not compileable",
+      "config": null,
+      "engaged": false
+    },
+    "max_cache_len_ignored": 256,
+    "variant": "eager",
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.19.0",
+    "num_hidden_layers": 35,
+    "generate_kwargs": {},
+    "generate_only": false,
+    "consistency_problems": []
+  },
+  "host": {
+    "hostname": "b1c89248f723",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "vcpu_count": 128,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "595.91.07",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "gpu": "NVIDIA L4",
+  "torch": "2.8.0+cu128",
+  "dtype": "bfloat16",
+  "weights_gb": 10.209116672,
+  "decode_tokens": 64,
+  "trials": 10,
+  "warmup": 3,
+  "rows": [
+    {
+      "prompt_len": 128,
+      "batch_size": 1,
+      "status": "ok",
+      "ttft_ms": 65.7747785007814,
+      "prefill_tok_s": 1946.0346795159392,
+      "decode_tok_s_per_seq": 17.57790846900659,
+      "decode_tok_s_total": 17.57790846900659,
+      "peak_mem_gb": 10.236395008,
+      "ttft_ms_min": 62.96840600043652,
+      "ttft_ms_max": 74.70065400048043
+    }
+  ]
+}

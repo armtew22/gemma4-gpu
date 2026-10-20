@@ -1,0 +1,9 @@
+01:36:50.438 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  16%|█▌        | 313/1951 [00:00<00:00, 3128.73it/s]Loading weights:  32%|███▏      | 626/1951 [00:00<00:00, 2809.21it/s]Loading weights:  47%|████▋     | 910/1951 [00:01<00:01, 698.46it/s] Loading weights:  55%|█████▌    | 1080/1951 [00:01<00:01, 712.82it/s]Loading weights:  62%|██████▏   | 1213/1951 [00:01<00:01, 674.60it/s]Loading weights:  68%|██████▊   | 1319/1951 [00:01<00:00, 692.53it/s]Loading weights:  84%|████████▎ | 1632/1951 [00:01<00:00, 1089.45it/s]Loading weights:  98%|█████████▊| 1919/1951 [00:01<00:00, 1423.78it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1061.28it/s]
+01:36:51.178 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+01:36:51.181 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:36:51.186 torch=2.8.0+cu128  weights=10.21 GB
+01:36:51.189 variant=static  max_cache_len=256  compile_requested=False
+01:36:51.192 
+01:37:42.055 prompt=  128 batch= 1  ttft=   66.4ms  prefill=  1927.9 tok/s  decode=  16.8 tok/s/seq     16.8 tok/s total  peak=10.24 GB
+01:37:42.059 
+01:37:42.063 wrote out/bench_B_static.json

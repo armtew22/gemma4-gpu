@@ -1,0 +1,33 @@
+[01:26:09] START s1a_save: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --save-reference ref_decode_eager.pt
+[01:28:27] END   s1a_save rc=0
+[01:28:27] START s1b_floor: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --reference ref_decode_eager.pt --expect no-drift --out out/drift_decode_eager_floor.json
+[01:30:30] END   s1b_floor rc=0
+[01:30:30] START s1c_perturb: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --reference ref_decode_eager.pt --perturb 1e-3 --expect drift --out out/drift_decode_eager_perturb.json
+[01:32:33] END   s1c_perturb rc=0
+[01:32:33] START s1d_prefill_sanity: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --reference ref_decode_eager.pt --prefill-reference ref_50k_bos.pt --out out/drift_decode_eager_prefill_sanity.json
+[01:34:37] END   s1d_prefill_sanity rc=0
+[01:34:37] START A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A_eager.json
+[01:35:39] END   A_bench rc=0
+[01:35:39] START A_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A_eager.json --out out/profile_A_eager.json
+[01:36:33] END   A_profile rc=0
+[01:36:40] counts A rc=0
+[01:36:40] START B_bench: /opt/venv/bin/python benchmark.py --variant static --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_B_static.json
+[01:37:43] END   B_bench rc=0
+[01:37:43] START B_profile: /opt/venv/bin/python profile_decode.py --variant static --prompt-len 128 --max-cache-len 256 --trace out/trace_B_static.json --out out/profile_B_static.json
+[01:38:40] END   B_profile rc=0
+[01:38:47] counts B rc=0
+[01:38:47] START B_drift: /opt/venv/bin/python eval_drift.py --mode decode --variant static --reference ref_decode_eager.pt --expect pass-band --out out/drift_decode_B_static.json
+[01:41:02] END   B_drift rc=1
+[01:41:02] START C_bench: /opt/venv/bin/python benchmark.py --variant compile --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_C_compile.json
+[01:44:18] END   C_bench rc=0
+[01:44:18] START C_profile: /opt/venv/bin/python profile_decode.py --variant compile --prompt-len 128 --max-cache-len 256 --trace out/trace_C_compile.json --out out/profile_C_compile.json
+[01:46:47] END   C_profile rc=0
+[01:46:53] counts C rc=0
+[01:46:53] START C_drift: /opt/venv/bin/python eval_drift.py --mode decode --variant compile --reference ref_decode_eager.pt --expect pass-band --out out/drift_decode_C_compile.json
+[01:50:53] END   C_drift rc=1
+[01:50:53] START A2_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A2_eager.json
+[01:51:51] END   A2_bench rc=0
+[01:51:51] START A2_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A2_eager.json --out out/profile_A2_eager.json
+[01:52:45] END   A2_profile rc=0
+[01:52:51] counts A2 rc=0
+[01:52:51] ALL DONE

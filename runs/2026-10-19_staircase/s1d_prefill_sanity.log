@@ -1,0 +1,20 @@
+01:32:37.664 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+01:32:37.668 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:32:40.698 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+01:32:42.727 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+01:32:42.731 
+01:32:45.773 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  17%|█▋        | 323/1951 [00:00<00:00, 3169.19it/s]Loading weights:  33%|███▎      | 640/1951 [00:00<00:00, 2738.32it/s]Loading weights:  47%|████▋     | 918/1951 [00:01<00:01, 575.05it/s] Loading weights:  55%|█████▌    | 1082/1951 [00:01<00:01, 610.91it/s]Loading weights:  62%|██████▏   | 1211/1951 [00:01<00:01, 584.42it/s]Loading weights:  67%|██████▋   | 1312/1951 [00:01<00:01, 589.68it/s]Loading weights:  86%|████████▌ | 1675/1951 [00:01<00:00, 1028.83it/s]Loading weights: 100%|██████████| 1951/1951 [00:02<00:00, 943.86it/s] 
+01:32:46.334 variant: eager  cache=DynamicCache  compile_requested=False
+01:32:48.074 prefill sanity: 478 positions with identical context, in decode windows [0, 4]
+01:34:35.702 
+01:34:35.706 PREFILL SANITY  decode run vs prefill reference, 478 positions
+01:34:35.709 PREFILL SANITY  KL 1.797e-03  top-1 98.3264%  -> FAIL  (expected PASS, not 0: decode and prefill use different kernels)
+01:34:35.712 
+01:34:35.713 tokens scored         1912
+01:34:35.716 mean KL(ref||cur)     0.000e+00  nats, over the ref top-100
+01:34:35.718 top-1 agreement       100.0000 %
+01:34:35.721 perplexity            290.6745
+01:34:35.723 top-100 coverage       98.240 %  (current model's mass inside the reference top-k)
+01:34:35.725 wall                  107.5s
+01:34:35.727 band verdict          PASS
+01:34:35.846 wrote out/drift_decode_eager_prefill_sanity.json

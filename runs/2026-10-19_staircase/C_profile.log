@@ -1,0 +1,991 @@
+01:44:29.465 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  21%|██        | 401/1951 [00:00<00:00, 3985.38it/s]Loading weights:  41%|████      | 800/1951 [00:01<00:01, 675.71it/s] Loading weights:  51%|█████     | 990/1951 [00:01<00:01, 742.94it/s]Loading weights:  58%|█████▊    | 1138/1951 [00:01<00:01, 688.78it/s]Loading weights:  64%|██████▍   | 1250/1951 [00:01<00:01, 643.34it/s]Loading weights:  69%|██████▊   | 1340/1951 [00:01<00:00, 670.03it/s]Loading weights:  82%|████████▏ | 1595/1951 [00:01<00:00, 988.44it/s]Loading weights:  96%|█████████▌| 1868/1951 [00:02<00:00, 1327.74it/s]Loading weights: 100%|██████████| 1951/1951 [00:02<00:00, 948.90it/s] 
+01:44:30.221 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+01:44:30.225 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:44:30.227 torch=2.8.0+cu128  prompt=128  decode_tokens=32
+01:44:30.231 variant=compile  max_cache_len=256  compile_requested=True
+01:44:30.235 
+01:44:32.693 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks] Graph break in user code at /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py:209
+01:44:32.697 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks] Graph Break Reason: Attempted to inline function marked as skipped
+01:44:32.701 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__init__` should not be traced.
+01:44:32.705 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__init__`.
+01:44:32.708 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__init__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:32.712 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:32.716 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks] 
+01:44:32.719 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   Developer debug context: qualname: UserDict.__init__, name: __init__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:32.723 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks] 
+01:44:32.726 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks] User code traceback:
+01:44:32.729 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/root/profile_decode.py", line 296, in <module>
+01:44:32.733 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     main()
+01:44:32.737 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/root/profile_decode.py", line 194, in main
+01:44:32.740 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     timed_generate(model, inputs, args.decode_tokens, gen_kwargs)
+01:44:32.744 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/root/benchmark.py", line 35, in timed_generate
+01:44:32.748 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     out = model.generate(
+01:44:32.751 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+01:44:32.754 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     return func(*args, **kwargs)
+01:44:32.758 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 2982, in generate
+01:44:32.762 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     result = decoding_method(
+01:44:32.765 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 3210, in _sample
+01:44:32.768 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     outputs = model_forward(**model_inputs, return_dict=True)
+01:44:32.771 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:32.775 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:32.779 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:32.781 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:32.784 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:32.787 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:32.791 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2590, in forward
+01:44:32.795 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     outputs = self.model(
+01:44:32.800 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:32.804 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:32.807 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:32.810 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:32.814 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2417, in forward
+01:44:32.817 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     outputs = self.language_model(
+01:44:32.820 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:32.823 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:32.825 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 287, in wrapper
+01:44:32.828 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     outputs = func(self, *args, **kwargs)
+01:44:32.831 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1677, in forward
+01:44:32.835 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     shared_kv_states = kwargs.pop("shared_kv_states", UserDict())
+01:44:32.838 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py", line 209, in instantiate_user_defined_class_object
+01:44:32.840 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks]     obj.__init__(*args, **kwargs)
+01:44:32.843 V1020 01:44:32.688000 3939 torch/_dynamo/symbolic_convert.py:560] [0/0] [__graph_breaks] 
+01:44:32.941 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py:209
+01:44:32.945 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks] Graph Break Reason: Attempted to inline function marked as skipped
+01:44:32.948 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__init__` should not be traced.
+01:44:32.952 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__init__`.
+01:44:32.955 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__init__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:32.959 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:32.962 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks] 
+01:44:32.966 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks]   Developer debug context: qualname: UserDict.__init__, name: __init__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:32.970 V1020 01:44:32.937000 3939 torch/_dynamo/symbolic_convert.py:567] [1/0] [__graph_breaks] 
+01:44:33.211 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] Graph break: skip: from user code at:
+01:44:33.214 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:33.218 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:33.222 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:33.226 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:33.229 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2417, in forward
+01:44:33.232 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     outputs = self.language_model(
+01:44:33.236 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:33.239 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:33.242 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 287, in wrapper
+01:44:33.244 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     outputs = func(self, *args, **kwargs)
+01:44:33.247 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1677, in forward
+01:44:33.249 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     shared_kv_states = kwargs.pop("shared_kv_states", UserDict())
+01:44:33.251 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py", line 209, in instantiate_user_defined_class_object
+01:44:33.255 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     obj.__init__(*args, **kwargs)
+01:44:33.257 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] Traceback (most recent call last):
+01:44:33.260 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1272, in __call__
+01:44:33.262 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     result = self._inner_convert(
+01:44:33.265 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]              ^^^^^^^^^^^^^^^^^^^^
+01:44:33.268 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 629, in __call__
+01:44:33.271 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return _compile(
+01:44:33.274 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^
+01:44:33.277 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1111, in _compile
+01:44:33.281 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     guarded_code = compile_inner(code, one_graph, hooks, transform)
+01:44:33.284 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.288 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_utils_internal.py", line 97, in wrapper_function
+01:44:33.291 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return function(*args, **kwargs)
+01:44:33.295 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.298 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 793, in compile_inner
+01:44:33.301 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return _compile_inner(code, one_graph, hooks, transform)
+01:44:33.304 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.308 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 832, in _compile_inner
+01:44:33.310 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     out_code = transform_code_object(code, transform)
+01:44:33.313 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.317 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/bytecode_transformation.py", line 1424, in transform_code_object
+01:44:33.320 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     transformations(instructions, code_options)
+01:44:33.324 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 267, in _fn
+01:44:33.327 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return fn(*args, **kwargs)
+01:44:33.330 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^
+01:44:33.333 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 753, in transform
+01:44:33.336 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     tracer.run()
+01:44:33.340 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3497, in run
+01:44:33.342 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     super().run()
+01:44:33.345 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:33.348 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     while self.step():
+01:44:33.351 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:33.354 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:33.357 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:33.361 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:33.363 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:33.367 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:33.369 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:33.372 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:33.375 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:33.379 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:33.382 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.385 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:33.389 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:33.391 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.395 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:33.398 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:33.401 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.403 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:33.406 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:33.410 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.413 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:33.416 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:33.419 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.422 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:33.425 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:33.428 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:33.431 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:33.435 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.run()
+01:44:33.438 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:33.441 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     while self.step():
+01:44:33.444 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:33.447 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:33.450 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:33.453 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:33.456 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:33.458 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:33.461 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:33.464 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:33.466 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:33.469 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:33.472 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.475 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:33.479 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:33.483 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.485 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:33.488 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:33.490 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.493 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:33.496 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:33.498 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.501 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:33.504 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:33.506 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.509 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:33.512 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:33.514 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:33.518 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:33.522 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.run()
+01:44:33.526 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:33.529 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     while self.step():
+01:44:33.532 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:33.536 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:33.540 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:33.543 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:33.547 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:33.550 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:33.553 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:33.556 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:33.560 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:33.563 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:33.566 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.569 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:33.572 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:33.575 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.579 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/nn_module.py", line 1000, in call_function
+01:44:33.582 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return variables.UserFunctionVariable(fn, source=source).call_function(
+01:44:33.586 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.588 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:33.591 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:33.594 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.597 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:33.600 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:33.603 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.607 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:33.610 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:33.614 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.617 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:33.619 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:33.622 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:33.625 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:33.628 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.run()
+01:44:33.631 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:33.633 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     while self.step():
+01:44:33.636 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:33.639 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:33.642 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:33.645 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:33.648 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:33.651 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:33.653 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:33.657 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:33.661 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:33.664 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:33.666 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.669 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:33.672 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:33.674 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.677 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:33.681 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:33.684 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.688 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:33.690 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:33.693 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.696 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:33.701 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:33.704 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.707 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:33.710 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:33.713 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:33.716 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:33.719 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.run()
+01:44:33.722 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:33.725 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     while self.step():
+01:44:33.728 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:33.731 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:33.735 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:33.739 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:33.742 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:33.746 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:33.749 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:33.752 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:33.755 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:33.760 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:33.764 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.768 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:33.772 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:33.775 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.778 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:33.781 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:33.784 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.786 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:33.789 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:33.792 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.796 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:33.800 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:33.803 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.807 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:33.810 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:33.813 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:33.816 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:33.818 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.run()
+01:44:33.821 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:33.824 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     while self.step():
+01:44:33.827 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:33.830 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:33.834 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:33.836 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:33.839 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:33.841 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:33.844 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2910, in CALL
+01:44:33.847 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self._call(inst)
+01:44:33.850 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2904, in _call
+01:44:33.853 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.call_function(fn, args, kwargs)
+01:44:33.856 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:33.858 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:33.861 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.864 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:33.866 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:33.869 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.872 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/user_defined.py", line 706, in call_function
+01:44:33.875 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tx.inline_user_function_return(
+01:44:33.878 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.881 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:33.883 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:33.886 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.889 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:33.891 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:33.894 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:33.897 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:33.900 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.run()
+01:44:33.902 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:33.905 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     while self.step():
+01:44:33.908 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:33.912 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:33.914 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:33.916 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:33.919 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:33.922 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:33.924 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:33.927 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:33.929 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:33.931 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:33.934 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.937 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 1055, in call_function
+01:44:33.939 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:33.943 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.945 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:33.948 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:33.950 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.953 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:33.956 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:33.958 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.961 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:33.965 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:33.967 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.970 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3697, in inline_call
+01:44:33.972 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     tracer = cls.build_inline_tracer(parent, func, args, kwargs)
+01:44:33.975 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.979 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3801, in build_inline_tracer
+01:44:33.984 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     result = InliningInstructionTranslator.check_inlineable(func)
+01:44:33.987 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:33.991 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3751, in check_inlineable
+01:44:33.994 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     unimplemented_v2(
+01:44:33.997 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/exc.py", line 528, in unimplemented_v2
+01:44:33.999 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     raise Unsupported(msg)
+01:44:34.001 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] torch._dynamo.exc.Unsupported: Attempted to inline function marked as skipped
+01:44:34.004 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__init__` should not be traced.
+01:44:34.007 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__init__`.
+01:44:34.010 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__init__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:34.012 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:34.015 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] 
+01:44:34.018 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   Developer debug context: qualname: UserDict.__init__, name: __init__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:34.021 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] 
+01:44:34.023 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] 
+01:44:34.025 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] from user code:
+01:44:34.028 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]    File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:34.030 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:34.033 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:34.036 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:34.038 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2417, in forward
+01:44:34.040 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     outputs = self.language_model(
+01:44:34.043 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:34.046 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:34.048 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 287, in wrapper
+01:44:34.050 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     outputs = func(self, *args, **kwargs)
+01:44:34.053 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1677, in forward
+01:44:34.056 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     shared_kv_states = kwargs.pop("shared_kv_states", UserDict())
+01:44:34.060 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py", line 209, in instantiate_user_defined_class_object
+01:44:34.063 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks]     obj.__init__(*args, **kwargs)
+01:44:34.067 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] 
+01:44:34.072 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+01:44:34.075 V1020 01:44:33.200000 3939 torch/_dynamo/convert_frame.py:1320] [2/0] [__graph_breaks] 
+01:44:34.078 V1020 01:44:33.215000 3939 torch/_dynamo/guards.py:3508] [0/1] [__recompiles] Recompiling function wrapper in /opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py:937
+01:44:34.080 V1020 01:44:33.215000 3939 torch/_dynamo/guards.py:3508] [0/1] [__recompiles]     triggered by the following guard failure(s):
+01:44:34.084 V1020 01:44:33.215000 3939 torch/_dynamo/guards.py:3508] [0/1] [__recompiles]     - 0/0: ___check_obj_id(func.__code__, 171784128)              
+01:44:34.088 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py:209
+01:44:34.091 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks] Graph Break Reason: Attempted to inline function marked as skipped
+01:44:34.094 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__init__` should not be traced.
+01:44:34.098 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__init__`.
+01:44:34.102 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__init__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:34.104 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:34.107 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks] 
+01:44:34.110 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks]   Developer debug context: qualname: UserDict.__init__, name: __init__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:34.113 V1020 01:44:33.442000 3939 torch/_dynamo/symbolic_convert.py:567] [0/1] [__graph_breaks] 
+01:44:34.117 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py:209
+01:44:34.120 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks] Graph Break Reason: Attempted to inline function marked as skipped
+01:44:34.124 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__init__` should not be traced.
+01:44:34.127 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__init__`.
+01:44:34.130 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__init__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:34.133 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:34.135 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks] 
+01:44:34.138 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks]   Developer debug context: qualname: UserDict.__init__, name: __init__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:34.140 V1020 01:44:33.678000 3939 torch/_dynamo/symbolic_convert.py:567] [3/0] [__graph_breaks] 
+01:44:34.470 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] Graph break: skip: from user code at:
+01:44:34.474 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 287, in wrapper
+01:44:34.478 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     outputs = func(self, *args, **kwargs)
+01:44:34.481 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1677, in forward
+01:44:34.485 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     shared_kv_states = kwargs.pop("shared_kv_states", UserDict())
+01:44:34.488 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py", line 209, in instantiate_user_defined_class_object
+01:44:34.491 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     obj.__init__(*args, **kwargs)
+01:44:34.494 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] Traceback (most recent call last):
+01:44:34.497 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1272, in __call__
+01:44:34.501 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     result = self._inner_convert(
+01:44:34.504 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]              ^^^^^^^^^^^^^^^^^^^^
+01:44:34.508 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 629, in __call__
+01:44:34.511 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return _compile(
+01:44:34.515 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^
+01:44:34.519 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1111, in _compile
+01:44:34.521 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     guarded_code = compile_inner(code, one_graph, hooks, transform)
+01:44:34.525 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.529 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_utils_internal.py", line 97, in wrapper_function
+01:44:34.532 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return function(*args, **kwargs)
+01:44:34.535 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.538 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 793, in compile_inner
+01:44:34.541 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return _compile_inner(code, one_graph, hooks, transform)
+01:44:34.545 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.548 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 832, in _compile_inner
+01:44:34.552 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     out_code = transform_code_object(code, transform)
+01:44:34.556 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.559 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/bytecode_transformation.py", line 1424, in transform_code_object
+01:44:34.562 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     transformations(instructions, code_options)
+01:44:34.566 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 267, in _fn
+01:44:34.571 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return fn(*args, **kwargs)
+01:44:34.575 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^
+01:44:34.578 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 753, in transform
+01:44:34.582 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     tracer.run()
+01:44:34.585 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3497, in run
+01:44:34.588 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     super().run()
+01:44:34.592 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:34.596 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     while self.step():
+01:44:34.600 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:34.603 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:34.607 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:34.610 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:34.612 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:34.615 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:34.619 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:34.621 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:34.624 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:34.626 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:34.630 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.633 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:34.636 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:34.638 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.641 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:34.644 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:34.647 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.650 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:34.653 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:34.656 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.659 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:34.662 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:34.665 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.668 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:34.671 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:34.674 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:34.677 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:34.681 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.run()
+01:44:34.684 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:34.686 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     while self.step():
+01:44:34.689 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:34.692 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:34.695 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:34.698 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:34.701 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:34.703 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:34.706 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2910, in CALL
+01:44:34.709 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self._call(inst)
+01:44:34.712 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2904, in _call
+01:44:34.715 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.call_function(fn, args, kwargs)
+01:44:34.718 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:34.721 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:34.723 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.726 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/lazy.py", line 201, in realize_and_forward
+01:44:34.729 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return getattr(self.realize(), name)(*args, **kwargs)
+01:44:34.733 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.736 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/user_defined.py", line 706, in call_function
+01:44:34.739 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return tx.inline_user_function_return(
+01:44:34.741 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.744 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:34.747 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:34.750 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.753 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3698, in inline_call
+01:44:34.756 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return tracer.inline_call_()
+01:44:34.759 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^
+01:44:34.761 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3901, in inline_call_
+01:44:34.764 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.run()
+01:44:34.766 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:44:34.769 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     while self.step():
+01:44:34.772 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]           ^^^^^^^^^^^
+01:44:34.774 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:44:34.777 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:44:34.780 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 834, in wrapper
+01:44:34.783 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return inner_fn(self, inst)
+01:44:34.786 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^
+01:44:34.789 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 2228, in CALL_FUNCTION_EX
+01:44:34.791 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.call_function(fn, argsvars.items, kwargsvars)
+01:44:34.794 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1193, in call_function
+01:44:34.797 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     self.push(fn.call_function(self, args, kwargs))  # type: ignore[arg-type]
+01:44:34.800 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.803 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 1055, in call_function
+01:44:34.806 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:34.809 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.812 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 529, in call_function
+01:44:34.815 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return super().call_function(tx, args, kwargs)
+01:44:34.818 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.822 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py", line 293, in call_function
+01:44:34.825 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return tx.inline_user_function_return(self, [*self.self_args(), *args], kwargs)
+01:44:34.829 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.832 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1210, in inline_user_function_return
+01:44:34.836 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+01:44:34.839 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.844 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3697, in inline_call
+01:44:34.847 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     tracer = cls.build_inline_tracer(parent, func, args, kwargs)
+01:44:34.850 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.853 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3801, in build_inline_tracer
+01:44:34.857 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     result = InliningInstructionTranslator.check_inlineable(func)
+01:44:34.860 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:44:34.862 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3751, in check_inlineable
+01:44:34.865 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     unimplemented_v2(
+01:44:34.868 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/exc.py", line 528, in unimplemented_v2
+01:44:34.870 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     raise Unsupported(msg)
+01:44:34.873 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] torch._dynamo.exc.Unsupported: Attempted to inline function marked as skipped
+01:44:34.877 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__init__` should not be traced.
+01:44:34.880 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__init__`.
+01:44:34.883 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__init__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:34.885 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:34.888 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] 
+01:44:34.891 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   Developer debug context: qualname: UserDict.__init__, name: __init__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:34.894 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] 
+01:44:34.897 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] 
+01:44:34.899 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] from user code:
+01:44:34.902 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]    File "/opt/venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 287, in wrapper
+01:44:34.904 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     outputs = func(self, *args, **kwargs)
+01:44:34.907 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1677, in forward
+01:44:34.910 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     shared_kv_states = kwargs.pop("shared_kv_states", UserDict())
+01:44:34.913 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py", line 209, in instantiate_user_defined_class_object
+01:44:34.916 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks]     obj.__init__(*args, **kwargs)
+01:44:34.919 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] 
+01:44:34.922 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+01:44:34.925 V1020 01:44:34.462000 3939 torch/_dynamo/convert_frame.py:1320] [4/0] [__graph_breaks] 
+01:44:34.928 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py:209
+01:44:34.930 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks] Graph Break Reason: Attempted to inline function marked as skipped
+01:44:34.933 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__init__` should not be traced.
+01:44:34.936 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__init__`.
+01:44:34.939 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__init__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:34.942 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:34.945 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks] 
+01:44:34.948 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks]   Developer debug context: qualname: UserDict.__init__, name: __init__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:34.951 V1020 01:44:34.520000 3939 torch/_dynamo/symbolic_convert.py:567] [5/0] [__graph_breaks] 
+01:44:34.954 /usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/functions.py:1481: UserWarning: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:44:34.957 If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:44:34.961 If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:44:34.964   torch._dynamo.utils.warn_once(explanation + "\n" + "\n".join(hints))
+01:44:34.967 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks] Graph break in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:44:34.971 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:44:34.975 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:44:34.978 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:44:34.981 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:44:34.985 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks] 
+01:44:34.988 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:44:34.991 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks] 
+01:44:34.994 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks] User code traceback:
+01:44:34.997 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/root/profile_decode.py", line 296, in <module>
+01:44:34.999 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     main()
+01:44:35.002 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/root/profile_decode.py", line 194, in main
+01:44:35.005 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     timed_generate(model, inputs, args.decode_tokens, gen_kwargs)
+01:44:35.008 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/root/benchmark.py", line 35, in timed_generate
+01:44:35.011 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     out = model.generate(
+01:44:35.014 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+01:44:35.016 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     return func(*args, **kwargs)
+01:44:35.019 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 2982, in generate
+01:44:35.022 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     result = decoding_method(
+01:44:35.025 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 3210, in _sample
+01:44:35.028 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     outputs = model_forward(**model_inputs, return_dict=True)
+01:44:35.031 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:35.034 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:35.038 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:35.042 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:35.047 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:35.050 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:35.054 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2590, in forward
+01:44:35.057 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     outputs = self.model(
+01:44:35.060 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:35.063 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:35.067 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:35.070 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:35.073 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:35.076 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:35.079 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:35.082 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:35.086 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2417, in forward
+01:44:35.089 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     outputs = self.language_model(
+01:44:35.091 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:35.095 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:35.098 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:35.100 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:35.103 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:35.106 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:35.109 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 287, in wrapper
+01:44:35.112 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     outputs = func(self, *args, **kwargs)
+01:44:35.115 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1677, in forward
+01:44:35.118 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks]     shared_kv_states = kwargs.pop("shared_kv_states", UserDict())
+01:44:35.121 V1020 01:44:34.670000 3939 torch/_dynamo/symbolic_convert.py:560] [6/0] [__graph_breaks] 
+01:44:36.869 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks] Graph break in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1246
+01:44:36.873 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks] Graph Break Reason: Attempted to inline function marked as skipped
+01:44:36.877 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `UserDict.__setitem__` should not be traced.
+01:44:36.881 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   Hint: Avoid calling the function `UserDict.__setitem__`.
+01:44:36.885 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `UserDict.__setitem__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:44:36.888 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:44:36.892 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks] 
+01:44:36.896 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   Developer debug context: qualname: UserDict.__setitem__, name: __setitem__, filename: `/usr/lib/python3.12/collections/__init__.py`, skip reason: skipped according trace_rules.lookup SKIP_DIRS
+01:44:36.899 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks] 
+01:44:36.902 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks] User code traceback:
+01:44:36.905 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/root/profile_decode.py", line 296, in <module>
+01:44:36.909 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     main()
+01:44:36.913 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/root/profile_decode.py", line 194, in main
+01:44:36.917 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     timed_generate(model, inputs, args.decode_tokens, gen_kwargs)
+01:44:36.921 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/root/benchmark.py", line 35, in timed_generate
+01:44:36.925 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     out = model.generate(
+01:44:36.929 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+01:44:36.931 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return func(*args, **kwargs)
+01:44:36.935 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 2982, in generate
+01:44:36.938 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     result = decoding_method(
+01:44:36.942 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 3210, in _sample
+01:44:36.945 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     outputs = model_forward(**model_inputs, return_dict=True)
+01:44:36.947 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:36.950 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:36.953 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:36.956 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:36.959 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:36.962 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:36.966 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2590, in forward
+01:44:36.969 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     outputs = self.model(
+01:44:36.972 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:36.975 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:36.978 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:36.980 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:36.983 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:36.986 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:36.989 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+01:44:36.991 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:36.994 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 2417, in forward
+01:44:36.998 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     outputs = self.language_model(
+01:44:37.001 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:37.004 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:37.007 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:37.010 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:37.014 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1081, in wrapper
+01:44:37.016 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     output = func(self, *args, **kwargs)
+01:44:37.020 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 287, in wrapper
+01:44:37.023 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     outputs = func(self, *args, **kwargs)
+01:44:37.026 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1683, in forward
+01:44:37.029 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     hidden_states = decoder_layer(
+01:44:37.032 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py", line 110, in __call__
+01:44:37.035 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return super().__call__(*args, **kwargs)
+01:44:37.038 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:44:37.041 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:44:37.044 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+01:44:37.047 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     return forward_call(*args, **kwargs)
+01:44:37.050 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1389, in forward
+01:44:37.053 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     hidden_states, _ = self.self_attn(
+01:44:37.056 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py", line 1246, in forward
+01:44:37.059 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks]     shared_kv_states[self.layer_type] = key_states, value_states
+01:44:37.062 V1020 01:44:36.864000 3939 torch/_dynamo/symbolic_convert.py:560] [7/0] [__graph_breaks] 
+01:44:37.169 V1020 01:44:37.165000 3939 torch/_dynamo/guards.py:3508] [8/1] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:37.172 V1020 01:44:37.165000 3939 torch/_dynamo/guards.py:3508] [8/1] [__recompiles]     triggered by the following guard failure(s):
+01:44:37.176 V1020 01:44:37.165000 3939 torch/_dynamo/guards.py:3508] [8/1] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:37.448 V1020 01:44:37.443000 3939 torch/_dynamo/guards.py:3508] [8/2] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:37.452 V1020 01:44:37.443000 3939 torch/_dynamo/guards.py:3508] [8/2] [__recompiles]     triggered by the following guard failure(s):
+01:44:37.455 V1020 01:44:37.443000 3939 torch/_dynamo/guards.py:3508] [8/2] [__recompiles]     - 8/1: kwargs['past_key_values'].layers[1].cumulative_length_int == 128
+01:44:37.458 V1020 01:44:37.443000 3939 torch/_dynamo/guards.py:3508] [8/2] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:37.729 V1020 01:44:37.725000 3939 torch/_dynamo/guards.py:3508] [8/3] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:37.733 V1020 01:44:37.725000 3939 torch/_dynamo/guards.py:3508] [8/3] [__recompiles]     triggered by the following guard failure(s):
+01:44:37.737 V1020 01:44:37.725000 3939 torch/_dynamo/guards.py:3508] [8/3] [__recompiles]     - 8/2: kwargs['past_key_values'].layers[2].cumulative_length_int == 128
+01:44:37.741 V1020 01:44:37.725000 3939 torch/_dynamo/guards.py:3508] [8/3] [__recompiles]     - 8/1: kwargs['past_key_values'].layers[1].cumulative_length_int == 128
+01:44:37.744 V1020 01:44:37.725000 3939 torch/_dynamo/guards.py:3508] [8/3] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:38.305 V1020 01:44:38.300000 3939 torch/_dynamo/guards.py:3508] [8/4] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:38.308 V1020 01:44:38.300000 3939 torch/_dynamo/guards.py:3508] [8/4] [__recompiles]     triggered by the following guard failure(s):
+01:44:38.312 V1020 01:44:38.300000 3939 torch/_dynamo/guards.py:3508] [8/4] [__recompiles]     - 8/3: tensor 'kwargs['position_embeddings'][0]' size mismatch at index 2. expected 256, actual 512
+01:44:38.316 V1020 01:44:38.300000 3939 torch/_dynamo/guards.py:3508] [8/4] [__recompiles]     - 8/2: kwargs['past_key_values'].layers[2].cumulative_length_int == 128
+01:44:38.319 V1020 01:44:38.300000 3939 torch/_dynamo/guards.py:3508] [8/4] [__recompiles]     - 8/1: kwargs['past_key_values'].layers[1].cumulative_length_int == 128
+01:44:38.323 V1020 01:44:38.300000 3939 torch/_dynamo/guards.py:3508] [8/4] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:39.119 V1020 01:44:39.114000 3939 torch/_dynamo/guards.py:3508] [8/5] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:39.123 V1020 01:44:39.114000 3939 torch/_dynamo/guards.py:3508] [8/5] [__recompiles]     triggered by the following guard failure(s):
+01:44:39.126 V1020 01:44:39.114000 3939 torch/_dynamo/guards.py:3508] [8/5] [__recompiles]     - 8/4: tensor 'kwargs['position_embeddings'][0]' size mismatch at index 2. expected 512, actual 256
+01:44:39.130 V1020 01:44:39.114000 3939 torch/_dynamo/guards.py:3508] [8/5] [__recompiles]     - 8/3: kwargs['past_key_values'].layers[3].cumulative_length_int == 128
+01:44:39.134 V1020 01:44:39.114000 3939 torch/_dynamo/guards.py:3508] [8/5] [__recompiles]     - 8/2: kwargs['past_key_values'].layers[2].cumulative_length_int == 128
+01:44:39.137 V1020 01:44:39.114000 3939 torch/_dynamo/guards.py:3508] [8/5] [__recompiles]     - 8/1: kwargs['past_key_values'].layers[1].cumulative_length_int == 128
+01:44:39.140 V1020 01:44:39.114000 3939 torch/_dynamo/guards.py:3508] [8/5] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:39.474 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:39.478 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles]     triggered by the following guard failure(s):
+01:44:39.483 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles]     - 8/5: kwargs['past_key_values'].layers[5].cumulative_length_int == 128
+01:44:39.487 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles]     - 8/4: tensor 'kwargs['position_embeddings'][0]' size mismatch at index 2. expected 512, actual 256
+01:44:39.492 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles]     - 8/3: kwargs['past_key_values'].layers[3].cumulative_length_int == 128
+01:44:39.495 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles]     - 8/2: kwargs['past_key_values'].layers[2].cumulative_length_int == 128
+01:44:39.498 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles]     - 8/1: kwargs['past_key_values'].layers[1].cumulative_length_int == 128
+01:44:39.501 V1020 01:44:39.469000 3939 torch/_dynamo/guards.py:3508] [8/6] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:39.816 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:39.820 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     triggered by the following guard failure(s):
+01:44:39.824 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     - 8/6: kwargs['past_key_values'].layers[6].cumulative_length_int == 128
+01:44:39.828 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     - 8/5: kwargs['past_key_values'].layers[5].cumulative_length_int == 128
+01:44:39.832 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     - 8/4: tensor 'kwargs['position_embeddings'][0]' size mismatch at index 2. expected 512, actual 256
+01:44:39.836 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     - 8/3: kwargs['past_key_values'].layers[3].cumulative_length_int == 128
+01:44:39.839 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     - 8/2: kwargs['past_key_values'].layers[2].cumulative_length_int == 128
+01:44:39.843 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     - 8/1: kwargs['past_key_values'].layers[1].cumulative_length_int == 128
+01:44:39.847 V1020 01:44:39.811000 3939 torch/_dynamo/guards.py:3508] [8/7] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:40.165 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles] Recompiling function __call__ in /opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81
+01:44:40.170 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     triggered by the following guard failure(s):
+01:44:40.174 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/7: kwargs['past_key_values'].layers[7].cumulative_length_int == 128
+01:44:40.177 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/6: kwargs['past_key_values'].layers[6].cumulative_length_int == 128
+01:44:40.181 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/5: kwargs['past_key_values'].layers[5].cumulative_length_int == 128
+01:44:40.184 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/4: tensor 'kwargs['position_embeddings'][0]' size mismatch at index 2. expected 512, actual 256
+01:44:40.189 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/3: kwargs['past_key_values'].layers[3].cumulative_length_int == 128
+01:44:40.193 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/2: kwargs['past_key_values'].layers[2].cumulative_length_int == 128
+01:44:40.196 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/1: kwargs['past_key_values'].layers[1].cumulative_length_int == 128
+01:44:40.200 V1020 01:44:40.161000 3939 torch/_dynamo/guards.py:3508] [8/8] [__recompiles]     - 8/0: kwargs['past_key_values'].layers[0].cumulative_length_int == 128
+01:44:40.204 W1020 01:44:40.162000 3939 torch/_dynamo/convert_frame.py:1016] [8/8] torch._dynamo hit config.recompile_limit (8)
+01:44:40.208 W1020 01:44:40.162000 3939 torch/_dynamo/convert_frame.py:1016] [8/8]    function: '__call__' (/opt/venv/lib/python3.12/site-packages/transformers/modeling_layers.py:81)
+01:44:40.213 W1020 01:44:40.162000 3939 torch/_dynamo/convert_frame.py:1016] [8/8]    last reason: 8/7: kwargs['past_key_values'].layers[7].cumulative_length_int == 128
+01:44:40.217 W1020 01:44:40.162000 3939 torch/_dynamo/convert_frame.py:1016] [8/8] To log all recompilation reasons, use TORCH_LOGS="recompiles".
+01:44:40.222 W1020 01:44:40.162000 3939 torch/_dynamo/convert_frame.py:1016] [8/8] To diagnose recompilation issues, see https://pytorch.org/docs/main/torch.compiler_troubleshooting.html.
+01:44:41.621 V1020 01:44:41.617000 3939 torch/_dynamo/guards.py:3508] [6/1] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:44:41.625 V1020 01:44:41.617000 3939 torch/_dynamo/guards.py:3508] [6/1] [__recompiles]     triggered by the following guard failure(s):
+01:44:41.629 V1020 01:44:41.617000 3939 torch/_dynamo/guards.py:3508] [6/1] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:44:41.632 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:44:41.635 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:44:41.640 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:44:41.643 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:44:41.648 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:44:41.651 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks] 
+01:44:41.655 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:44:41.659 V1020 01:44:41.621000 3939 torch/_dynamo/symbolic_convert.py:567] [6/1] [__graph_breaks] 
+01:45:25.492 V1020 01:45:25.488000 3939 torch/_dynamo/guards.py:3508] [6/2] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.497 V1020 01:45:25.488000 3939 torch/_dynamo/guards.py:3508] [6/2] [__recompiles]     triggered by the following guard failure(s):
+01:45:25.501 V1020 01:45:25.488000 3939 torch/_dynamo/guards.py:3508] [6/2] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.505 V1020 01:45:25.488000 3939 torch/_dynamo/guards.py:3508] [6/2] [__recompiles]     - 6/1: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.509 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.514 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:45:25.518 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:45:25.522 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:45:25.526 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:45:25.529 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks] 
+01:45:25.531 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:45:25.534 V1020 01:45:25.491000 3939 torch/_dynamo/symbolic_convert.py:567] [6/2] [__graph_breaks] 
+01:45:25.592 V1020 01:45:25.588000 3939 torch/_dynamo/guards.py:3508] [6/3] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.595 V1020 01:45:25.588000 3939 torch/_dynamo/guards.py:3508] [6/3] [__recompiles]     triggered by the following guard failure(s):
+01:45:25.599 V1020 01:45:25.588000 3939 torch/_dynamo/guards.py:3508] [6/3] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.602 V1020 01:45:25.588000 3939 torch/_dynamo/guards.py:3508] [6/3] [__recompiles]     - 6/1: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.606 V1020 01:45:25.588000 3939 torch/_dynamo/guards.py:3508] [6/3] [__recompiles]     - 6/2: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.609 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.612 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:45:25.615 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:45:25.618 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:45:25.621 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:45:25.625 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks] 
+01:45:25.629 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:45:25.632 V1020 01:45:25.591000 3939 torch/_dynamo/symbolic_convert.py:567] [6/3] [__graph_breaks] 
+01:45:25.687 V1020 01:45:25.682000 3939 torch/_dynamo/guards.py:3508] [6/4] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.690 V1020 01:45:25.682000 3939 torch/_dynamo/guards.py:3508] [6/4] [__recompiles]     triggered by the following guard failure(s):
+01:45:25.693 V1020 01:45:25.682000 3939 torch/_dynamo/guards.py:3508] [6/4] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.696 V1020 01:45:25.682000 3939 torch/_dynamo/guards.py:3508] [6/4] [__recompiles]     - 6/1: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.700 V1020 01:45:25.682000 3939 torch/_dynamo/guards.py:3508] [6/4] [__recompiles]     - 6/2: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.703 V1020 01:45:25.682000 3939 torch/_dynamo/guards.py:3508] [6/4] [__recompiles]     - 6/3: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.707 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.711 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:45:25.715 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:45:25.718 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:45:25.721 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:45:25.724 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks] 
+01:45:25.727 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:45:25.730 V1020 01:45:25.685000 3939 torch/_dynamo/symbolic_convert.py:567] [6/4] [__graph_breaks] 
+01:45:25.781 V1020 01:45:25.776000 3939 torch/_dynamo/guards.py:3508] [6/5] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.784 V1020 01:45:25.776000 3939 torch/_dynamo/guards.py:3508] [6/5] [__recompiles]     triggered by the following guard failure(s):
+01:45:25.787 V1020 01:45:25.776000 3939 torch/_dynamo/guards.py:3508] [6/5] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.791 V1020 01:45:25.776000 3939 torch/_dynamo/guards.py:3508] [6/5] [__recompiles]     - 6/1: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.794 V1020 01:45:25.776000 3939 torch/_dynamo/guards.py:3508] [6/5] [__recompiles]     - 6/2: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.797 V1020 01:45:25.776000 3939 torch/_dynamo/guards.py:3508] [6/5] [__recompiles]     - 6/3: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.801 V1020 01:45:25.776000 3939 torch/_dynamo/guards.py:3508] [6/5] [__recompiles]     - 6/4: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.804 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.808 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:45:25.811 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:45:25.814 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:45:25.818 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:45:25.821 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks] 
+01:45:25.825 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:45:25.827 V1020 01:45:25.779000 3939 torch/_dynamo/symbolic_convert.py:567] [6/5] [__graph_breaks] 
+01:45:25.881 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.885 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles]     triggered by the following guard failure(s):
+01:45:25.888 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.891 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles]     - 6/1: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.895 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles]     - 6/2: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.898 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles]     - 6/3: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.901 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles]     - 6/4: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.905 V1020 01:45:25.876000 3939 torch/_dynamo/guards.py:3508] [6/6] [__recompiles]     - 6/5: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.909 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.913 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:45:25.917 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:45:25.921 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:45:25.923 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:45:25.926 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks] 
+01:45:25.929 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:45:25.932 V1020 01:45:25.879000 3939 torch/_dynamo/symbolic_convert.py:567] [6/6] [__graph_breaks] 
+01:45:25.976 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:25.979 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     triggered by the following guard failure(s):
+01:45:25.983 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.986 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     - 6/1: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.990 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     - 6/2: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.993 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     - 6/3: Cache line invalidated because L['___stack0'] got deallocated
+01:45:25.997 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     - 6/4: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.000 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     - 6/5: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.003 V1020 01:45:25.972000 3939 torch/_dynamo/guards.py:3508] [6/7] [__recompiles]     - 6/6: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.006 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks] Graph break (user stack suppressed due to duplicate graph break) in user code at /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:26.011 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks] Graph Break Reason: Attempted to call function marked as skipped
+01:45:26.014 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks]   Explanation: Dynamo does not know how to trace the builtin `<unknown module>.dict.pop.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+01:45:26.017 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks]   Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+01:45:26.021 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks]   Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+01:45:26.023 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks] 
+01:45:26.027 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks]   Developer debug context: module: <unknown module>, qualname: dict.pop, skip reason: <missing reason>
+01:45:26.030 V1020 01:45:25.975000 3939 torch/_dynamo/symbolic_convert.py:567] [6/7] [__graph_breaks] 
+01:45:26.073 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles] Recompiling function torch_dynamo_resume_in_forward_at_1677 in /opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677
+01:45:26.077 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     triggered by the following guard failure(s):
+01:45:26.080 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.083 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/1: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.087 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/2: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.090 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/3: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.094 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/4: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.097 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/5: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.101 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/6: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.104 V1020 01:45:26.069000 3939 torch/_dynamo/guards.py:3508] [6/8] [__recompiles]     - 6/7: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.107 W1020 01:45:26.069000 3939 torch/_dynamo/convert_frame.py:1016] [6/8] torch._dynamo hit config.recompile_limit (8)
+01:45:26.111 W1020 01:45:26.069000 3939 torch/_dynamo/convert_frame.py:1016] [6/8]    function: 'torch_dynamo_resume_in_forward_at_1677' (/opt/venv/lib/python3.12/site-packages/transformers/models/gemma4/modeling_gemma4.py:1677)
+01:45:26.115 W1020 01:45:26.069000 3939 torch/_dynamo/convert_frame.py:1016] [6/8]    last reason: 6/0: Cache line invalidated because L['___stack0'] got deallocated
+01:45:26.118 W1020 01:45:26.069000 3939 torch/_dynamo/convert_frame.py:1016] [6/8] To log all recompilation reasons, use TORCH_LOGS="recompiles".
+01:45:26.121 W1020 01:45:26.069000 3939 torch/_dynamo/convert_frame.py:1016] [6/8] To diagnose recompilation issues, see https://pytorch.org/docs/main/torch.compiler_troubleshooting.html.
+01:46:31.918 wall clock     58.05 ms per decode step   (17.2 tok/s)
+01:46:31.921 
+01:46:32.066 W1020 01:46:32.061000 3939 torch/_logging/_internal.py:1154] [13/0] Profiler function <class 'torch.autograd.profiler.record_function'> will be ignored
+01:46:32.069 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks] Graph break in user code at /root/profile_decode.py:60
+01:46:32.073 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks] Graph Break Reason: Unsupported method call
+01:46:32.078 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   Explanation: Dynamo does not know how to trace method `__enter__` of class `<unknown type>`
+01:46:32.083 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   Hint: Avoid calling `<unknown type>.__enter__` in your code.
+01:46:32.085 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   Hint: Please report an issue to PyTorch.
+01:46:32.088 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks] 
+01:46:32.093 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   Developer debug context: call_method ProfilerContextVariable() __enter__ [] {}
+01:46:32.096 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks] 
+01:46:32.100 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks] User code traceback:
+01:46:32.102 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/root/profile_decode.py", line 296, in <module>
+01:46:32.105 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     main()
+01:46:32.108 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/root/profile_decode.py", line 211, in main
+01:46:32.112 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     model.generate(
+01:46:32.114 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+01:46:32.116 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     return func(*args, **kwargs)
+01:46:32.118 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 2982, in generate
+01:46:32.120 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     result = decoding_method(
+01:46:32.122 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 3210, in _sample
+01:46:32.124 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     outputs = model_forward(**model_inputs, return_dict=True)
+01:46:32.127 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:46:32.129 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:46:32.132 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1879, in _call_impl
+01:46:32.134 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     return inner()
+01:46:32.138 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1806, in inner
+01:46:32.140 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+01:46:32.142 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]   File "/root/profile_decode.py", line 60, in pre_hook
+01:46:32.144 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks]     ctx.__enter__()
+01:46:32.146 V1020 01:46:32.063000 3939 torch/_dynamo/symbolic_convert.py:560] [13/0] [__graph_breaks] 
+01:46:32.148 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] Graph break: skip: from user code at:
+01:46:32.151 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/root/profile_decode.py", line 60, in pre_hook
+01:46:32.153 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     ctx.__enter__()
+01:46:32.155 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] Traceback (most recent call last):
+01:46:32.157 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1272, in __call__
+01:46:32.160 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     result = self._inner_convert(
+01:46:32.162 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]              ^^^^^^^^^^^^^^^^^^^^
+01:46:32.165 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 629, in __call__
+01:46:32.168 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     return _compile(
+01:46:32.170 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]            ^^^^^^^^^
+01:46:32.172 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1111, in _compile
+01:46:32.174 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     guarded_code = compile_inner(code, one_graph, hooks, transform)
+01:46:32.178 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.183 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_utils_internal.py", line 97, in wrapper_function
+01:46:32.186 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     return function(*args, **kwargs)
+01:46:32.188 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.191 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 793, in compile_inner
+01:46:32.195 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     return _compile_inner(code, one_graph, hooks, transform)
+01:46:32.199 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.202 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 832, in _compile_inner
+01:46:32.205 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     out_code = transform_code_object(code, transform)
+01:46:32.207 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.211 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/bytecode_transformation.py", line 1424, in transform_code_object
+01:46:32.214 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     transformations(instructions, code_options)
+01:46:32.216 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 267, in _fn
+01:46:32.218 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     return fn(*args, **kwargs)
+01:46:32.220 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^
+01:46:32.222 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 753, in transform
+01:46:32.224 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     tracer.run()
+01:46:32.226 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3497, in run
+01:46:32.229 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     super().run()
+01:46:32.231 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+01:46:32.234 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     while self.step():
+01:46:32.236 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]           ^^^^^^^^^^^
+01:46:32.239 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+01:46:32.241 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     self.dispatch_table[inst.opcode](self, inst)
+01:46:32.243 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 832, in wrapper
+01:46:32.245 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     return handle_graph_break(self, inst, speculation.reason)
+01:46:32.247 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.249 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 894, in handle_graph_break
+01:46:32.251 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     all_stack_locals_metadata = self.output.compile_subgraph(
+01:46:32.253 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.256 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1399, in compile_subgraph
+01:46:32.258 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     self.codegen_suffix(tx, stack_values_flat, pass1)
+01:46:32.260 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1476, in codegen_suffix
+01:46:32.262 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     cg.restore_stack(stack_values, value_from_source=not tx.export)
+01:46:32.265 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/codegen.py", line 105, in restore_stack
+01:46:32.267 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     self.foreach(stack_values)
+01:46:32.269 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/codegen.py", line 387, in foreach
+01:46:32.271 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     self(i)
+01:46:32.273 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/codegen.py", line 346, in __call__
+01:46:32.276 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     self.call_reconstruct(value)
+01:46:32.281 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/codegen.py", line 113, in call_reconstruct
+01:46:32.284 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     res = value.reconstruct(self)
+01:46:32.287 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]           ^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.289 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/misc.py", line 1102, in reconstruct
+01:46:32.292 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     codegen(self.obj)
+01:46:32.295 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/codegen.py", line 346, in __call__
+01:46:32.299 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     self.call_reconstruct(value)
+01:46:32.302 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/codegen.py", line 113, in call_reconstruct
+01:46:32.305 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     res = value.reconstruct(self)
+01:46:32.308 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]           ^^^^^^^^^^^^^^^^^^^^^^^
+01:46:32.310 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/variables/ctx_manager.py", line 953, in reconstruct
+01:46:32.313 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     unimplemented_v2(
+01:46:32.316 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/exc.py", line 528, in unimplemented_v2
+01:46:32.318 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     raise Unsupported(msg)
+01:46:32.320 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] torch._dynamo.exc.Unsupported: torch.profiler object escaped from compiled region
+01:46:32.322 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   Explanation: Dynamo doesn't support compiling a region that returns a torch.profiler context manager.
+01:46:32.325 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.
+01:46:32.326 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] 
+01:46:32.329 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]   Developer debug context: ProfilerContextVariable()
+01:46:32.331 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] 
+01:46:32.334 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] 
+01:46:32.337 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] from user code:
+01:46:32.339 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]    File "/root/profile_decode.py", line 60, in pre_hook
+01:46:32.341 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks]     ctx.__enter__()
+01:46:32.343 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] 
+01:46:32.346 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+01:46:32.348 V1020 01:46:32.068000 3939 torch/_dynamo/convert_frame.py:1320] [13/0] [__graph_breaks] 
+01:46:32.350 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks] Graph break in user code at /root/profile_decode.py:64
+01:46:32.352 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks] Graph Break Reason: Attempted to inline function marked as skipped
+01:46:32.354 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   Explanation: Dynamo developers have intentionally marked that the function `record_function.__exit__` should not be traced.
+01:46:32.356 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   Hint: Avoid calling the function `record_function.__exit__`.
+01:46:32.359 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `record_function.__exit__` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+01:46:32.361 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   Hint: Please file an issue to PyTorch.
+01:46:32.364 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks] 
+01:46:32.366 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   Developer debug context: qualname: record_function.__exit__, name: __exit__, filename: `/usr/local/lib/python3.12/dist-packages/torch/autograd/profiler.py`, skip reason: skipped according trace_rules.lookup MOD_SKIPLIST
+01:46:32.368 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks] 
+01:46:32.370 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks] User code traceback:
+01:46:32.372 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/root/profile_decode.py", line 296, in <module>
+01:46:32.374 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     main()
+01:46:32.377 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/root/profile_decode.py", line 211, in main
+01:46:32.381 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     model.generate(
+01:46:32.385 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+01:46:32.388 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     return func(*args, **kwargs)
+01:46:32.392 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 2982, in generate
+01:46:32.395 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     result = decoding_method(
+01:46:32.398 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/opt/venv/lib/python3.12/site-packages/transformers/generation/utils.py", line 3210, in _sample
+01:46:32.401 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     outputs = model_forward(**model_inputs, return_dict=True)
+01:46:32.402 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+01:46:32.405 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     return self._call_impl(*args, **kwargs)
+01:46:32.408 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1879, in _call_impl
+01:46:32.409 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     return inner()
+01:46:32.412 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1838, in inner
+01:46:32.414 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     hook_result = hook(self, args, kwargs, result)
+01:46:32.417 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]   File "/root/profile_decode.py", line 64, in post_hook
+01:46:32.419 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks]     open_ctx.pop().__exit__(None, None, None)
+01:46:32.422 V1020 01:46:32.164000 3939 torch/_dynamo/symbolic_convert.py:560] [14/0] [__graph_breaks] 
+01:46:44.743 forwards seen: 32  (1 prefill 'gen_fwd_000' + 31 decode)
+01:46:44.747 analyzed 29 decode steps, skipping the first 2
+01:46:44.750 
+01:46:44.754 per decode step, averaged
+01:46:44.758   CUDA kernels launched     1936.0
+01:46:44.761   GPU kernel time            21.83 ms
+01:46:44.764   wall time                  58.05 ms
+01:46:44.767   GPU busy                    37.6 %
+01:46:44.770   GPU idle                    62.4 %
+01:46:44.773 
+01:46:44.777 category                     ms/step    share   kernels
+01:46:44.780 -------------------------------------------------------
+01:46:44.782 matmul/gemm                   18.466    84.6%     277.0
+01:46:44.785 elementwise/activation         2.296    10.5%    1444.0
+01:46:44.787 attention                      0.653     3.0%      35.0
+01:46:44.790 memory copies                  0.243     1.1%     115.0
+01:46:44.793 other                          0.174     0.8%      65.0
+01:46:44.796 
+01:46:44.799 top 15 kernels by total time (per step)
+01:46:44.801   ms/step   calls    avg us  name
+01:46:44.805 ----------------------------------------------------------------------------------------------------
+01:46:44.808    13.851   142.0      97.5  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+01:46:44.811     4.416   100.0      44.2  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+01:46:44.813     0.653    35.0      18.7  fmha_cutlassF_bf16_aligned_32x128_gmem_sm80(PyTorchMemEffAttention::At
+01:46:44.817     0.327   176.0       1.9  triton_red_fused__to_copy_add_mean_mul_pow_0
+01:46:44.820     0.291   175.0       1.7  void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::
+01:46:44.823     0.243   115.0       2.1  void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k
+01:46:44.826     0.228   105.0       2.2  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+01:46:44.829     0.199    35.0       5.7  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+01:46:44.832     0.198   155.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+01:46:44.835     0.174    65.0       2.7  void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:
+01:46:44.838     0.168   100.0       1.7  void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp
+01:46:44.841     0.128   100.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu
+01:46:44.844     0.105    70.0       1.5  void at::native::vectorized_elementwise_kernel<4, at::native::GeluCUDA
+01:46:44.847     0.101    35.0       2.9  void at::native::(anonymous namespace)::CatArrayBatchedCopy<at::native
+01:46:44.850     0.087    65.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke
+01:46:44.852 
+01:46:44.854 VERDICT  GPU busy 37.6%  ->  overhead-bound: try CUDA graphs / torch.compile first
+01:46:44.858 thresholds: busy >= 80% memory/compute-bound | < 60% overhead-bound | 60-80% mixed
+01:46:44.861 
+01:46:44.863 trace written to out/trace_C_compile.json - open in ui.perfetto.dev and look at the gaps between kernels by eye
+01:46:44.865 wrote out/profile_C_compile.json
