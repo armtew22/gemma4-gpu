@@ -92,6 +92,30 @@ def perturb_one_layer(model, scale, seed, pattern):
     raise SystemExit(f"no parameter matched {pattern!r} with dim >= 2")
 
 
+def perturb_matching(model, scale, seed, regex):
+    """Relative gaussian noise on EVERY parameter matching `regex` (the band v2 FAIL anchor).
+
+    perturb_one_layer stays as it was so the v1 control reproduces exactly.
+    """
+    import re
+    pattern = re.compile(regex)
+    names, shapes = [], {}
+    for i, (name, param) in enumerate(model.named_parameters()):
+        if not (pattern.search(name) and param.dim() >= 2):
+            continue
+        gen = torch.Generator().manual_seed(seed + i)
+        with torch.no_grad():
+            std = param.detach().float().std().item()
+            noise = torch.randn(param.shape, generator=gen, dtype=torch.float32)
+            param.add_(noise.to(param.device, param.dtype) * (scale * std))
+        names.append(name)
+        shapes[str(tuple(param.shape))] = shapes.get(str(tuple(param.shape)), 0) + 1
+    if not names:
+        raise SystemExit(f"no parameter matched {regex!r} with dim >= 2")
+    return {"regex": regex, "scale": scale, "seed": seed, "params": len(names),
+            "first": names[0], "last": names[-1], "shapes": shapes}
+
+
 # --- evaluation set -------------------------------------------------------------------
 
 def load_eval_windows(tokenizer, num_tokens, window, add_bos, dataset=DATASET):
@@ -508,6 +532,69 @@ def classify_band(kl, top1, pass_kl, pass_top1, fail_kl, fail_top1):
     return "INVESTIGATE"
 
 
+# --- band v2 (2026-10-26), the default --------------------------------------------------
+# Band v1 above stays computed and written so every past result reproduces; its verdicts
+# stand as recorded. It was miscalibrated: on 2026-10-19 three changes that do not damage the
+# model - decode vs prefill on the same weights, the static cache, and torch.compile - all
+# landed at KL 1.7-1.9e-3 and top-1 98.3-98.85%, about twice v1's FAIL anchor. One matrix
+# perturbed by 1e-3 was too gentle to define "broken".
+#
+# PASS comes from benign kernel-path noise, and only from noise that is benign BY
+# CONSTRUCTION: decode vs prefill, the same weights through two standard eager kernel paths
+# (KL 1.797e-3, top-1 98.33% over 478 positions). Static and compile are deliberately left
+# out - they are what the band judges, so letting them set its ceiling would be circular.
+# Ceiling = 1.5 x 1.797e-3 = 2.70e-3. Top-1 floor 98.0%: below the benign minimum, about
+# 3 binomial standard deviations under the ~98.8% that benign variants reach on the
+# 1,912-position decode set.
+#
+# FAIL is anchored on V2_ANCHOR - the v1 per-matrix noise applied to all 35 q_proj matrices
+# instead of one - which has NOT been measured yet. Until it is, BAND_V2_FAIL_* are None and
+# band v2 reports only PASS / NOT-PASS. Rule fixed now, before measuring: FAIL_KL = anchor KL
+# rounded DOWN to 2 significant figures, FAIL_TOP1 = anchor top-1 rounded UP to 0.1, so the
+# anchor itself lands in FAIL (v1 rounded the other way and its own control read
+# INVESTIGATE). Both are set before any new variant is judged.
+
+BAND_V2_PASS_KL = 2.7e-3
+BAND_V2_PASS_TOP1 = 98.0
+BAND_V2_FAIL_KL = None
+BAND_V2_FAIL_TOP1 = None
+ALL_Q_PROJ = r"language_model\.layers\.\d+\.self_attn\.q_proj\.weight$"
+V2_ANCHOR = {"target": "all-q-proj", "scale": 1e-3}
+
+
+def classify_band_v2(kl, top1, pass_kl, pass_top1, fail_kl=None, fail_top1=None):
+    passed = kl < pass_kl and top1 >= pass_top1
+    if fail_kl is None or fail_top1 is None:
+        return "PASS" if passed else "NOT-PASS"  # no measured anchor yet: no FAIL verdict
+    if kl >= fail_kl or top1 <= fail_top1:
+        return "FAIL"
+    return "PASS" if passed else "INVESTIGATE"
+
+
+def band_report(kl, top1, args):
+    """Both bands for one result. v1 is kept so past verdicts reproduce."""
+    v1 = {
+        "pass_kl_below": args.band_pass_kl,
+        "pass_top1_at_least": args.band_pass_top1,
+        "fail_kl_at_least": args.band_fail_kl,
+        "fail_top1_at_most": args.band_fail_top1,
+        "verdict": classify_band(kl, top1, args.band_pass_kl, args.band_pass_top1,
+                                 args.band_fail_kl, args.band_fail_top1),
+    }
+    anchored = args.band_v2_fail_kl is not None and args.band_v2_fail_top1 is not None
+    v2 = {
+        "pass_kl_below": args.band_v2_pass_kl,
+        "pass_top1_at_least": args.band_v2_pass_top1,
+        "fail_kl_at_least": args.band_v2_fail_kl,
+        "fail_top1_at_most": args.band_v2_fail_top1,
+        "fail_anchor": V2_ANCHOR,
+        "fail_anchor_measured": anchored,
+        "verdict": classify_band_v2(kl, top1, args.band_v2_pass_kl, args.band_v2_pass_top1,
+                                    args.band_v2_fail_kl, args.band_v2_fail_top1),
+    }
+    return v1, v2
+
+
 # --- main -----------------------------------------------------------------------------
 
 def _load_prefill_sanity(path, decode_settings, tokenizer, dataset):
@@ -543,16 +630,14 @@ def _prefill_sanity_metrics(sanity, run, args):
         ref["topk_logprobs"][idx], ref["argmax_ids"][idx], run["gathered"]["prefill"],
         run["current"]["argmax_ids"][rows], run["current"]["target_logprobs"][rows],
     )
-    m["verdict"] = classify_band(
-        m["mean_kl"], m["top1_agreement_pct"],
-        args.band_pass_kl, args.band_pass_top1, args.band_fail_kl, args.band_fail_top1,
-    )
+    v1, v2 = band_report(m["mean_kl"], m["top1_agreement_pct"], args)
+    m["verdict_v1"], m["verdict_v2"] = v1["verdict"], v2["verdict"]
     m["aligned_decode_windows"] = sanity["plan"]["windows"]
     m["prefill_reference"] = sanity["path"]
     print(f"\nPREFILL SANITY  decode run vs prefill reference, {m['tokens_scored']} positions")
     print(f"PREFILL SANITY  KL {m['mean_kl']:.3e}  top-1 {m['top1_agreement_pct']:.4f}%  "
-          f"-> {m['verdict']}  (expected PASS, not 0: decode and prefill use different "
-          f"kernels)")
+          f"-> band v2 {m['verdict_v2']}, v1 {m['verdict_v1']}  (expected nonzero: "
+          f"decode and prefill use different kernels)")
     return m
 
 
@@ -590,7 +675,7 @@ def main():
                         "for optimized variants: exit 0 on PASS, 1 on FAIL, 2 on "
                         "INVESTIGATE.")
     p.add_argument("--band-pass-kl", type=float, default=BAND_PASS_KL,
-                   help="PASS requires mean KL strictly below this")
+                   help="band v1: PASS requires mean KL strictly below this")
     p.add_argument("--band-pass-top1", type=float, default=BAND_PASS_TOP1,
                    help="PASS requires top-1 agreement %% at or above this")
     p.add_argument("--band-fail-kl", type=float, default=BAND_FAIL_KL,
@@ -603,6 +688,21 @@ def main():
                         "layer's weight before scoring (e.g. 1e-3)")
     p.add_argument("--perturb-pattern", default="language_model.layers.17.")
     p.add_argument("--perturb-seed", type=int, default=0)
+    p.add_argument("--perturb-target", choices=("one-layer", "all-q-proj"), default="one-layer",
+                   help="one-layer: the first 2D match of --perturb-pattern (the v1 control). "
+                        "all-q-proj: every decoder layer's q_proj, 35 matrices.")
+    p.add_argument("--perturb-preset", choices=("v2-anchor",),
+                   help="v2-anchor: the band v2 FAIL anchor, 1e-3 relative noise on all 35 "
+                        "q_proj matrices. Measure it before judging any variant with band v2.")
+    p.add_argument("--band-version", choices=("v1", "v2"), default="v2",
+                   help="which band --expect pass-band asserts on. Both are always computed "
+                        "and written; v1 reproduces the 2026-10-13 pre-registered verdicts.")
+    p.add_argument("--band-v2-pass-kl", type=float, default=BAND_V2_PASS_KL)
+    p.add_argument("--band-v2-pass-top1", type=float, default=BAND_V2_PASS_TOP1)
+    p.add_argument("--band-v2-fail-kl", type=float, default=BAND_V2_FAIL_KL,
+                   help="unset until the v2 anchor is measured; band v2 then reports only "
+                        "PASS / NOT-PASS")
+    p.add_argument("--band-v2-fail-top1", type=float, default=BAND_V2_FAIL_TOP1)
     p.add_argument("--num-tokens", type=int, default=50_000)
     p.add_argument("--window", type=int, default=1024)
     p.add_argument("--topk", type=int, default=100)
@@ -631,6 +731,10 @@ def main():
         )
     if args.prefill_reference and args.mode != "decode":
         raise SystemExit("--prefill-reference is a decode-mode sanity check; add --mode decode")
+    if args.perturb_preset == "v2-anchor":
+        if args.perturb > 0:
+            raise SystemExit("--perturb-preset sets its own scale; drop --perturb")
+        args.perturb, args.perturb_target = V2_ANCHOR["scale"], V2_ANCHOR["target"]
     if not torch.cuda.is_available():
         raise SystemExit("CUDA not available - this evaluation needs an NVIDIA GPU.")
 
@@ -672,7 +776,13 @@ def main():
     print(f"variant: {args.variant}  cache={variant_meta['cache']['class']}  "
           f"compile_requested={variant_meta['compile']['requested']}")
 
-    if args.perturb > 0:
+    if args.perturb > 0 and args.perturb_target == "all-q-proj":
+        pert = perturb_matching(model, args.perturb, args.perturb_seed, ALL_Q_PROJ)
+        pert["preset"] = args.perturb_preset
+        variant_meta["perturb"] = pert
+        print(f"PERTURBED {pert['params']} matrices ({pert['first']} .. {pert['last']}) "
+              f"scale={pert['scale']:g} relative to each weight's std; shapes {pert['shapes']}")
+    elif args.perturb > 0:
         pert = perturb_one_layer(
             model, args.perturb, args.perturb_seed, args.perturb_pattern
         )
@@ -769,18 +879,10 @@ def main():
           f"(current model's mass inside the reference top-k)")
     print(f"wall                  {wall:.1f}s")
 
-    band = {
-        "pass_kl_below": args.band_pass_kl,
-        "pass_top1_at_least": args.band_pass_top1,
-        "fail_kl_at_least": args.band_fail_kl,
-        "fail_top1_at_most": args.band_fail_top1,
-        "verdict": classify_band(
-            result["mean_kl"], result["top1_agreement_pct"],
-            args.band_pass_kl, args.band_pass_top1,
-            args.band_fail_kl, args.band_fail_top1,
-        ),
-    }
-    print(f"band verdict          {band['verdict']}")
+    band_v1, band_v2 = band_report(result["mean_kl"], result["top1_agreement_pct"], args)
+    print(f"band v2 verdict       {band_v2['verdict']}"
+          + ("" if band_v2["fail_anchor_measured"] else "   (FAIL anchor not measured yet)"))
+    print(f"band v1 verdict       {band_v1['verdict']}   (2026-10-13 pre-registration)")
 
     default_out = f"drift_{args.variant}_decode.json" if args.mode == "decode" else (
         f"drift_{args.variant}.json")
@@ -797,7 +899,9 @@ def main():
                 "reference_path": ref_path,
                 "wall_seconds": wall,
                 **result,
-                "band": band,
+                "band_v1": band_v1,
+                "band_v2": band_v2,
+                "band_default": "v2",
                 **({"prefill_sanity": sanity["result"]} if sanity else {}),
             },
             f,
@@ -833,16 +937,22 @@ def main():
             assert ok_t1, "expected drift but top-1 agreement is still 100%"
             print("EXPECT drift     PASS - reports nonzero drift when something changed")
         elif expect == "pass-band":
-            print(f"PASS-BAND  PASS        KL < {band['pass_kl_below']:.0e} "
+            band = band_v2 if args.band_version == "v2" else band_v1
+            tag = f"PASS-BAND {args.band_version}"
+            print(f"{tag}  PASS        KL < {band['pass_kl_below']:.1e} "
                   f"and top-1 >= {band['pass_top1_at_least']}%")
-            print(f"PASS-BAND  FAIL        KL >= {band['fail_kl_at_least']:.1e} "
-                  f"or top-1 <= {band['fail_top1_at_most']}%   (negative control)")
-            print(f"PASS-BAND  INVESTIGATE anything in between")
-            print(f"PASS-BAND  measured    KL {kl:.3e}, top-1 {t1:.4f}%  ->  "
+            if band["fail_kl_at_least"] is None:
+                print(f"{tag}  FAIL        not available - anchor {V2_ANCHOR} not measured yet")
+                print(f"{tag}  NOT-PASS    anything that misses PASS")
+            else:
+                print(f"{tag}  FAIL        KL >= {band['fail_kl_at_least']:.1e} "
+                      f"or top-1 <= {band['fail_top1_at_most']}%   (negative control)")
+                print(f"{tag}  INVESTIGATE anything in between")
+            print(f"{tag}  measured    KL {kl:.3e}, top-1 {t1:.4f}%  ->  "
                   f"{band['verdict']}")
             if band["verdict"] == "FAIL":
                 raise SystemExit(1)
-            if band["verdict"] == "INVESTIGATE":
+            if band["verdict"] in ("INVESTIGATE", "NOT-PASS"):
                 raise SystemExit(2)
 
 

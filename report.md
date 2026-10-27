@@ -1,7 +1,7 @@
 # Gemma 4 E2B — GPU inference baseline
 
 Working notes and measurements for the Gemma 4 E2B optimization project.
-Last updated 2026-10-19.
+Last updated 2026-10-26.
 
 ## Target
 
@@ -583,6 +583,40 @@ transformers pinned to 5.19.0 (`pip -U` resolved 5.20.2; variants were verified 
   It has 128 visible cores, so per-core CPU speed, not core count, is the likely variable.
 - Cost ~$0.35–0.44 (one pod, ~44 min, including ~5 min idle after a bug in the stock watcher).
 
+## Drift band recalibration (2026-10-26)
+
+**Why.** The v1 bands were miscalibrated. On 2026-10-19 three changes that do not damage the
+model — decode vs prefill on the same weights, the static cache, and `torch.compile` — all
+landed at KL 1.7–1.9e-3 and top-1 98.3–98.85%, about twice v1's FAIL anchor. A single q_proj
+matrix perturbed by 1e-3 was too gentle to define "broken": it sits *below* ordinary bf16
+kernel-path noise.
+
+**Band v2**, now the default. This was decided before testing any new variant.
+
+| verdict | rule | source |
+| --- | --- | --- |
+| PASS | KL < 2.7e-3 **and** top-1 ≥ 98.0% | benign noise: 1.5 × decode-vs-prefill KL (1.797e-3); floor below its 98.33% |
+| FAIL | anchor-derived — **not yet measured** | `--perturb-preset v2-anchor`: 1e-3 noise on all 35 q_proj |
+| INVESTIGATE | in between | — |
+
+- **The PASS ceiling uses only decode vs prefill**, the one change benign by construction
+  (same weights, two standard eager kernel paths). Static and compile are deliberately
+  excluded: they are what the band judges, so letting them set its ceiling would be circular.
+- **The FAIL anchor** keeps v1's per-matrix noise but applies it to every layer instead of one.
+  1e-2 was considered and rejected: KL grows roughly with the square of the noise, so it would
+  likely destroy the model, and a FAIL line anchored there would almost never trigger.
+- **Until the anchor is measured, band v2 reports only PASS / NOT-PASS.** It is measured on
+  the next pod, before any variant is judged. The rule is fixed now: FAIL KL = anchor KL
+  rounded *down* to 2 significant figures, FAIL top-1 = anchor top-1 rounded *up* to 0.1, so
+  the anchor itself lands in FAIL. v1 rounded the other way, and its own control read
+  INVESTIGATE.
+
+**v1 verdicts stand as recorded.** Band v1 is still computed and written to every JSON, and
+recomputing it on all recorded results reproduces them exactly. Applied after the fact,
+band v2 would read static, compile and decode-vs-prefill as PASS — and the v1 anchor too,
+which is the point. Those v2 readings are post hoc and are not pre-registered evidence about
+static or compile.
+
 ## Model variants
 
 `variants.py` is the single place every tool builds its model, so a variant name means the
@@ -780,7 +814,8 @@ different host class; (f) score the base `gemma-4-E2B` once to explain the high 
 perplexity; (g) validate decode mode on a GPU — fresh-process floor, perturbation, prefill
 sanity check — before trusting any `static` or `compile` drift verdict; (h) check whether `profile_decode.py`'s step labels survive `compile`; (i) decide
 whether to run `compile` with `fullgraph=True` so graph breaks fail loudly; (j) record the
-cgroup CPU quota in `hostinfo.py` instead of visible cores.
+cgroup CPU quota in `hostinfo.py` instead of visible cores; (k) measure the band v2 FAIL
+anchor (`--perturb-preset v2-anchor`) on the next pod, before judging any new variant.
 
 **Measurement standard:** host variance reaches 1.76x, so absolute throughput is meaningless
 without the host. Every before/after must run on one pod in one session. Every results file
@@ -855,6 +890,11 @@ pod and driver, then ran eager → static → compile → eager. Neither static 
 faster than eager; compile fell back to mostly eager on a Gemma 4 graph break and two
 recompile-limit hits, and both failed the drift bands at the same KL as decode vs prefill.
 Raw results only; see Week 3 staircase above.
+
+### 2026-10-26 — drift bands recalibrated, no GPU
+Kept band v1 intact and added band v2 as the default: PASS from benign decode-vs-prefill noise,
+FAIL from a stronger all-layer perturbation that is measured on the next pod before any
+variant is judged. v1 verdicts unchanged.
 
 ### A note on corrections
 Four conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s
