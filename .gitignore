@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 trace_decode.json
 *.pt
+.pytest_cache/

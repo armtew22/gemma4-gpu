@@ -150,6 +150,90 @@ def _compile(max_cache_len, text_config):
     return kwargs, meta
 
 
+def _fused_rmsnorm(max_cache_len, text_config):
+    # Same cache and generate() arguments as eager; the difference is applied to the loaded
+    # model by patch_fused_rmsnorm(), so it shows up in plain forward passes too.
+    kwargs, meta = _eager(max_cache_len, text_config)
+    meta["kernel"] = {
+        "name": "fused RMSNorm (Triton, one program per row)",
+        "file": "kernels/rmsnorm.py",
+        "replaces": "Gemma4RMSNorm.forward on the text decoder",
+    }
+    return kwargs, meta
+
+
+def _norm_size(name, module, modules):
+    if getattr(module, "with_scale", False):
+        return module.weight.shape[0]
+    # a weightless norm (v_norm) stores no size; its parent attention knows the head dim
+    return getattr(modules[name.rsplit(".", 1)[0]], "head_dim", None)
+
+
+def patch_fused_rmsnorm(model, verify=True):
+    """Route every text-decoder Gemma4RMSNorm through the fused kernel. Returns a report.
+
+    Vision and audio norms are left eager on purpose: they never run during text decode, and
+    their inputs are not covered by tests/test_rmsnorm.py, so replacing them would change code
+    that nothing measures. Anything that is not a Gemma4RMSNorm is left alone as well.
+    """
+    import torch.nn as nn
+    from transformers.models.gemma4.modeling_gemma4 import Gemma4RMSNorm
+
+    from kernels.rmsnorm import rmsnorm
+
+    def fused_forward(module):
+        def forward(hidden_states):
+            return rmsnorm(hidden_states, module.weight if module.with_scale else None,
+                           module.eps, module.with_scale)
+        return forward
+
+    modules = dict(model.named_modules())
+    replaced, left, shapes = Counter(), Counter(), {}
+    for name, module in modules.items():
+        if isinstance(module, Gemma4RMSNorm):
+            if ".language_model." not in name:
+                left["Gemma4RMSNorm (vision/audio): not on the text decode path, untested inputs"] += 1
+                continue
+            n = _norm_size(name, module, modules)
+            key = f"Gemma4RMSNorm N={n} with_scale={module.with_scale}"
+            replaced[key] += 1
+            shapes[key] = (n, module.with_scale, module.eps)
+            module.forward = fused_forward(module)
+        elif isinstance(module, (nn.LayerNorm, nn.GroupNorm)):
+            left[f"{type(module).__name__}: not an RMSNorm"] += 1
+
+    report = {
+        "replaced_total": sum(replaced.values()),
+        "replaced": dict(replaced),
+        "left_on_eager": dict(left),
+    }
+    if verify:
+        report["build_check"] = _verify_fused(model, shapes)
+    return report
+
+
+def _verify_fused(model, shapes):
+    """On a GPU, compare the kernel with the reference for each distinct norm shape at build
+    time, so a broken kernel stops the run before anything is measured."""
+    if model.device.type != "cuda":
+        return "skipped: model not on CUDA"
+    from kernels.rmsnorm import rmsnorm, rmsnorm_reference
+
+    worst = {}
+    for key, (n, with_scale, eps) in shapes.items():
+        gen = torch.Generator(device="cuda").manual_seed(0)
+        x = torch.randn(8, n, device="cuda", dtype=model.dtype, generator=gen) * 3
+        w = (1 + 0.1 * torch.randn(n, device="cuda", dtype=model.dtype, generator=gen)
+             if with_scale else None)
+        err = (rmsnorm(x, w, eps, with_scale).float()
+               - rmsnorm_reference(x, w, eps, with_scale).float()).abs().max().item()
+        worst[key] = err
+        if not err < 0.1:
+            raise SystemExit(f"fused RMSNorm disagrees with the reference for {key}: max abs "
+                             f"error {err:.3g}. Run tests/test_rmsnorm.py before measuring.")
+    return {"max_abs_error_vs_reference": worst}
+
+
 # --- future: "graph" ------------------------------------------------------------------
 # Manual torch.cuda.graph capture of the decode step with a static cache, and NO
 # torch.compile. The point is attribution: "compile" combines kernel fusion with CUDA graphs,
@@ -162,6 +246,9 @@ VARIANTS = {
     "eager": {"builder": _eager, "static_cache": False},
     "static": {"builder": _static, "static_cache": True},
     "compile": {"builder": _compile, "static_cache": True},
+    # Not generate-only: the norms change in every forward pass, so prefill-mode drift sees it.
+    "fused_rmsnorm": {"builder": _fused_rmsnorm, "static_cache": False,
+                      "patch": patch_fused_rmsnorm},
 }
 
 # Variants whose distinguishing behaviour exists only inside generate(). A tool that scores
@@ -206,6 +293,9 @@ def build(variant, max_cache_len=None):
         raise SystemExit(f"unknown variant {variant!r}; known: {sorted(VARIANTS)}")
     model = load_model()
     kwargs, meta = describe(variant, max_cache_len, model.config)
+    patch = VARIANTS[variant].get("patch")
+    if patch is not None:
+        meta["patch"] = patch(model)
     return model, kwargs, meta
 
 

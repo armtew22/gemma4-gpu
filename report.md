@@ -1,7 +1,7 @@
 # Gemma 4 E2B — GPU inference baseline
 
 Working notes and measurements for the Gemma 4 E2B optimization project.
-Last updated 2026-10-26.
+Last updated 2026-10-28.
 
 ## Target
 
@@ -617,6 +617,57 @@ band v2 would read static, compile and decode-vs-prefill as PASS — and the v1 
 which is the point. Those v2 readings are post hoc and are not pre-registered evidence about
 static or compile.
 
+## Fused RMSNorm (2026-10-28, built, not yet run on a GPU)
+
+RMSNorm is the single largest source of decode launches: 242 calls per step at ~8 eager
+kernels each, roughly 1,900 of the 3,085. `fused_rmsnorm` replaces each call with one Triton
+kernel (`kernels/rmsnorm.py`). The kernel body is deliberately left as a TODO to be written by
+hand; until then it fails at compile time rather than producing output.
+
+**Gemma 4's RMSNorm, read from transformers 5.19.0** — one class, `Gemma4RMSNorm`:
+
+- upcast `x.float()` first; `ms = x.pow(2).mean(-1) + eps`; `y = x * torch.pow(ms, -0.5)`
+  (`pow(-0.5)` for JAX parity — it runs as `rsqrt` on CUDA)
+- multiply by the **plain** `weight.float()` in fp32 — **not `(1 + weight)`** as in Gemma 1–3;
+  the weight is initialised to ones
+- cast back with `.type_as(x)` only at the very end; eps is 1e-6 for every text norm
+- `v_norm` uses `with_scale=False` and has no weight
+
+The pure-PyTorch reference reproduces the real module **bit for bit** on CPU, in bf16 and
+fp32, for every shape below; the `(1 + weight)` form does not match.
+
+| N | weight | text-decoder modules | where |
+| --- | --- | --- | --- |
+| 1536 | yes | 176 | 5 per layer × 35, plus the final norm |
+| 256 | yes | 41 | q_norm (28 sliding layers), k_norm (12), per-layer projection norm (1) |
+| 256 | no | 12 | v_norm, sliding layers |
+| 512 | yes | 10 | q_norm (7 full layers), k_norm (3) |
+| 512 | no | 3 | v_norm, full layers |
+
+That is exactly **242**, matching the profile's 242 calls per step; k/v norms exist only on
+the 15 layers that own a KV cache. The cast count closes too: 242 input upcasts plus 227
+weight upcasts (242 minus the 15 weightless v_norms) is 469, against 471 `LoadWithCast`
+kernels measured. The 222 vision/audio RMSNorms and 2 LayerNorms are left eager — they never
+run during text decode.
+
+`fused_rmsnorm` changes every forward pass, so it is **not** generate-only: prefill and decode
+drift both apply. At build time on a GPU it checks the kernel against the reference for each
+shape and refuses to continue on a mismatch. `tests/test_rmsnorm.py` compares the kernel with
+the real module across 76 cases (both dtypes, 1 to 1,000 rows, three non-contiguous layouts)
+and microbenchmarks it.
+
+**Next pod plan** — `pod/fused_rmsnorm.sh`, written, not run:
+
+1. Decode-reference floor on the new pod; rebuild `ref_decode_eager.pt` there if it is not
+   portable.
+2. **Measure the band v2 FAIL anchor** (`--perturb-preset v2-anchor`) in decode and prefill
+   mode, and derive FAIL thresholds per mode with the pre-stated rounding rule.
+3. `tests/test_rmsnorm.py` — correctness, then the microbenchmark. Nothing measures D unless
+   it passes.
+4. A eager → D fused_rmsnorm → A eager, each step in a fresh process: benchmark, profile
+   (kernels/step, launches/step, busy %), and for D, drift in prefill and decode mode with
+   band v2 verdicts.
+
 ## Model variants
 
 `variants.py` is the single place every tool builds its model, so a variant name means the
@@ -815,7 +866,8 @@ perplexity; (g) validate decode mode on a GPU — fresh-process floor, perturbat
 sanity check — before trusting any `static` or `compile` drift verdict; (h) check whether `profile_decode.py`'s step labels survive `compile`; (i) decide
 whether to run `compile` with `fullgraph=True` so graph breaks fail loudly; (j) record the
 cgroup CPU quota in `hostinfo.py` instead of visible cores; (k) measure the band v2 FAIL
-anchor (`--perturb-preset v2-anchor`) on the next pod, before judging any new variant.
+anchor (`--perturb-preset v2-anchor`) on the next pod, before judging any new variant;
+(l) write the fused RMSNorm kernel body, then run `pod/fused_rmsnorm.sh`.
 
 **Measurement standard:** host variance reaches 1.76x, so absolute throughput is meaningless
 without the host. Every before/after must run on one pod in one session. Every results file
@@ -895,6 +947,13 @@ Raw results only; see Week 3 staircase above.
 Kept band v1 intact and added band v2 as the default: PASS from benign decode-vs-prefill noise,
 FAIL from a stronger all-layer perturbation that is measured on the next pod before any
 variant is judged. v1 verdicts unchanged.
+
+### 2026-10-28 — fused RMSNorm scaffolding, no GPU
+Read Gemma 4's RMSNorm from source — plain weight rather than `(1 + weight)`, fp32
+throughout, one cast back at the end — and confirmed the 242 norms per decode step one by one
+on the meta model. Built the reference (bit-exact against the real module), the wrapper, the
+76-case GPU test file, the `fused_rmsnorm` variant and the next pod plan. The kernel body is
+left for hand-writing.
 
 ### A note on corrections
 Four conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s
