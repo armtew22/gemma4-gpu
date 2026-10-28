@@ -621,8 +621,10 @@ static or compile.
 
 RMSNorm is the single largest source of decode launches: 242 calls per step at ~8 eager
 kernels each, roughly 1,900 of the 3,085. `fused_rmsnorm` replaces each call with one Triton
-kernel (`kernels/rmsnorm.py`). The kernel body is deliberately left as a TODO to be written by
-hand; until then it fails at compile time rather than producing output.
+kernel (`kernels/rmsnorm.py`). The kernel body was written by hand, one commented step at a
+time, and has not yet run on a GPU. A line-for-line PyTorch emulation of it matches the real
+module bit for bit on CPU for every shape below, including the 512 masked padding lanes when
+N=1536; on CUDA, expect last-bit differences from `rsqrt` and reduction order.
 
 **Gemma 4's RMSNorm, read from transformers 5.19.0** — one class, `Gemma4RMSNorm`:
 
@@ -867,7 +869,7 @@ sanity check — before trusting any `static` or `compile` drift verdict; (h) ch
 whether to run `compile` with `fullgraph=True` so graph breaks fail loudly; (j) record the
 cgroup CPU quota in `hostinfo.py` instead of visible cores; (k) measure the band v2 FAIL
 anchor (`--perturb-preset v2-anchor`) on the next pod, before judging any new variant;
-(l) write the fused RMSNorm kernel body, then run `pod/fused_rmsnorm.sh`.
+(l) run `pod/fused_rmsnorm.sh` - the fused RMSNorm kernel is written but untested on a GPU.
 
 **Measurement standard:** host variance reaches 1.76x, so absolute throughput is meaningless
 without the host. Every before/after must run on one pod in one session. Every results file
@@ -952,8 +954,9 @@ variant is judged. v1 verdicts unchanged.
 Read Gemma 4's RMSNorm from source — plain weight rather than `(1 + weight)`, fp32
 throughout, one cast back at the end — and confirmed the 242 norms per decode step one by one
 on the meta model. Built the reference (bit-exact against the real module), the wrapper, the
-76-case GPU test file, the `fused_rmsnorm` variant and the next pod plan. The kernel body is
-left for hand-writing.
+76-case GPU test file, the `fused_rmsnorm` variant and the next pod plan. Then wrote the
+kernel body by hand, step by step; its logic, emulated in PyTorch, matches the module bit for
+bit on CPU. Untested on a GPU.
 
 ### A note on corrections
 Four conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s
