@@ -1,0 +1,12 @@
+{
+  "trace": "out/trace_B_static.json",
+  "decode_steps_found": 31,
+  "decode_steps_analyzed": 29,
+  "cudaLaunchKernel_per_step": 3206,
+  "cuLaunchKernel_per_step": 0,
+  "graph_launch_per_step": 0,
+  "gpu_kernels_per_step": 3206,
+  "gpu_memcpy_memset_per_step": 1,
+  "gpu_ms_per_step": 23.796223758620656,
+  "cpu_launch_calls_per_step": 3206
+}

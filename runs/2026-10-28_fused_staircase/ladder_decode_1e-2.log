@@ -1,0 +1,17 @@
+host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+
+Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  26%|██▌       | 503/1951 [00:00<00:00, 4969.00it/s]Loading weights:  51%|█████▏    | 1000/1951 [00:00<00:00, 1154.20it/s]Loading weights:  64%|██████▍   | 1249/1951 [00:01<00:00, 1000.22it/s]Loading weights:  76%|███████▌  | 1483/1951 [00:01<00:00, 1194.15it/s]Loading weights: 100%|█████████▉| 1944/1951 [00:01<00:00, 1779.05it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1501.52it/s]
+variant: eager  cache=DynamicCache  compile_requested=False
+PERTURBED 35 matrices (model.language_model.layers.0.self_attn.q_proj.weight .. model.language_model.layers.34.self_attn.q_proj.weight) scale=0.01 relative to each weight's std; shapes {'(2048, 1536)': 28, '(4096, 1536)': 7}
+
+tokens scored         1912
+mean KL(ref||cur)     3.254e-03  nats, over the ref top-100
+top-1 agreement       98.0649 %
+perplexity            292.8009
+top-100 coverage       98.256 %  (current model's mass inside the reference top-k)
+wall                  60.8s
+band v2 verdict       NOT-PASS   (FAIL anchor not measured yet)
+band v1 verdict       FAIL   (2026-10-13 pre-registration)
+wrote out/ladder_decode_1e-2.json

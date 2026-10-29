@@ -1,0 +1,12 @@
+{
+  "trace": "out/trace_A2_eager.json",
+  "decode_steps_found": 31,
+  "decode_steps_analyzed": 29,
+  "cudaLaunchKernel_per_step": 3084,
+  "cuLaunchKernel_per_step": 0,
+  "graph_launch_per_step": 0,
+  "gpu_kernels_per_step": 3084,
+  "gpu_memcpy_memset_per_step": 1,
+  "gpu_ms_per_step": 23.387639758620693,
+  "cpu_launch_calls_per_step": 3084
+}

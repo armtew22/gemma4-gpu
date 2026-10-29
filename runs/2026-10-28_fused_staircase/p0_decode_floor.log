@@ -1,0 +1,24 @@
+01:38:41.920 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+01:38:41.922 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:38:42.412 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+01:38:52.894 Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 485118.42 examples/s]
+01:38:52.927 Generating train split:   0%|          | 0/36718 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 1165761.76 examples/s]
+01:38:52.932 Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 3760/3760 [00:00<00:00, 854542.57 examples/s]
+01:38:53.742 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+01:38:53.745 
+01:39:36.863 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  25%|██▍       | 481/1951 [00:00<00:00, 4808.79it/s]Loading weights:  49%|████▉     | 962/1951 [00:00<00:00, 1192.47it/s]Loading weights:  62%|██████▏   | 1206/1951 [00:01<00:00, 1067.31it/s]Loading weights:  71%|███████   | 1378/1951 [00:01<00:00, 1126.51it/s]Loading weights:  97%|█████████▋| 1888/1951 [00:01<00:00, 1833.13it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1570.57it/s]
+01:39:37.368 variant: eager  cache=DynamicCache  compile_requested=False
+01:40:38.592 
+01:40:38.594 tokens scored         1912
+01:40:38.595 mean KL(ref||cur)     0.000e+00  nats, over the ref top-100
+01:40:38.597 top-1 agreement       100.0000 %
+01:40:38.598 perplexity            290.6745
+01:40:38.599 top-100 coverage       98.240 %  (current model's mass inside the reference top-k)
+01:40:38.600 wall                  61.2s
+01:40:38.602 band v2 verdict       PASS   (FAIL anchor not measured yet)
+01:40:38.603 band v1 verdict       PASS   (2026-10-13 pre-registration)
+01:40:38.719 wrote out/drift_decode_eager_floor.json
+01:40:38.722 
+01:40:38.724 EXPECT no-drift  KL 0.000e+00 <= 1e-05   PASS
+01:40:38.727 EXPECT no-drift  top-1 100.0000% >= 99.99%   PASS
+01:40:38.728 EXPECT no-drift  PASS - reports zero drift when nothing changed

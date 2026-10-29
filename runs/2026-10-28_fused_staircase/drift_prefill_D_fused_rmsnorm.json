@@ -1,0 +1,139 @@
+{
+  "mode": "prefill",
+  "variant": "fused_rmsnorm",
+  "variant_meta": {
+    "cache": {
+      "class": "DynamicCache",
+      "source": "generate() default: cache_implementation is None -> DynamicCache(config=text_config)",
+      "compileable": false,
+      "num_cache_layers": 15,
+      "layer_classes": {
+        "DynamicSlidingWindowLayer": 12,
+        "DynamicLayer": 3
+      },
+      "layer_max_cache_len": {
+        "DynamicSlidingWindowLayer": [
+          null
+        ],
+        "DynamicLayer": [
+          null
+        ]
+      }
+    },
+    "max_cache_len": null,
+    "compile": {
+      "requested": false,
+      "disable_compile": null,
+      "reason": "generate() auto-compiles only with a compileable cache; DynamicCache is not compileable",
+      "config": null,
+      "engaged": null
+    },
+    "kernel": {
+      "name": "fused RMSNorm (Triton, one program per row)",
+      "file": "kernels/rmsnorm.py",
+      "replaces": "Gemma4RMSNorm.forward on the text decoder"
+    },
+    "variant": "fused_rmsnorm",
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.19.0",
+    "num_hidden_layers": 35,
+    "generate_kwargs": {},
+    "generate_only": false,
+    "patch": {
+      "replaced_total": 242,
+      "replaced": {
+        "Gemma4RMSNorm N=256 with_scale=True": 41,
+        "Gemma4RMSNorm N=256 with_scale=False": 12,
+        "Gemma4RMSNorm N=1536 with_scale=True": 176,
+        "Gemma4RMSNorm N=512 with_scale=True": 10,
+        "Gemma4RMSNorm N=512 with_scale=False": 3
+      },
+      "left_on_eager": {
+        "Gemma4RMSNorm (vision/audio): not on the text decode path, untested inputs": 222,
+        "LayerNorm: not an RMSNorm": 2
+      },
+      "build_check": {
+        "max_abs_error_vs_reference": {
+          "Gemma4RMSNorm N=256 with_scale=True": 0.0,
+          "Gemma4RMSNorm N=256 with_scale=False": 0.0,
+          "Gemma4RMSNorm N=1536 with_scale=True": 0.0,
+          "Gemma4RMSNorm N=512 with_scale=True": 0.0,
+          "Gemma4RMSNorm N=512 with_scale=False": 0.0
+        }
+      }
+    }
+  },
+  "host": {
+    "hostname": "566f5112d591",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 9254 24-Core Processor",
+    "vcpu_count": 48,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "595.91.07",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "reference_host": {
+    "hostname": "595bdcd53da5",
+    "platform": "Linux-6.14.0-33-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "vcpu_count": 128,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "570.195.03",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "settings": {
+    "dataset": "Salesforce/wikitext/wikitext-2-raw-v1:test",
+    "join": "\\n\\n",
+    "window": 1024,
+    "num_windows": 48,
+    "tokens_requested": 50000,
+    "add_bos": true,
+    "bos_token_id": 2,
+    "corpus_tokens_available": 292282,
+    "eval_set_sha256": "b4e6ebfe8865633bb16959486ea39bc0aff8d703c9d8ce5a668a245e25db6409",
+    "mode": "prefill",
+    "topk": 100,
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16"
+  },
+  "reference_path": "ref_50k_bos.pt",
+  "wall_seconds": 8.49747596308589,
+  "tokens_scored": 49152,
+  "mean_kl": 0.002432838236927637,
+  "top1_agreement_pct": 98.309326171875,
+  "perplexity": 184.74746704101562,
+  "mean_nll": 5.21898973484834,
+  "topk_coverage_pct": 99.0631528198719,
+  "band_v1": {
+    "pass_kl_below": 0.0001,
+    "pass_top1_at_least": 99.5,
+    "fail_kl_at_least": 0.00089,
+    "fail_top1_at_most": 98.9,
+    "verdict": "FAIL"
+  },
+  "band_v2": {
+    "pass_kl_below": 0.0027,
+    "pass_top1_at_least": 98.0,
+    "fail_kl_at_least": 0.0023,
+    "fail_top1_at_most": 98.4,
+    "fail_anchor": {
+      "target": "all-q-proj",
+      "scale": 0.001
+    },
+    "fail_anchor_measured": true,
+    "verdict": "FAIL"
+  },
+  "band_default": "v2"
+}

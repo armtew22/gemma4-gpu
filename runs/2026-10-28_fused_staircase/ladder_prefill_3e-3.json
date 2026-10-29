@@ -1,0 +1,124 @@
+{
+  "mode": "prefill",
+  "variant": "eager",
+  "variant_meta": {
+    "cache": {
+      "class": "DynamicCache",
+      "source": "generate() default: cache_implementation is None -> DynamicCache(config=text_config)",
+      "compileable": false,
+      "num_cache_layers": 15,
+      "layer_classes": {
+        "DynamicSlidingWindowLayer": 12,
+        "DynamicLayer": 3
+      },
+      "layer_max_cache_len": {
+        "DynamicSlidingWindowLayer": [
+          null
+        ],
+        "DynamicLayer": [
+          null
+        ]
+      }
+    },
+    "max_cache_len": null,
+    "compile": {
+      "requested": false,
+      "disable_compile": null,
+      "reason": "generate() auto-compiles only with a compileable cache; DynamicCache is not compileable",
+      "config": null,
+      "engaged": null
+    },
+    "variant": "eager",
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.19.0",
+    "num_hidden_layers": 35,
+    "generate_kwargs": {},
+    "generate_only": false,
+    "perturb": {
+      "regex": "language_model\\.layers\\.\\d+\\.self_attn\\.q_proj\\.weight$",
+      "scale": 0.003,
+      "seed": 0,
+      "params": 35,
+      "first": "model.language_model.layers.0.self_attn.q_proj.weight",
+      "last": "model.language_model.layers.34.self_attn.q_proj.weight",
+      "shapes": {
+        "(2048, 1536)": 28,
+        "(4096, 1536)": 7
+      },
+      "preset": null
+    }
+  },
+  "host": {
+    "hostname": "566f5112d591",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 9254 24-Core Processor",
+    "vcpu_count": 48,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "595.91.07",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "reference_host": {
+    "hostname": "595bdcd53da5",
+    "platform": "Linux-6.14.0-33-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "vcpu_count": 128,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "570.195.03",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "settings": {
+    "dataset": "Salesforce/wikitext/wikitext-2-raw-v1:test",
+    "join": "\\n\\n",
+    "window": 1024,
+    "num_windows": 48,
+    "tokens_requested": 50000,
+    "add_bos": true,
+    "bos_token_id": 2,
+    "corpus_tokens_available": 292282,
+    "eval_set_sha256": "b4e6ebfe8865633bb16959486ea39bc0aff8d703c9d8ce5a668a245e25db6409",
+    "mode": "prefill",
+    "topk": 100,
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16"
+  },
+  "reference_path": "ref_50k_bos.pt",
+  "wall_seconds": 9.279699767008424,
+  "tokens_scored": 49152,
+  "mean_kl": 0.0024094284029464084,
+  "top1_agreement_pct": 98.150634765625,
+  "perplexity": 184.52542114257812,
+  "mean_nll": 5.217787229766448,
+  "topk_coverage_pct": 99.06277343009909,
+  "band_v1": {
+    "pass_kl_below": 0.0001,
+    "pass_top1_at_least": 99.5,
+    "fail_kl_at_least": 0.00089,
+    "fail_top1_at_most": 98.9,
+    "verdict": "FAIL"
+  },
+  "band_v2": {
+    "pass_kl_below": 0.0027,
+    "pass_top1_at_least": 98.0,
+    "fail_kl_at_least": null,
+    "fail_top1_at_most": null,
+    "fail_anchor": {
+      "target": "all-q-proj",
+      "scale": 0.001
+    },
+    "fail_anchor_measured": false,
+    "verdict": "PASS"
+  },
+  "band_default": "v2"
+}

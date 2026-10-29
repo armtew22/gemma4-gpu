@@ -1,0 +1,18 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+eval set: 48 x 1024 tokens, bos=yes, sha256=b4e6ebfe8865633b
+
+Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  25%|██▍       | 483/1951 [00:00<00:00, 4827.39it/s]Loading weights:  50%|████▉     | 966/1951 [00:00<00:00, 1147.85it/s]Loading weights:  62%|██████▏   | 1209/1951 [00:01<00:00, 1037.50it/s]Loading weights:  71%|███████   | 1380/1951 [00:01<00:00, 1087.31it/s]Loading weights:  94%|█████████▍| 1833/1951 [00:01<00:00, 1681.30it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1504.37it/s]
+variant: eager  cache=DynamicCache  compile_requested=False
+PERTURBED 35 matrices (model.language_model.layers.0.self_attn.q_proj.weight .. model.language_model.layers.34.self_attn.q_proj.weight) scale=0.003 relative to each weight's std; shapes {'(2048, 1536)': 28, '(4096, 1536)': 7}
+
+tokens scored         49152
+mean KL(ref||cur)     2.409e-03  nats, over the ref top-100
+top-1 agreement       98.1506 %
+perplexity            184.5254
+top-100 coverage       99.063 %  (current model's mass inside the reference top-k)
+wall                  9.3s
+band v2 verdict       PASS   (FAIL anchor not measured yet)
+band v1 verdict       FAIL   (2026-10-13 pre-registration)
+wrote out/ladder_prefill_3e-3.json

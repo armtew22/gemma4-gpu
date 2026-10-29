@@ -1,0 +1,38 @@
+[01:38:38] START p0_decode_floor: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --reference ref_decode_eager.pt --expect no-drift --out out/drift_decode_eager_floor.json
+[01:40:39] END   p0_decode_floor rc=0
+[01:40:39] START p1_anchor_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb-preset v2-anchor --reference ref_decode_eager.pt --out out/drift_anchor_decode.json
+[01:41:52] END   p1_anchor_decode rc=0
+[01:41:52] START p1_anchor_prefill: /opt/venv/bin/python eval_drift.py --variant eager --perturb-preset v2-anchor --reference ref_50k_bos.pt --out out/drift_anchor_prefill.json
+[01:42:14] END   p1_anchor_prefill rc=0
+[01:42:14] band v2 FAIL: decode KL>=0.0021 or top-1<=98.3 | prefill KL>=0.0023 or top-1<=98.4
+[01:42:14] START p2_kernel_tests: /opt/venv/bin/python tests/test_rmsnorm.py
+[01:42:20] END   p2_kernel_tests rc=0
+[01:42:20] START A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A_eager.json
+[01:42:56] END   A_bench rc=0
+[01:42:56] START A_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A_eager.json --out out/profile_A_eager.json
+[01:43:29] END   A_profile rc=0
+[01:43:32] START D_bench: /opt/venv/bin/python benchmark.py --variant fused_rmsnorm --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_D_fused_rmsnorm.json
+[01:44:05] END   D_bench rc=0
+[01:44:05] START D_profile: /opt/venv/bin/python profile_decode.py --variant fused_rmsnorm --prompt-len 128 --max-cache-len 256 --trace out/trace_D_fused_rmsnorm.json --out out/profile_D_fused_rmsnorm.json
+[01:44:31] END   D_profile rc=0
+[01:44:33] START D_drift_prefill: /opt/venv/bin/python eval_drift.py --variant fused_rmsnorm --reference ref_50k_bos.pt --expect pass-band --band-v2-fail-kl 0.0023 --band-v2-fail-top1 98.4 --out out/drift_prefill_D_fused_rmsnorm.json
+[01:44:53] END   D_drift_prefill rc=1
+[01:44:53] START D_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant fused_rmsnorm --reference ref_decode_eager.pt --expect pass-band --band-v2-fail-kl 0.0021 --band-v2-fail-top1 98.3 --out out/drift_decode_D_fused_rmsnorm.json
+[01:45:57] END   D_drift_decode rc=0
+[01:45:57] START B_bench: /opt/venv/bin/python benchmark.py --variant static --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_B_static.json
+[01:46:34] END   B_bench rc=0
+[01:46:34] START B_profile: /opt/venv/bin/python profile_decode.py --variant static --prompt-len 128 --max-cache-len 256 --trace out/trace_B_static.json --out out/profile_B_static.json
+[01:47:08] END   B_profile rc=0
+[01:47:12] START B_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant static --reference ref_decode_eager.pt --expect pass-band --band-v2-fail-kl 0.0021 --band-v2-fail-top1 98.3 --out out/drift_decode_B_static.json
+[01:48:27] END   B_drift_decode rc=0
+[01:48:27] START C_bench: /opt/venv/bin/python benchmark.py --variant compile --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_C_compile.json
+[01:50:45] END   C_bench rc=0
+[01:50:45] START C_profile: /opt/venv/bin/python profile_decode.py --variant compile --prompt-len 128 --max-cache-len 256 --trace out/trace_C_compile.json --out out/profile_C_compile.json
+[01:52:36] END   C_profile rc=0
+[01:52:39] START C_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant compile --reference ref_decode_eager.pt --expect pass-band --band-v2-fail-kl 0.0021 --band-v2-fail-top1 98.3 --out out/drift_decode_C_compile.json
+[01:55:41] END   C_drift_decode rc=0
+[01:55:41] START A2_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A2_eager.json
+[01:56:16] END   A2_bench rc=0
+[01:56:16] START A2_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A2_eager.json --out out/profile_A2_eager.json
+[01:56:49] END   A2_profile rc=0
+[01:56:52] ALL DONE

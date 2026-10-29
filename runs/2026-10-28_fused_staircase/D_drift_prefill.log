@@ -1,0 +1,22 @@
+01:44:35.902 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+01:44:35.904 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:44:38.535 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+01:44:41.170 eval set: 48 x 1024 tokens, bos=yes, sha256=b4e6ebfe8865633b
+01:44:41.172 
+01:44:43.139 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  23%|██▎       | 449/1951 [00:00<00:00, 4463.24it/s]Loading weights:  46%|████▌     | 896/1951 [00:00<00:00, 1085.82it/s]Loading weights:  58%|█████▊    | 1122/1951 [00:00<00:00, 1067.96it/s]Loading weights:  66%|██████▌   | 1292/1951 [00:01<00:00, 1020.68it/s]Loading weights:  88%|████████▊ | 1726/1951 [00:01<00:00, 1591.37it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1507.28it/s]
+01:44:43.779 variant: fused_rmsnorm  cache=DynamicCache  compile_requested=False
+01:44:52.276 
+01:44:52.278 tokens scored         49152
+01:44:52.279 mean KL(ref||cur)     2.433e-03  nats, over the ref top-100
+01:44:52.282 top-1 agreement       98.3093 %
+01:44:52.283 perplexity            184.7475
+01:44:52.284 top-100 coverage       99.063 %  (current model's mass inside the reference top-k)
+01:44:52.286 wall                  8.5s
+01:44:52.287 band v2 verdict       FAIL
+01:44:52.288 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+01:44:52.376 wrote out/drift_prefill_D_fused_rmsnorm.json
+01:44:52.377 
+01:44:52.378 PASS-BAND v2  PASS        KL < 2.7e-03 and top-1 >= 98.0%
+01:44:52.380 PASS-BAND v2  FAIL        KL >= 2.3e-03 or top-1 <= 98.4%   (negative control)
+01:44:52.382 PASS-BAND v2  INVESTIGATE anything in between
+01:44:52.383 PASS-BAND v2  measured    KL 2.433e-03, top-1 98.3093%  ->  FAIL

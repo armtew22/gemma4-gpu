@@ -1,6 +1,7 @@
 #!/bin/bash
-# Next pod session: band v2 FAIL anchor first, then A eager -> D fused_rmsnorm -> A eager.
-# Written 2026-10-28, NOT yet run. Every step is its own python process.
+# Band v2 FAIL anchor first, then the full staircase:
+# A eager -> D fused_rmsnorm -> B static -> C compile -> A eager.
+# Every step is its own python process. Settings match the 2026-10-19 staircase.
 #
 # Expects in /root: the repo files (variants.py, benchmark.py, profile_decode.py,
 # eval_drift.py, hostinfo.py, kernels/, tests/), ref_50k_bos.pt, ref_decode_eager.pt, and
@@ -54,22 +55,27 @@ echo "{\"decode\": [$DEC_KL, $DEC_T1], \"prefill\": [$PRE_KL, $PRE_T1]}" > out/b
 # 2. Kernel correctness. Nothing measures D unless this passes.
 run p2_kernel_tests $PY tests/test_rmsnorm.py || stop "kernel tests failed - D not measured"
 
-# 3. A eager -> D fused_rmsnorm -> A eager, each step in a fresh process.
-for pair in A:eager D:fused_rmsnorm A2:eager; do
+# 3. A eager -> D fused_rmsnorm -> B static -> C compile -> A eager, each in a fresh process.
+for pair in A:eager D:fused_rmsnorm B:static C:compile A2:eager; do
   tag=${pair%%:*}; v=${pair##*:}
+  if [ "$v" = "compile" ]; then export TORCH_LOGS="graph_breaks,recompiles"; else unset TORCH_LOGS; fi
   run ${tag}_bench $PY benchmark.py --variant $v --prompt-lens 128 --batch-sizes 1 \
     --decode-tokens 64 --max-cache-len 256 --out out/bench_${tag}_${v}.json
   run ${tag}_profile $PY profile_decode.py --variant $v --prompt-len 128 --max-cache-len 256 \
     --trace out/trace_${tag}_${v}.json --out out/profile_${tag}_${v}.json
   [ -f out/trace_${tag}_${v}.json ] && \
     $PY runs/2026-10-19_staircase/trace_counts.py out/trace_${tag}_${v}.json 2 > out/counts_${tag}_${v}.json
-  if [ "$v" != "eager" ]; then
+  # prefill-mode drift only where it applies: static and compile exist only inside generate()
+  if [ "$v" = "fused_rmsnorm" ]; then
     run ${tag}_drift_prefill $PY eval_drift.py --variant $v --reference ref_50k_bos.pt \
       --expect pass-band --band-v2-fail-kl $PRE_KL --band-v2-fail-top1 $PRE_T1 \
       --out out/drift_prefill_${tag}_${v}.json
+  fi
+  if [ "$v" != "eager" ]; then
     run ${tag}_drift_decode $PY eval_drift.py --mode decode --variant $v --reference ref_decode_eager.pt \
       --expect pass-band --band-v2-fail-kl $DEC_KL --band-v2-fail-top1 $DEC_T1 \
       --out out/drift_decode_${tag}_${v}.json
   fi
 done
+unset TORCH_LOGS
 log "ALL DONE"; touch out/DONE

@@ -1,0 +1,9 @@
+01:55:48.718 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  27%|██▋       | 521/1951 [00:00<00:00, 5188.85it/s]Loading weights:  53%|█████▎    | 1040/1951 [00:00<00:00, 1138.25it/s]Loading weights:  66%|██████▋   | 1297/1951 [00:01<00:00, 1028.28it/s]Loading weights:  91%|█████████ | 1772/1951 [00:01<00:00, 1562.72it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1549.07it/s]
+01:55:49.148 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+01:55:49.150 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:55:49.153 torch=2.8.0+cu128  weights=10.21 GB
+01:55:49.154 variant=eager  max_cache_len=None  compile_requested=False
+01:55:49.155 
+01:56:15.732 prompt=  128 batch= 1  ttft=   39.6ms  prefill=  3229.2 tok/s  decode=  32.5 tok/s/seq     32.5 tok/s total  peak=10.24 GB
+01:56:15.734 
+01:56:15.736 wrote out/bench_A2_eager.json

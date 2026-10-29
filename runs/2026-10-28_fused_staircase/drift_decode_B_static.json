@@ -1,0 +1,125 @@
+{
+  "mode": "decode",
+  "variant": "static",
+  "variant_meta": {
+    "cache": {
+      "class": "StaticCache",
+      "source": "StaticCache built with generate()'s own arguments (_prepare_static_cache: config=text_config, max_cache_len, offloading=False)",
+      "compileable": true,
+      "num_cache_layers": 15,
+      "layer_classes": {
+        "StaticSlidingWindowLayer": 12,
+        "StaticLayer": 3
+      },
+      "layer_max_cache_len": {
+        "StaticSlidingWindowLayer": [
+          384
+        ],
+        "StaticLayer": [
+          384
+        ]
+      }
+    },
+    "max_cache_len": 384,
+    "compile": {
+      "requested": false,
+      "disable_compile": true,
+      "reason": "disable_compile=True overrides generate()'s auto-compile for compileable caches",
+      "config": null,
+      "engaged": null
+    },
+    "variant": "static",
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.19.0",
+    "num_hidden_layers": 35,
+    "generate_kwargs": {
+      "cache_implementation": "static",
+      "max_cache_len": 384,
+      "disable_compile": true
+    },
+    "generate_only": true
+  },
+  "host": {
+    "hostname": "566f5112d591",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 9254 24-Core Processor",
+    "vcpu_count": 48,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "595.91.07",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "reference_host": {
+    "hostname": "b1c89248f723",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "vcpu_count": 128,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "595.91.07",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "settings": {
+    "mode": "decode",
+    "dataset": "Salesforce/wikitext/wikitext-2-raw-v1:test",
+    "join": "\\n\\n",
+    "decode_window_len": 256,
+    "decode_windows": 8,
+    "decode_prompt_len": 16,
+    "prompt_tokens_with_bos": 17,
+    "generated_per_window": 240,
+    "scored_per_window": 239,
+    "scored_positions": 1912,
+    "unscored": "step 0 of each window - its logits come from the prefill forward pass",
+    "add_bos": true,
+    "bos_token_id": 2,
+    "corpus_tokens_available": 292282,
+    "eval_set_sha256": "3405f78b69903bfa32ff747af55145d7bcd0f7a3df830815c7f2a1a5a351e8b6",
+    "topk": 100,
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16",
+    "processor_order": [
+      "TeacherForcingRecorder",
+      "MinLengthLogitsProcessor",
+      "MinNewTokensLengthLogitsProcessor"
+    ]
+  },
+  "reference_path": "ref_decode_eager.pt",
+  "wall_seconds": 63.744249286013655,
+  "tokens_scored": 1912,
+  "mean_kl": 0.001738178804828532,
+  "top1_agreement_pct": 98.7970711297071,
+  "perplexity": 290.2314147949219,
+  "mean_nll": 5.670678813088389,
+  "topk_coverage_pct": 98.24200235151346,
+  "band_v1": {
+    "pass_kl_below": 0.0001,
+    "pass_top1_at_least": 99.5,
+    "fail_kl_at_least": 0.00089,
+    "fail_top1_at_most": 98.9,
+    "verdict": "FAIL"
+  },
+  "band_v2": {
+    "pass_kl_below": 0.0027,
+    "pass_top1_at_least": 98.0,
+    "fail_kl_at_least": 0.0021,
+    "fail_top1_at_most": 98.3,
+    "fail_anchor": {
+      "target": "all-q-proj",
+      "scale": 0.001
+    },
+    "fail_anchor_measured": true,
+    "verdict": "PASS"
+  },
+  "band_default": "v2"
+}

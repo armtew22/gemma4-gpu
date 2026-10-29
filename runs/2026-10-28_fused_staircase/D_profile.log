@@ -1,0 +1,50 @@
+01:44:12.792 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  22%|██▏       | 436/1951 [00:00<00:00, 4300.01it/s]Loading weights:  44%|████▍     | 867/1951 [00:00<00:01, 1072.05it/s]Loading weights:  56%|█████▌    | 1086/1951 [00:00<00:00, 1069.60it/s]Loading weights:  64%|██████▍   | 1254/1951 [00:01<00:00, 969.01it/s] Loading weights:  78%|███████▊  | 1523/1951 [00:01<00:00, 1259.32it/s]Loading weights:  99%|█████████▉| 1932/1951 [00:01<00:00, 1808.79it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1440.22it/s]
+01:44:13.545 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+01:44:13.547 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+01:44:13.550 torch=2.8.0+cu128  prompt=128  decode_tokens=32
+01:44:13.552 variant=fused_rmsnorm  max_cache_len=None  compile_requested=False
+01:44:13.553 
+01:44:25.559 wall clock     27.02 ms per decode step   (37.0 tok/s)
+01:44:25.562 
+01:44:30.458 forwards seen: 32  (1 prefill 'gen_fwd_000' + 31 decode)
+01:44:30.461 analyzed 29 decode steps, skipping the first 2
+01:44:30.464 
+01:44:30.466 per decode step, averaged
+01:44:30.469   CUDA kernels launched     1179.0
+01:44:30.472   GPU kernel time            20.27 ms
+01:44:30.474   wall time                  27.02 ms
+01:44:30.477   GPU busy                    75.0 %
+01:44:30.480   GPU idle                    25.0 %
+01:44:30.481 
+01:44:30.484 category                     ms/step    share   kernels
+01:44:30.486 -------------------------------------------------------
+01:44:30.487 matmul/gemm                   18.468    91.1%     277.0
+01:44:30.488 elementwise/activation         0.987     4.9%     594.0
+01:44:30.490 attention                      0.442     2.2%      63.0
+01:44:30.491 norm                           0.370     1.8%     242.0
+01:44:30.493 memory copies                  0.004     0.0%       3.0
+01:44:30.494 
+01:44:30.495 top 15 kernels by total time (per step)
+01:44:30.496   ms/step   calls    avg us  name
+01:44:30.498 ----------------------------------------------------------------------------------------------------
+01:44:30.499    13.852   142.0      97.5  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+01:44:30.502     4.417   100.0      44.2  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+01:44:30.503     0.370   242.0       1.5  rmsnorm_fwd_kernel
+01:44:30.504     0.231   107.0       2.2  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+01:44:30.506     0.199    35.0       5.7  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+01:44:30.507     0.197   156.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+01:44:30.508     0.191    28.0       6.8  void pytorch_flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<2
+01:44:30.511     0.155     7.0      22.2  fmha_cutlassF_bf16_aligned_32x128_gmem_sm80(PyTorchMemEffAttention::At
+01:44:30.512     0.125   100.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu
+01:44:30.513     0.102    70.0       1.5  void at::native::vectorized_elementwise_kernel<4, at::native::GeluCUDA
+01:44:30.515     0.100    35.0       2.9  void at::native::(anonymous namespace)::CatArrayBatchedCopy<at::native
+01:44:30.516     0.096    28.0       3.4  void pytorch_flash::flash_fwd_splitkv_combine_kernel<Flash_fwd_kernel_
+01:44:30.517     0.085    45.0       1.9  void at::native::(anonymous namespace)::CatArrayBatchedCopy_alignedK_c
+01:44:30.518     0.078    35.0       2.2  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+01:44:30.519     0.019    15.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::neg_kern
+01:44:30.520 
+01:44:30.521 VERDICT  GPU busy 75.0%  ->  mixed
+01:44:30.522 thresholds: busy >= 80% memory/compute-bound | < 60% overhead-bound | 60-80% mixed
+01:44:30.523 
+01:44:30.524 trace written to out/trace_D_fused_rmsnorm.json - open in ui.perfetto.dev and look at the gaps between kernels by eye
+01:44:30.525 wrote out/profile_D_fused_rmsnorm.json
