@@ -596,15 +596,17 @@ kernel-path noise.
 | verdict | rule | source |
 | --- | --- | --- |
 | PASS | KL < 2.7e-3 **and** top-1 ≥ 98.0% | benign noise: 1.5 × decode-vs-prefill KL (1.797e-3); floor below its 98.33% |
-| FAIL | anchor-derived — **not yet measured** | `--perturb-preset v2-anchor`: 1e-3 noise on all 35 q_proj |
+| FAIL | anchor-derived — **measured 2026-10-28, unusable** (below the PASS ceiling) | `--perturb-preset v2-anchor`: 1e-3 noise on all 35 q_proj |
 | INVESTIGATE | in between | — |
 
 - **The PASS ceiling uses only decode vs prefill**, the one change benign by construction
   (same weights, two standard eager kernel paths). Static and compile are deliberately
   excluded: they are what the band judges, so letting them set its ceiling would be circular.
 - **The FAIL anchor** keeps v1's per-matrix noise but applies it to every layer instead of one.
-  1e-2 was considered and rejected: KL grows roughly with the square of the noise, so it would
-  likely destroy the model, and a FAIL line anchored there would almost never trigger.
+  ~~1e-2 was considered and rejected: KL grows roughly with the square of the noise, so it would
+  likely destroy the model, and a FAIL line anchored there would almost never trigger.~~
+  **Wrong** — measured 2026-10-28, 1e-2 on all 35 q_proj reaches only KL 3.25e-3. The estimate
+  assumed damage adds up across layers; going from one layer to 35 raised KL only 2.4×.
 - **Until the anchor is measured, band v2 reports only PASS / NOT-PASS.** It is measured on
   the next pod, before any variant is judged. The rule is fixed now: FAIL KL = anchor KL
   rounded *down* to 2 significant figures, FAIL top-1 = anchor top-1 rounded *up* to 0.1, so
@@ -617,14 +619,44 @@ band v2 would read static, compile and decode-vs-prefill as PASS — and the v1 
 which is the point. Those v2 readings are post hoc and are not pre-registered evidence about
 static or compile.
 
-## Fused RMSNorm (2026-10-28, built, not yet run on a GPU)
+### The anchor failed (2026-10-28)
+
+Measured before any variant was judged, as planned: the v2 anchor reads **KL 2.152e-3 / top-1
+98.22% in decode mode** and **2.348e-3 / 98.31% in prefill mode**. The pre-stated rounding rule
+then gives FAIL at KL ≥ 2.1e-3 (decode) and 2.3e-3 (prefill) — *below* the 2.7e-3 PASS ceiling.
+The bands overlap, so **band v2 has no usable FAIL line and its verdicts from that run carry no
+weight.** The PASS rule on its own is unaffected.
+
+A follow-up ladder on the same pod, all 35 q_proj:
+
+| noise | decode KL / top-1 | prefill KL / top-1 |
+| --- | --- | --- |
+| 1e-3 | 2.152e-3 / 98.22% | 2.348e-3 / 98.31% |
+| 3e-3 | 2.489e-3 / 98.69% | 2.409e-3 / 98.15% |
+| 1e-2 | 3.254e-3 / 98.07% | 3.101e-3 / 98.08% |
+
+Ten times the noise raises KL only ~50%. Two likely reasons:
+
+- **A floor near KL 2e-3.** Every numerical change measured so far lands at 1.7–2.4e-3:
+  decode vs prefill, static, compile, fused RMSNorm, and small weight noise. Eager vs eager is
+  exactly 0, so this is the model's sensitivity, not the harness — consistent with any bf16
+  rounding difference being amplified through 35 layers until it saturates. A single bf16
+  rounding step is ~4e-3 relative, larger than the 1e-3 anchor noise itself.
+- **q_proj is a poor target.** Gemma 4 applies `q_norm` directly to the q_proj output, which
+  normalizes much of the injected noise away. (Hypothesis, consistent with the ladder.)
+
+A usable FAIL anchor needs a target that is not normalized away — o_proj, down_proj, or all
+linear layers — and a new `--perturb-target`. **Choosing it is an open decision, and any anchor
+chosen now is post hoc**: the variant results below were already seen.
+
+## Fused RMSNorm (2026-10-28)
 
 RMSNorm is the single largest source of decode launches: 242 calls per step at ~8 eager
 kernels each, roughly 1,900 of the 3,085. `fused_rmsnorm` replaces each call with one Triton
 kernel (`kernels/rmsnorm.py`). The kernel body was written by hand, one commented step at a
-time, and has not yet run on a GPU. A line-for-line PyTorch emulation of it matches the real
-module bit for bit on CPU for every shape below, including the 512 masked padding lanes when
-N=1536; on CUDA, expect last-bit differences from `rsqrt` and reduction order.
+time. A line-for-line PyTorch emulation of it matches the real module bit for bit on CPU for
+every shape below, including the 512 masked padding lanes when N=1536. **On the GPU it passed
+all 76 tests and gave a +12.8% decode speedup** — see the raw results below.
 
 **Gemma 4's RMSNorm, read from transformers 5.19.0** — one class, `Gemma4RMSNorm`:
 
@@ -669,6 +701,49 @@ and microbenchmarks it.
 4. A eager → D fused_rmsnorm → A eager, each step in a fresh process: benchmark, profile
    (kernels/step, launches/step, busy %), and for D, drift in prefill and decode mode with
    band v2 verdicts.
+
+## Fused RMSNorm staircase — raw results (2026-10-28)
+
+Raw numbers; the full writeup is separate. One L4 pod, one session, every step in a fresh
+process: AMD EPYC 9254 (48 visible cores, 6 allocated), driver 595.91.07, torch 2.8.0+cu128,
+transformers 5.19.0 (pinned), Triton 3.4.0. Batch 1, 128-token prompt, same settings as the
+2026-10-19 staircase. Files in `runs/2026-10-28_fused_staircase/`.
+
+**Kernel tests:** 76/76 passed. bf16 — the model's dtype — is **100% bit-exact** with the real
+`Gemma4RMSNorm` in every case except N=512 with weight (≥ 99.95%); worst bf16 error 1.56e-2,
+about one bf16 step. fp32 is 2.5–62% bit-exact, within tolerance: `rsqrt` and reduction order
+differ in the last bits. Microbenchmark per call: 29–35 µs fused vs 47–69 µs eager (1.6–2.0×).
+The build-time check against the reference reported 0.0 error for all five shapes.
+
+| variant | decode tok/s | ms/step | GPU kernels/step | CPU launches/step | GPU busy | prefill KL / top-1 | decode KL / top-1 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A eager | 32.46 | 31.04 | 3,085 | 3,084 | 75.4% | — | — |
+| **D fused_rmsnorm** | **36.63** | **27.02** | **1,179** | **1,178** ᵃ | 75.0% | 2.433e-3 / 98.31% | 1.918e-3 / 98.38% |
+| B static | 31.34 | 31.72 | 3,207 | 3,206 | 75.0% | n/a ᵇ | 1.738e-3 / 98.80% |
+| C compile | 27.90 | 35.59 | 1,936 | 1,931 ᶜ | 61.1% | n/a ᵇ | 1.911e-3 / 98.85% |
+| A eager (repeat) | 32.47 | 30.98 | 3,085 | 3,084 | 75.5% | — | — |
+
+ᵃ 936 `cudaLaunchKernel` + 242 Triton `cuLaunchKernel`. ᵇ Prefill mode refuses generate-only
+variants. ᶜ 1,752 `cudaLaunchKernel` + 179 `cudaGraphLaunch`.
+
+- **Fused RMSNorm is the project's first real speedup: +12.8% decode** (36.63 vs 32.46 tok/s),
+  +12.6% prefill, and time to first token 39.7 → 35.2 ms. CPU launches per step fall 62%
+  (3,084 → 1,178); GPU kernel time falls 23.39 → 20.27 ms. The 471 cast kernels and the 242
+  mean reductions are gone. 1,179 kernels per step is exactly what the per-call count predicted.
+- **The two eager runs agree to 0.03%** on identical GPU work, so the gain is far outside noise.
+- **The gain is capped near 13% here** because this host already kept the GPU 75% busy. On the
+  CPU-bound EPYC 7542 host (41% busy) removing ~1,900 launches should matter more — untested.
+- **Static is 3% slower than eager and compile 14% slower.** Compile shows the same Gemma 4
+  fallback as 2026-10-19 (16 graph-break lines, 17 recompiles, 2 recompile-limit hits).
+- **Static and compile drift reproduce the 2026-10-19 values exactly** (1.7382e-3 / 98.7971%
+  and 1.9109e-3 / 98.8494%) on a different host: the drift measurements are deterministic and
+  portable. The decode reference also passed its floor check on this pod (KL 0, top-1 100%).
+- **No drift verdicts are reported here**: band v1 fails everything, and band v2's FAIL line is
+  unusable (see [The anchor failed](#the-anchor-failed-2026-10-28)). By the v2 PASS rule alone,
+  all four drift results would pass. The fused kernel's model-level KL (1.9–2.4e-3) sits at the
+  same floor as every other numerical change, despite the kernel being bit-exact on random
+  bf16 inputs — consistent with rare last-bit differences being amplified through 35 layers.
+- Cost ~$0.32 (one pod, ~33 min, including the anchor ladder).
 
 ## Model variants
 
@@ -726,8 +801,8 @@ cache name described, now recorded exactly in every results file.
 
 - **Drift for `static` and `compile` needs `--mode decode`.** Prefill mode scores with one
   plain forward pass and still refuses them, since it would run them as eager and report a
-  false PASS. Decode mode (see [Decode mode](#decode-mode)) scores through `generate()`, but
-  has not yet run on a GPU.
+  false PASS. Decode mode (see [Decode mode](#decode-mode)) scores through `generate()`; it was
+  validated on a GPU on 2026-10-19.
 - **One cache length per sweep.** `benchmark.py` defaults to the largest prompt + decode
   length, rounded up to 128, for every config, so the 128-token config decodes against a
   2176-slot cache in the 3 full-attention layers. Isolate it with
@@ -839,37 +914,45 @@ mid-session and was discarded.
 benchmark harness written, hardened against early stopping, and executed; full 3×3 sweep
 collected; real memory bandwidth measured; per-token byte accounting completed and the
 roofline corrected; decode profiled and the time budget fully attributed; 1.76x host
-variance discovered and host identity now recorded in every results file; output-drift
-harness built and validated in both directions, with a 50k-token bf16 reference saved.
+variance discovered and host identity recorded in every results file; output-drift harness
+built and validated in prefill and decode mode; week 3 staircase (static, compile) measured
+twice; fused RMSNorm kernel written by hand, tested and measured.
 
-**Drift baseline:** noise floor KL 0.000, top-1 100%; a deliberately damaged model reads
-KL 8.9e-4, top-1 98.9%. Every optimization is judged between those two.
+**Best result so far:** `fused_rmsnorm` at **36.63 tok/s vs 32.46 eager (+12.8%)** on an
+EPYC 9254 host, with CPU launches per step cut from 3,084 to 1,178. Static (−3%) and compile
+(−14%) are slower than eager on the same host; compile falls back to mostly eager on Gemma 4.
 
-**Baseline:** **17.6–32.4 tok/s** at batch 1 depending on host — not a single number. On the
-fast host (EPYC 9254): 32.4 tok/s, 30.56 ms/step, 76.5% GPU busy, 57% of the 57.3 tok/s
-roofline. Batch-8 aggregate 138.8 tok/s on the slow host.
+**Baseline:** eager decode is **17.6–32.5 tok/s** at batch 1 depending on host — not a single
+number. EPYC 9254: 32.5 tok/s, ~31 ms/step, ~75% GPU busy. EPYC 7542: 17.6–18.6 tok/s, ~57
+ms/step, 41% busy on identical GPU work. Batch-8 aggregate 138.8 tok/s on the slow host.
 
-**Time budget per decode step (fast host):** 18.46 ms GEMV at 94.6% of achievable bandwidth
-(irreducible at bf16), 4.93 ms small kernels, 7.17 ms launch-gap idle. **12.1 ms addressable.**
+**Time budget per decode step (fast host, eager):** 18.46 ms GEMV at 94.6% of achievable
+bandwidth (irreducible at bf16), 4.93 ms small kernels, 7.17 ms launch-gap idle.
 
-**Next (week 3):** run `--variant static`, then `--variant compile`, through `benchmark.py`
-and `profile_decode.py` on one pod in one session → quantized dequant-GEMV Triton kernel. See
-the week 3 plan and Model variants above. Speed is measurable now, and drift for these two
-variants is scored with `eval_drift.py --mode decode` against a decode-mode eager reference,
-once that mode has been validated on a GPU.
+**Drift:** eager vs eager is exactly 0, and every numerical change measured lands at KL
+1.7–2.4e-3. Band v1 fails all of them; band v2's PASS rule (KL < 2.7e-3, top-1 ≥ 98.0%) holds,
+but **band v2 has no usable FAIL line** — its q_proj anchor sits at the same floor.
 
-**Still open:** (a) confirm the CPU-starvation hypothesis by profiling a low-core host;
-(b) extend the batch sweep to 16/32/64, ~10 GB VRAM unused; (c) add the KV cache term to the
-roofline so long-context numbers are honest, now known to cover only 15 cache-owning layers;
-(d) the sustained-load clock hypothesis is now largely superseded by host variance as the
-better explanation, but remains unmeasured; (e) confirm the drift reference is portable to a
-different host class; (f) score the base `gemma-4-E2B` once to explain the high absolute
-perplexity; (g) validate decode mode on a GPU — fresh-process floor, perturbation, prefill
-sanity check — before trusting any `static` or `compile` drift verdict; (h) check whether `profile_decode.py`'s step labels survive `compile`; (i) decide
-whether to run `compile` with `fullgraph=True` so graph breaks fail loudly; (j) record the
-cgroup CPU quota in `hostinfo.py` instead of visible cores; (k) measure the band v2 FAIL
-anchor (`--perturb-preset v2-anchor`) on the next pod, before judging any new variant;
-(l) run `pod/fused_rmsnorm.sh` - the fused RMSNorm kernel is written but untested on a GPU.
+**Next:** (1) choose a FAIL-anchor target that is not normalized away (o_proj, down_proj or all
+linear layers; needs a new `--perturb-target`) and measure it before judging another variant;
+(2) run `fused_rmsnorm` on a CPU-bound host, where the launch savings should matter more;
+(3) the full week 3 writeup and chart; (4) the quantized dequant-GEMV Triton kernel.
+
+**Still open:** (a) CPU starvation — busy% measured 41% on the EPYC 7542 vs ~75% on the EPYC
+9254 on identical GPU work, which supports the mechanism; per-core speed rather than core count
+is the likely variable, unconfirmed while `hostinfo.py` records visible cores; (b) extend the
+batch sweep to 16/32/64, ~10 GB VRAM unused; (c) add the KV cache term to the roofline (15
+cache-owning layers); (d) the sustained-load clock hypothesis, largely superseded by host
+variance; (f) score the base `gemma-4-E2B` once to explain the high absolute perplexity;
+(i) decide whether to run `compile` with `fullgraph=True` so graph breaks fail loudly;
+(j) record the cgroup CPU quota in `hostinfo.py` instead of visible cores; (m) why the fused
+kernel, bit-exact on random inputs, still drifts at the model level.
+
+**Resolved:** (e) both references are portable across pods — prefill on 2026-10-19, decode on
+2026-10-28; (g) decode mode validated on GPU on 2026-10-19; (h) `profile_decode.py`'s step
+labels survive `compile` (all 31 decode steps found, though the hooks add three graph-break
+lines to the profiled run); (k) the v2 anchor was measured and failed; (l) the fused RMSNorm
+pod run is done.
 
 **Measurement standard:** host variance reaches 1.76x, so absolute throughput is meaningless
 without the host. Every before/after must run on one pod in one session. Every results file
@@ -950,19 +1033,24 @@ Kept band v1 intact and added band v2 as the default: PASS from benign decode-vs
 FAIL from a stronger all-layer perturbation that is measured on the next pod before any
 variant is judged. v1 verdicts unchanged.
 
-### 2026-10-28 — fused RMSNorm scaffolding, no GPU
+### 2026-10-28 — fused RMSNorm built and measured
 Read Gemma 4's RMSNorm from source — plain weight rather than `(1 + weight)`, fp32
 throughout, one cast back at the end — and confirmed the 242 norms per decode step one by one
 on the meta model. Built the reference (bit-exact against the real module), the wrapper, the
 76-case GPU test file, the `fused_rmsnorm` variant and the next pod plan. Then wrote the
 kernel body by hand, step by step; its logic, emulated in PyTorch, matches the module bit for
-bit on CPU. Untested on a GPU.
+bit on CPU. That evening's pod run: 76/76 kernel tests passed, and `fused_rmsnorm` gave **+12.8%
+decode** with 62% fewer launches per step — the project's first real speedup. The band v2 FAIL
+anchor, measured first, came out too weak to use: every numerical change lands near KL 2e-3,
+and even 1e-2 noise on q_proj only reaches 3.25e-3. Retracted my earlier argument against 1e-2.
+*Commits: `72ed81e`, `15f2466`, `d19b21e`.*
 
 ### A note on corrections
-Four conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s
-dense roofline, the ~5% noise floor, and defaulting BOS off. The first three are struck
-through in place rather than deleted, with the reason, so the reasoning trail stays
-auditable; the BOS default was caught before it reached a commit. Two were analysis errors
-from reasoning ahead of the measurement, one was insufficient sampling, and one was trusting
-a config file over the model's known behaviour. The pattern holds: every correction came from
-measuring something that had previously been assumed.
+Five conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s
+dense roofline, the ~5% noise floor, defaulting BOS off, and rejecting 1e-2 as a FAIL anchor
+because it would "destroy the model". All but the BOS default are struck through in place
+rather than deleted, with the reason, so the reasoning trail stays auditable; the BOS default
+was caught before it reached a commit. Three were analysis errors from reasoning ahead of the
+measurement, one was insufficient sampling, and one was trusting a config file over the
+model's known behaviour. The pattern holds: every correction came from measuring something
+that had previously been assumed.
