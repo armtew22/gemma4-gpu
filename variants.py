@@ -234,13 +234,41 @@ def _verify_fused(model, shapes):
     return {"max_abs_error_vs_reference": worst}
 
 
-# --- future: "graph" ------------------------------------------------------------------
-# Manual torch.cuda.graph capture of the decode step with a static cache, and NO
-# torch.compile. The point is attribution: "compile" combines kernel fusion with CUDA graphs,
-# and "graph" would isolate how much of the win is launch overhead alone. It needs its own
-# capture per (batch, cache length) and a forward wrapper or decode loop that replays it.
-# Not implemented. Register it below once it exists, and decide whether it belongs in
-# GENERATE_ONLY_VARIANTS.
+def _graph_common(max_cache_len, text_config, fused):
+    # Same StaticCache as "static"; no generate() kwargs because the runner has its own loop.
+    _, meta = _static(max_cache_len, text_config)
+    meta["cache"]["source"] = ("StaticCache built by graph_decode.GraphDecoder with generate()'s "
+                               "own arguments (config=text_config, max_cache_len, offloading=False)")
+    meta["compile"] = {
+        "requested": False,
+        "disable_compile": None,
+        "reason": "no torch.compile: each decode step replays a manually captured CUDA graph",
+        "config": None,
+    }
+    meta["decode"] = {
+        "loop": "graph_decode.GraphDecoder: eager prefill, one CUDA graph replay per decode step",
+        "norms": "fused Triton RMSNorm" if fused else "eager Gemma4RMSNorm",
+    }
+    return {}, meta
+
+
+def _graph(max_cache_len, text_config):
+    return _graph_common(max_cache_len, text_config, fused=True)
+
+
+def _graph_eager(max_cache_len, text_config):
+    return _graph_common(max_cache_len, text_config, fused=False)
+
+
+def wrap_graph(model, max_cache_len, meta):
+    """Capture the decode step and hand back the runner in place of the model."""
+    from graph_decode import GraphDecoder
+
+    runner = GraphDecoder(model, max_cache_len)
+    meta["graph"] = runner.meta
+    return runner
+
+
 
 VARIANTS = {
     "eager": {"builder": _eager, "static_cache": False},
@@ -249,11 +277,16 @@ VARIANTS = {
     # Not generate-only: the norms change in every forward pass, so prefill-mode drift sees it.
     "fused_rmsnorm": {"builder": _fused_rmsnorm, "static_cache": False,
                       "patch": patch_fused_rmsnorm},
+    # Manual CUDA graph decode (graph_decode.py), with and without the fused norms, so the
+    # graph and the fusion can be attributed separately.
+    "graph": {"builder": _graph, "static_cache": True, "patch": patch_fused_rmsnorm,
+              "wrap": wrap_graph},
+    "graph_eager": {"builder": _graph_eager, "static_cache": True, "wrap": wrap_graph},
 }
 
 # Variants whose distinguishing behaviour exists only inside generate(). A tool that scores
 # with a plain forward pass (eval_drift.py) would silently run these as eager.
-GENERATE_ONLY_VARIANTS = frozenset({"static", "compile"})
+GENERATE_ONLY_VARIANTS = frozenset({"static", "compile", "graph", "graph_eager"})
 
 
 def describe(variant, max_cache_len, config):
@@ -296,6 +329,9 @@ def build(variant, max_cache_len=None):
     patch = VARIANTS[variant].get("patch")
     if patch is not None:
         meta["patch"] = patch(model)
+    wrap = VARIANTS[variant].get("wrap")
+    if wrap is not None:
+        model = wrap(model, max_cache_len, meta)
     return model, kwargs, meta
 
 

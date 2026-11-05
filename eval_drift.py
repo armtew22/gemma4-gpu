@@ -390,16 +390,30 @@ def decode_window(model, window_ids, prompt_total, topk, gen_kwargs, gathers=Non
     generated = len(window_ids) - prompt_total
     prompt = torch.tensor([window_ids[:prompt_total]], device=model.device)
     recorder = TeacherForcingRecorder(window_ids, prompt_total, topk, gathers)
-    with _processor_first(model, recorder) as order:
+    if getattr(model, "is_graph_runner", False):
+        # The graph runner's own decode loop builds no logits processors, so the recorder is
+        # the first and only one by construction and sees the raw fp32 logits.
         out = model.generate(
             input_ids=prompt,
             attention_mask=torch.ones_like(prompt),
             max_new_tokens=generated,
             min_new_tokens=generated,
-            # explicit: Gemma 4's shipped generation config has do_sample=True
             do_sample=False,
+            logits_processor=LogitsProcessorList([recorder]),
             **gen_kwargs,
         )
+        order = [type(recorder).__name__]
+    else:
+        with _processor_first(model, recorder) as order:
+            out = model.generate(
+                input_ids=prompt,
+                attention_mask=torch.ones_like(prompt),
+                max_new_tokens=generated,
+                min_new_tokens=generated,
+                # explicit: Gemma 4's shipped generation config has do_sample=True
+                do_sample=False,
+                **gen_kwargs,
+            )
 
     got = out[0, prompt_total:].tolist()
     want = list(window_ids[prompt_total:])
@@ -723,11 +737,11 @@ def main():
         raise SystemExit("pass --save-reference, --reference, or --self-check")
     if args.mode == "prefill" and args.variant in GENERATE_ONLY_VARIANTS:
         raise SystemExit(
-            f"variant {args.variant!r} cannot be scored in prefill mode. Its static cache and "
-            "compiled decode step exist only inside generate(), but prefill mode scores each "
-            "window with one plain forward pass, so the variant would run as plain eager and "
-            "report KL 0 - a false PASS. Use --mode decode, against a decode-mode eager "
-            "reference."
+            f"variant {args.variant!r} cannot be scored in prefill mode. What it changes - a "
+            "static cache, a compiled decode step or a CUDA graph - exists only in the decode "
+            "loop, but prefill mode scores each window with one plain forward pass, so the "
+            "variant would run as plain eager and report KL 0 - a false PASS. Use --mode "
+            "decode, against a decode-mode eager reference."
         )
     if args.prefill_reference and args.mode != "decode":
         raise SystemExit("--prefill-reference is a decode-mode sanity check; add --mode decode")

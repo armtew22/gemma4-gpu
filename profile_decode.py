@@ -205,7 +205,15 @@ def main():
 
     # ---- Measurement 2: profiler ----
     counter = {"n": 0}
-    handles = label_forward_passes(model, counter)
+    if getattr(model, "is_graph_runner", False):
+        # No Python runs during a CUDA graph replay, so forward hooks cannot label decode steps.
+        # The runner labels its own: the prefill, and each replay alone - the counterpart of the
+        # hooked model forward in the other variants, so counts stay comparable.
+        model.annotate = True
+        handles = []
+        counter["n"] = 1 + (args.decode_tokens - 1)
+    else:
+        handles = label_forward_passes(model, counter)
     try:
         with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
             model.generate(
@@ -218,6 +226,8 @@ def main():
     finally:
         for h in handles:
             h.remove()
+        if getattr(model, "is_graph_runner", False):
+            model.annotate = False
     prof.export_chrome_trace(args.trace)
 
     a = analyze_trace(args.trace, args.skip_decode_steps)
