@@ -1,0 +1,17 @@
+02:38:52.622 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+02:38:52.626 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+02:38:55.886 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+02:38:57.957 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+02:38:57.962 
+02:39:01.046 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  16%|█▋        | 318/1951 [00:00<00:00, 3148.48it/s]Loading weights:  32%|███▏      | 633/1951 [00:00<00:00, 2682.78it/s]Loading weights:  46%|████▋     | 906/1951 [00:01<00:01, 577.47it/s] Loading weights:  55%|█████▍    | 1067/1951 [00:01<00:01, 624.60it/s]Loading weights:  61%|██████▏   | 1197/1951 [00:01<00:01, 597.12it/s]Loading weights:  67%|██████▋   | 1299/1951 [00:01<00:01, 595.49it/s]Loading weights:  84%|████████▍ | 1636/1951 [00:01<00:00, 1002.61it/s]Loading weights: 100%|██████████| 1951/1951 [00:02<00:00, 961.29it/s] 
+02:39:02.076 variant: fused_rmsnorm  cache=DynamicCache  compile_requested=False
+02:40:30.193 
+02:40:30.198 tokens scored         1912
+02:40:30.202 mean KL(ref||cur)     1.918e-03  nats, over the ref top-100
+02:40:30.207 top-1 agreement       98.3787 %
+02:40:30.211 perplexity            290.7936
+02:40:30.216 top-100 coverage       98.237 %  (current model's mass inside the reference top-k)
+02:40:30.219 wall                  88.1s
+02:40:30.223 band v2 verdict       PASS   (FAIL anchor not measured yet)
+02:40:30.226 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+02:40:30.361 wrote out/drift_decode_D_fused_rmsnorm.json

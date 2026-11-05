@@ -1,0 +1,50 @@
+02:43:16.507 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  19%|█▉        | 380/1951 [00:00<00:00, 3754.93it/s]Loading weights:  39%|███▊      | 756/1951 [00:00<00:01, 685.11it/s] Loading weights:  48%|████▊     | 937/1951 [00:01<00:01, 757.03it/s]Loading weights:  55%|█████▌    | 1082/1951 [00:01<00:01, 740.33it/s]Loading weights:  61%|██████▏   | 1197/1951 [00:01<00:01, 663.64it/s]Loading weights:  66%|██████▌   | 1288/1951 [00:01<00:01, 634.77it/s]Loading weights:  80%|███████▉  | 1557/1951 [00:01<00:00, 973.89it/s]Loading weights:  95%|█████████▍| 1847/1951 [00:01<00:00, 1341.00it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 976.73it/s] 
+02:43:18.916 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+02:43:18.920 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+02:43:18.924 torch=2.8.0+cu128  prompt=128  decode_tokens=32
+02:43:18.928 variant=graph_eager  max_cache_len=256  compile_requested=False
+02:43:18.931 
+02:43:29.605 wall clock     23.13 ms per decode step   (43.2 tok/s)
+02:43:29.610 
+02:43:37.890 forwards seen: 32  (1 prefill 'gen_fwd_000' + 31 decode)
+02:43:37.895 analyzed 29 decode steps, skipping the first 2
+02:43:37.900 
+02:43:37.905 per decode step, averaged
+02:43:37.909   CUDA kernels launched     3208.0
+02:43:37.914   GPU kernel time            23.47 ms
+02:43:37.918   wall time                  23.13 ms
+02:43:37.922   GPU busy                   101.5 %
+02:43:37.927   GPU idle                    -1.5 %
+02:43:37.932 
+02:43:37.937 category                     ms/step    share   kernels
+02:43:37.941 -------------------------------------------------------
+02:43:37.945 matmul/gemm                   18.449    78.6%     277.0
+02:43:37.949 elementwise/activation         2.834    12.1%    2182.0
+02:43:37.952 memory copies                  1.027     4.4%     472.0
+02:43:37.957 attention                      0.649     2.8%      35.0
+02:43:37.962 other                          0.513     2.2%     242.0
+02:43:37.965 
+02:43:37.969 top 15 kernels by total time (per step)
+02:43:37.973   ms/step   calls    avg us  name
+02:43:37.977 ----------------------------------------------------------------------------------------------------
+02:43:37.981    13.843   142.0      97.5  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+02:43:37.985     4.411   100.0      44.1  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+02:43:37.988     1.025   471.0       2.2  void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k
+02:43:37.992     0.649    35.0      18.5  fmha_cutlassF_bf16_aligned_32x128_gmem_sm80(PyTorchMemEffAttention::At
+02:43:37.996     0.513   242.0       2.1  void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:
+02:43:38.000     0.396   280.0       1.4  void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp
+02:43:38.005     0.295   242.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke
+02:43:38.008     0.281   246.0       1.1  void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16
+02:43:38.012     0.277   242.0       1.1  void at::native::vectorized_elementwise_kernel<4, at::native::(anonymo
+02:43:38.017     0.271   242.0       1.1  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+02:43:38.020     0.230   191.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu
+02:43:38.024     0.203   107.0       1.9  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+02:43:38.028     0.195    35.0       5.6  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+02:43:38.032     0.184   156.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+02:43:38.036     0.119   100.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu
+02:43:38.040 
+02:43:38.045 VERDICT  GPU busy 101.5%  ->  mostly memory/compute-bound: quantization is the lever
+02:43:38.049 thresholds: busy >= 80% memory/compute-bound | < 60% overhead-bound | 60-80% mixed
+02:43:38.053 
+02:43:38.057 trace written to out/trace_GE_graph_eager.json - open in ui.perfetto.dev and look at the gaps between kernels by eye
+02:43:38.061 wrote out/profile_GE_graph_eager.json

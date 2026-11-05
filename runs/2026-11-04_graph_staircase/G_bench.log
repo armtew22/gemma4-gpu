@@ -1,0 +1,9 @@
+02:40:42.720 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  17%|█▋        | 327/1951 [00:00<00:00, 3268.75it/s]Loading weights:  34%|███▎      | 654/1951 [00:00<00:00, 2882.04it/s]Loading weights:  48%|████▊     | 946/1951 [00:01<00:01, 610.18it/s] Loading weights:  57%|█████▋    | 1118/1951 [00:01<00:01, 612.15it/s]Loading weights:  64%|██████▍   | 1247/1951 [00:01<00:01, 585.91it/s]Loading weights:  69%|██████▉   | 1348/1951 [00:01<00:00, 625.87it/s]Loading weights:  84%|████████▍ | 1644/1951 [00:01<00:00, 974.34it/s]Loading weights:  99%|█████████▉| 1935/1951 [00:02<00:00, 1314.37it/s]Loading weights: 100%|██████████| 1951/1951 [00:02<00:00, 945.93it/s] 
+02:40:45.268 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+02:40:45.272 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+02:40:45.276 torch=2.8.0+cu128  weights=10.24 GB
+02:40:45.281 variant=graph  max_cache_len=256  compile_requested=False
+02:40:45.285 
+02:41:03.349 prompt=  128 batch= 1  ttft=   47.9ms  prefill=  2673.2 tok/s  decode=  48.4 tok/s/seq     48.4 tok/s total  peak=10.26 GB
+02:41:03.353 
+02:41:03.358 wrote out/bench_G_graph.json

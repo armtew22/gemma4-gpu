@@ -1,0 +1,31 @@
+[02:32:31] START p0_decode_floor: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --reference ref_decode_eager.pt --expect no-drift --out out/drift_decode_eager_floor.json
+[02:35:02] END   p0_decode_floor rc=0
+[02:35:02] START p1_kernel_tests: /opt/venv/bin/python tests/test_rmsnorm.py
+[02:35:12] END   p1_kernel_tests rc=0
+[02:35:12] START A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A_eager.json
+[02:36:12] END   A_bench rc=0
+[02:36:12] START A_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A_eager.json --out out/profile_A_eager.json
+[02:37:06] END   A_profile rc=0
+[02:37:12] START D_bench: /opt/venv/bin/python benchmark.py --variant fused_rmsnorm --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_D_fused_rmsnorm.json
+[02:38:04] END   D_bench rc=0
+[02:38:04] START D_profile: /opt/venv/bin/python profile_decode.py --variant fused_rmsnorm --prompt-len 128 --max-cache-len 256 --trace out/trace_D_fused_rmsnorm.json --out out/profile_D_fused_rmsnorm.json
+[02:38:45] END   D_profile rc=0
+[02:38:47] START D_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant fused_rmsnorm --reference ref_decode_eager.pt --out out/drift_decode_D_fused_rmsnorm.json
+[02:40:32] END   D_drift_decode rc=0
+[02:40:32] START G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_G_graph.json
+[02:41:04] END   G_bench rc=0
+[02:41:04] START G_profile: /opt/venv/bin/python profile_decode.py --variant graph --prompt-len 128 --max-cache-len 256 --trace out/trace_G_graph.json --out out/profile_G_graph.json
+[02:41:31] END   G_profile rc=0
+[02:41:32] START G_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant graph --reference ref_decode_eager.pt --out out/drift_decode_G_graph.json
+[02:42:31] END   G_drift_decode rc=0
+[02:42:31] START GE_bench: /opt/venv/bin/python benchmark.py --variant graph_eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_GE_graph_eager.json
+[02:43:05] END   GE_bench rc=0
+[02:43:05] START GE_profile: /opt/venv/bin/python profile_decode.py --variant graph_eager --prompt-len 128 --max-cache-len 256 --trace out/trace_GE_graph_eager.json --out out/profile_GE_graph_eager.json
+[02:43:39] END   GE_profile rc=0
+[02:43:41] START GE_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant graph_eager --reference ref_decode_eager.pt --out out/drift_decode_GE_graph_eager.json
+[02:44:45] END   GE_drift_decode rc=0
+[02:44:45] START A2_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A2_eager.json
+[02:45:44] END   A2_bench rc=0
+[02:45:44] START A2_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A2_eager.json --out out/profile_A2_eager.json
+[02:46:39] END   A2_profile rc=0
+[02:46:46] ALL DONE

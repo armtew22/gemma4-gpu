@@ -1,0 +1,9 @@
+02:37:23.287 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  18%|█▊        | 342/1951 [00:00<00:00, 3417.64it/s]Loading weights:  35%|███▌      | 684/1951 [00:00<00:00, 3118.85it/s]Loading weights:  51%|█████     | 998/1951 [00:01<00:01, 769.27it/s] Loading weights:  61%|██████    | 1187/1951 [00:01<00:01, 761.40it/s]Loading weights:  68%|██████▊   | 1331/1951 [00:01<00:00, 778.64it/s]Loading weights:  84%|████████▍ | 1644/1951 [00:01<00:00, 1131.09it/s]Loading weights:  99%|█████████▊| 1926/1951 [00:01<00:00, 1427.77it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1174.09it/s]
+02:37:24.489 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+02:37:24.494 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+02:37:24.498 torch=2.8.0+cu128  weights=10.21 GB
+02:37:24.501 variant=fused_rmsnorm  max_cache_len=None  compile_requested=False
+02:37:24.504 
+02:38:02.996 prompt=  128 batch= 1  ttft=   53.4ms  prefill=  2395.0 tok/s  decode=  22.2 tok/s/seq     22.2 tok/s total  peak=10.24 GB
+02:38:03.000 
+02:38:03.004 wrote out/bench_D_fused_rmsnorm.json

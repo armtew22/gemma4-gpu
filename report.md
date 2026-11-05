@@ -745,6 +745,53 @@ variants. ᶜ 1,752 `cudaLaunchKernel` + 179 `cudaGraphLaunch`.
   bf16 inputs — consistent with rare last-bit differences being amplified through 35 layers.
 - Cost ~$0.32 (one pod, ~33 min, including the anchor ladder).
 
+## CUDA graph staircase — raw results (2026-11-04)
+
+Raw numbers; the full writeup is separate. One L4 pod, one session, every step in a fresh
+process: AMD EPYC 7542 (128 visible cores), the CPU-bound host type, driver 595.91.07, torch
+2.8.0+cu128, transformers 5.19.0 (pinned), Triton 3.4.0. Batch 1, 128-token prompt, 64 decode
+tokens, cache 256, as in the earlier staircases. Plan `pod/graph.sh`, files in
+`runs/2026-11-04_graph_staircase/`. The decode reference passed its floor check on this pod
+(KL 0, top-1 100%); kernel tests 76/76 passed.
+
+| variant | decode tok/s | ms/step | TTFT | GPU kernels/step | CPU launches/step | GPU busy | decode KL / top-1 | capture_ms |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A eager | 18.13 | 53.42 | 62.2 ms | 3,085 | 3,084 | 43.8% | — | — |
+| D fused_rmsnorm | 22.20 | 43.87 | 53.4 ms | 1,179 | 1,178 | 46.2% | 1.918e-3 / 98.38% | — |
+| **G graph** | **48.38** | **20.62** | **47.9 ms** | 1,302 | **1** ᵃ | 100.6% ᵇ | 1.935e-3 / 98.54% | 224 |
+| GE graph_eager | 43.14 | 23.13 | 61.7 ms | 3,208 | **1** ᵃ | 101.5% ᵇ | 1.7382e-3 / 98.7971% | 290 |
+| A eager (repeat) | 18.35 | 53.88 | 62.5 ms | 3,085 | 3,084 | 43.4% | — | — |
+
+ᵃ One `cudaGraphLaunch`, zero kernel launches. ᵇ Kernel time under the profiler (20.74 ms for
+G) slightly exceeds the unprofiled wall clock (20.62 ms): the GPU is saturated, and the excess
+over 100% is the two measurements coming from separate runs. capture_ms is from the benchmark
+build (the profile build measured 235 and 264 ms); capture happens at build time and is not in
+the timings. Both builds passed the self-check: replay, eager step and generate()-style forward
+bit-identical over 4 steps.
+
+- **graph is 2.65× eager** (48.38 vs 18.24 mean tok/s) and **2.18× fused_rmsnorm**. That
+  comparison measures the CUDA graph and the runner's own decode loop together, not the graph
+  alone. At 48.4 tok/s decode is at **84% of the 57.3 tok/s roofline**, and it is now
+  GPU-bound: kernel time equals wall time.
+- **The fused norms still matter under the graph:** graph vs graph_eager is +12.1%, and GPU
+  kernel time drops from 23.47 to 20.74 ms. On this host fused_rmsnorm alone is +21.7% over
+  eager, against +12.8% on the 75%-busy EPYC 9254 host — the CPU-bound case untested on
+  2026-10-28.
+- **The two eager runs agree to 1.2%** in tok/s and to 0.001 ms in GPU kernel time.
+- **graph_eager's drift equals static's exactly** (1.7382e-3 / 98.7971%), as on 2026-10-19 and
+  2026-10-28: the graph and the loop compute the same logits as the static cache does through
+  generate(). graph (1.935e-3 / 98.54%) is fused norms plus a static cache, a combination not
+  measured before, so it has no exact counterpart. No band verdicts: band v2's FAIL line is
+  still unusable.
+- **Predictions in `pod/graph.sh`:**
+  - ~1 CPU launch per step for G and GE: **confirmed**, exactly 1.
+  - GPU kernels per step unchanged from D for G and from eager for GE: **not confirmed**. G is
+    1,302 vs 1,179 and GE 3,208 vs 3,085. Both are +123, the static cache's own kernels:
+    static measured 3,207 on 2026-10-28. The prediction should have been D or eager plus the
+    static cache.
+  - graph_eager drift exactly equal to static's: **confirmed**.
+- Cost ~$0.20 (one pod, ~20 min).
+
 ## Model variants
 
 `variants.py` is the single place every tool builds its model, so a variant name means the
@@ -1044,6 +1091,14 @@ decode** with 62% fewer launches per step — the project's first real speedup. 
 anchor, measured first, came out too weak to use: every numerical change lands near KL 2e-3,
 and even 1e-2 noise on q_proj only reaches 3.25e-3. Retracted my earlier argument against 1e-2.
 *Commits: `72ed81e`, `15f2466`, `d19b21e`.*
+
+### 2026-11-04 — manual CUDA graph built and measured
+Audited every piece of per-step Python state in one Gemma 4 decode step. Two traps would have
+been silent bugs: the mask skipped at q_len 1, and the sliding layers' frozen position int.
+Built `graph_decode.py`, a static-cache decode loop that replays one captured CUDA graph per
+step and refuses to build rather than guess. Same-day pod run on a CPU-bound host: `graph` at
+**48.4 tok/s, 2.65× eager**, one CPU launch per step, 84% of the roofline. graph_eager
+reproduces static's drift exactly. *Commits: `a3e871f`.*
 
 ### A note on corrections
 Five conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s

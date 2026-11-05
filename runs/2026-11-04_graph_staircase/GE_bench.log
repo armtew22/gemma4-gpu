@@ -1,0 +1,9 @@
+02:42:41.690 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  17%|█▋        | 328/1951 [00:00<00:00, 3273.53it/s]Loading weights:  34%|███▎      | 656/1951 [00:00<00:00, 2802.58it/s]Loading weights:  48%|████▊     | 941/1951 [00:01<00:01, 607.51it/s] Loading weights:  57%|█████▋    | 1110/1951 [00:01<00:01, 636.89it/s]Loading weights:  64%|██████▎   | 1241/1951 [00:01<00:01, 619.04it/s]Loading weights:  69%|██████▉   | 1349/1951 [00:01<00:00, 679.75it/s]Loading weights:  87%|████████▋ | 1707/1951 [00:01<00:00, 1140.01it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1004.89it/s]
+02:42:44.198 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+02:42:44.202 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+02:42:44.206 torch=2.8.0+cu128  weights=10.24 GB
+02:42:44.209 variant=graph_eager  max_cache_len=256  compile_requested=False
+02:42:44.213 
+02:43:04.639 prompt=  128 batch= 1  ttft=   61.7ms  prefill=  2075.5 tok/s  decode=  43.1 tok/s/seq     43.1 tok/s total  peak=10.26 GB
+02:43:04.644 
+02:43:04.648 wrote out/bench_GE_graph_eager.json

@@ -1,0 +1,24 @@
+02:32:36.021 host   AMD EPYC 7542 32-Core Processor  (128 vCPU)
+02:32:36.026 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+02:32:36.244 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+02:32:46.003 Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 325135.22 examples/s]
+02:32:46.069 Generating train split:   0%|          | 0/36718 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 583253.94 examples/s]
+02:32:46.080 Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 3760/3760 [00:00<00:00, 362267.32 examples/s]
+02:32:47.419 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+02:32:47.425 
+02:33:14.475 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  19%|█▊        | 362/1951 [00:00<00:00, 3614.50it/s]Loading weights:  37%|███▋      | 724/1951 [00:00<00:00, 3041.23it/s]Loading weights:  53%|█████▎    | 1034/1951 [00:01<00:01, 616.80it/s]Loading weights:  62%|██████▏   | 1216/1951 [00:01<00:01, 597.20it/s]Loading weights:  69%|██████▉   | 1348/1951 [00:01<00:00, 635.92it/s]Loading weights:  83%|████████▎ | 1618/1951 [00:01<00:00, 898.00it/s]Loading weights:  98%|█████████▊| 1910/1951 [00:01<00:00, 1207.40it/s]Loading weights: 100%|██████████| 1951/1951 [00:02<00:00, 973.82it/s] 
+02:33:15.125 variant: eager  cache=DynamicCache  compile_requested=False
+02:35:01.197 
+02:35:01.200 tokens scored         1912
+02:35:01.203 mean KL(ref||cur)     0.000e+00  nats, over the ref top-100
+02:35:01.206 top-1 agreement       100.0000 %
+02:35:01.209 perplexity            290.6745
+02:35:01.212 top-100 coverage       98.240 %  (current model's mass inside the reference top-k)
+02:35:01.214 wall                  106.1s
+02:35:01.216 band v2 verdict       PASS   (FAIL anchor not measured yet)
+02:35:01.219 band v1 verdict       PASS   (2026-10-13 pre-registration)
+02:35:01.353 wrote out/drift_decode_eager_floor.json
+02:35:01.358 
+02:35:01.362 EXPECT no-drift  KL 0.000e+00 <= 1e-05   PASS
+02:35:01.367 EXPECT no-drift  top-1 100.0000% >= 99.99%   PASS
+02:35:01.370 EXPECT no-drift  PASS - reports zero drift when nothing changed
