@@ -575,6 +575,38 @@ BAND_V2_FAIL_TOP1 = None
 ALL_Q_PROJ = r"language_model\.layers\.\d+\.self_attn\.q_proj\.weight$"
 V2_ANCHOR = {"target": "all-q-proj", "scale": 1e-3}
 
+# --- FAIL anchor targets beyond q_proj (2026-11-11) -------------------------------------
+# The v2 anchor failed (report.md, 2026-10-28): noise on all 35 q_proj stayed near the ~2e-3
+# floor. o_proj and down_proj test whether q_proj was special; all-linears is the anchor target
+# (report.md, 2026-11-11). Same noise as all-q-proj (perturb_matching: relative to each
+# matrix's std, per-matrix seed).
+# all-linears is every text-decoder nn.Linear except lm_head (tied to the embedding), found by
+# module type rather than by name so a missed projection cannot slip through: attention
+# q/k/v/o, MLP gate/up/down, and the PLE projections. Counts are checked against the model.
+MATCH_TARGETS = {
+    "all-q-proj": ALL_Q_PROJ,
+    "all-o-proj": r"language_model\.layers\.\d+\.self_attn\.o_proj\.weight$",
+    "all-down-proj": r"language_model\.layers\.\d+\.mlp\.down_proj\.weight$",
+    "all-linears": None,  # built from the model's modules by text_linear_regex
+}
+EXPECTED_MATCHES = {"all-q-proj": 35, "all-o-proj": 35, "all-down-proj": 35, "all-linears": 276}
+
+
+def text_linear_regex(model):
+    """Exact-name regex for every text-decoder nn.Linear weight except lm_head."""
+    import re
+    names = [f"{n}.weight" for n, m in model.named_modules()
+             if isinstance(m, torch.nn.Linear) and "language_model." in n
+             and not n.endswith("lm_head")]
+    if not names:
+        raise SystemExit("no text-decoder nn.Linear found")
+    return "^(?:" + "|".join(re.escape(n) for n in names) + ")$"
+
+
+def target_regex(model, target):
+    regex = MATCH_TARGETS[target]
+    return text_linear_regex(model) if regex is None else regex
+
 
 def classify_band_v2(kl, top1, pass_kl, pass_top1, fail_kl=None, fail_top1=None):
     passed = kl < pass_kl and top1 >= pass_top1
@@ -702,9 +734,12 @@ def main():
                         "layer's weight before scoring (e.g. 1e-3)")
     p.add_argument("--perturb-pattern", default="language_model.layers.17.")
     p.add_argument("--perturb-seed", type=int, default=0)
-    p.add_argument("--perturb-target", choices=("one-layer", "all-q-proj"), default="one-layer",
+    p.add_argument("--perturb-target", choices=("one-layer", *MATCH_TARGETS),
+                   default="one-layer",
                    help="one-layer: the first 2D match of --perturb-pattern (the v1 control). "
-                        "all-q-proj: every decoder layer's q_proj, 35 matrices.")
+                        "all-q-proj / all-o-proj / all-down-proj: that projection in every "
+                        "decoder layer, 35 matrices. all-linears: every text-decoder "
+                        "nn.Linear except lm_head, 276 matrices.")
     p.add_argument("--perturb-preset", choices=("v2-anchor",),
                    help="v2-anchor: the band v2 FAIL anchor, 1e-3 relative noise on all 35 "
                         "q_proj matrices. Measure it before judging any variant with band v2.")
@@ -790,8 +825,15 @@ def main():
     print(f"variant: {args.variant}  cache={variant_meta['cache']['class']}  "
           f"compile_requested={variant_meta['compile']['requested']}")
 
-    if args.perturb > 0 and args.perturb_target == "all-q-proj":
-        pert = perturb_matching(model, args.perturb, args.perturb_seed, ALL_Q_PROJ)
+    if args.perturb > 0 and args.perturb_target in MATCH_TARGETS:
+        regex = target_regex(model, args.perturb_target)
+        pert = perturb_matching(model, args.perturb, args.perturb_seed, regex)
+        if pert["params"] != EXPECTED_MATCHES[args.perturb_target]:
+            raise SystemExit(f"--perturb-target {args.perturb_target} matched {pert['params']} "
+                             f"matrices, expected {EXPECTED_MATCHES[args.perturb_target]}")
+        if args.perturb_target == "all-linears":
+            pert["regex"] = "text_linear_regex(model)"  # the full alternation is ~25 KB
+        pert["target"] = args.perturb_target
         pert["preset"] = args.perturb_preset
         variant_meta["perturb"] = pert
         print(f"PERTURBED {pert['params']} matrices ({pert['first']} .. {pert['last']}) "

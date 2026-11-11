@@ -642,12 +642,62 @@ Ten times the noise raises KL only ~50%. Two likely reasons:
   exactly 0, so this is the model's sensitivity, not the harness — consistent with any bf16
   rounding difference being amplified through 35 layers until it saturates. A single bf16
   rounding step is ~4e-3 relative, larger than the 1e-3 anchor noise itself.
-- **q_proj is a poor target.** Gemma 4 applies `q_norm` directly to the q_proj output, which
-  normalizes much of the injected noise away. (Hypothesis, consistent with the ladder.)
+- ~~**q_proj is a poor target.** Gemma 4 applies `q_norm` directly to the q_proj output, which
+  normalizes much of the injected noise away. (Hypothesis, consistent with the ladder.)~~
+  **Weaker than stated** (2026-11-11). An RMSNorm only rescales its input vector, so it cannot
+  remove noise that changes the vector's direction — most of it, in 256+ dimensions. And
+  o_proj and down_proj feed RMSNorms too (`post_attention_layernorm`,
+  `post_feedforward_layernorm`). The floor is the better-supported explanation.
 
-A usable FAIL anchor needs a target that is not normalized away — o_proj, down_proj, or all
-linear layers — and a new `--perturb-target`. **Choosing it is an open decision, and any anchor
-chosen now is post hoc**: the variant results below were already seen.
+A usable FAIL anchor needs a ~~target that is not normalized away — o_proj, down_proj, or all
+linear layers —~~ stronger target (see below) and a new `--perturb-target`. **Choosing it is an
+open decision, and any anchor chosen now is post hoc**: the variant results below were already
+seen.
+
+### A FAIL anchor that clears the floor (2026-11-11, post hoc)
+
+**This is a post hoc recalibration.** It was made after the static, compile, fused_rmsnorm and
+graph drift results were seen (decode KL 1.7–1.9e-3, all under the 2.7e-3 PASS ceiling). It was
+also made after the per-weight quantization error was measured on real layer-0 weights.
+**Why now:** quantization is next, and it needs a FAIL line that real damage clears; band v2
+has none. What keeps the new line honest: the rule below uses only noise-injection runs, never
+a variant result, and the target, ladder, threshold and rounding are all fixed here, before
+the ladder runs.
+
+**The rule** (implemented in `pod/pick_anchor.py`, run by `pod/anchor.sh`, not yet run):
+
+1. **Target: all-linears**, every text-decoder `nn.Linear` except lm_head (276 matrices:
+   attention q/k/v/o, MLP gate/up/down, the PLE projections). It is chosen in advance because
+   quantization changes exactly these matrices. `all-o-proj` and `all-down-proj` (35 each) are
+   measured as diagnostics of whether q_proj was special, and can never become the anchor.
+2. **Ladder:** relative noise 1e-3, 3e-3, 1e-2, 3e-2, 1e-1 × each matrix's std, seed 0. The
+   same noise as the q_proj anchor; at least 84% of it survives bf16 rounding at 1e-3, and all
+   of it from 3e-3 up.
+3. **Anchor = the smallest ladder scale with mean KL ≥ 8.1e-3 (3 × the PASS ceiling) in both
+   decode and prefill mode.** The factor 3 puts FAIL well clear of the ~2e-3 floor that every
+   benign change lands on.
+4. **FAIL lines:** the v2 rounding rule, so the anchor itself reads FAIL. KL is rounded down to
+   2 significant figures and top-1 rounded up to 0.1%, per mode; the band then takes the lower
+   KL line and the higher top-1 line.
+5. **If that top-1 line is not strictly below the 98.0% PASS floor, FAIL is KL-only.**
+6. **If no scale qualifies, there is no anchor**, and the ladder is not extended without review.
+
+The measured anchor becomes **band v3**: v2's PASS plus this FAIL. **Band v1 and v2 verdicts
+stay as recorded.**
+
+**A known consequence, stated before any quantized model is scored.** In the anchor's units
+(error std / weight std, layer 0), int8 per-channel error is about 1e-2 and int4 group-128
+error about 1.2–1.3e-1. If the anchor lands at 3e-2 or below, naive int4 sits several ladder
+steps beyond it and will probably FAIL. Rounding error is not Gaussian noise, so that is an
+expectation, not a verdict.
+
+Pre-stated predictions for the ladder:
+
+- `all-q-proj` @ 1e-2 reproduces 2026-10-28 exactly.
+- o_proj, down_proj and q_proj give similar KL at each noise scale: all three feed an RMSNorm,
+  so if the floor explains the flat q_proj ladder, none of them is special. A much steeper
+  o_proj or down_proj curve would revive the q_norm explanation.
+- all-linears, with 276 matrices instead of 35, reaches 8.1e-3 by 3e-2.
 
 ## Fused RMSNorm (2026-10-28)
 
@@ -980,8 +1030,8 @@ bandwidth (irreducible at bf16), 4.93 ms small kernels, 7.17 ms launch-gap idle.
 1.7–2.4e-3. Band v1 fails all of them; band v2's PASS rule (KL < 2.7e-3, top-1 ≥ 98.0%) holds,
 but **band v2 has no usable FAIL line** — its q_proj anchor sits at the same floor.
 
-**Next:** (1) choose a FAIL-anchor target that is not normalized away (o_proj, down_proj or all
-linear layers; needs a new `--perturb-target`) and measure it before judging another variant;
+**Next:** (1) run `pod/anchor.sh`: the all-linears FAIL anchor, picked by the rule fixed on
+2026-11-11, measured before judging another variant;
 (2) run `fused_rmsnorm` on a CPU-bound host, where the launch savings should matter more;
 (3) the full week 3 writeup and chart; (4) the quantized dequant-GEMV Triton kernel.
 
