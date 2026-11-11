@@ -1,0 +1,118 @@
+{
+  "model": "google/gemma-4-E2B-it",
+  "host": {
+    "hostname": "redacted",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "cpu_model": "Apple M3 Pro",
+    "vcpu_count": 11,
+    "gpu_name": "unknown",
+    "gpu_memory": "unknown",
+    "gpu_driver": "unknown",
+    "gpu_sm_clock_max": "unknown",
+    "gpu_power_limit": "unknown",
+    "torch": "2.14.1",
+    "transformers": "5.19.0"
+  },
+  "bandwidth_gb_s": 261.2,
+  "int4_group_size": 128,
+  "scale_dtype": "bfloat16",
+  "linear_families": {
+    "attention": {
+      "leaves": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj"
+      ],
+      "tensors": 100,
+      "params": 278396928
+    },
+    "mlp": {
+      "leaves": [
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "tensors": 105,
+      "params": 1557135360
+    },
+    "ple": {
+      "leaves": [
+        "per_layer_input_gate",
+        "per_layer_projection",
+        "per_layer_model_projection"
+      ],
+      "tensors": 71,
+      "params": 41287680
+    }
+  },
+  "lm_head_shape": [
+    262144,
+    1536
+  ],
+  "bf16_fixed_bytes": {
+    "norms": 571904,
+    "embedding rows": 20996,
+    "other": 1606
+  },
+  "bf16_matches_bytes_per_token": true,
+  "measured_tok_s": 48.38,
+  "scenarios": [
+    {
+      "scenario": "bf16 (today)",
+      "linears": "bf16",
+      "lm_head": "bf16",
+      "linear_bytes": 3753639936,
+      "lm_head_bytes": 805306368,
+      "bf16_rest_bytes": 594506,
+      "read_bytes_per_step": 4559540810,
+      "ceiling_tok_s": 57.28647047683734,
+      "extra_resident_bytes": 0
+    },
+    {
+      "scenario": "int8 linears, lm_head bf16",
+      "linears": "int8",
+      "lm_head": "bf16",
+      "linear_bytes": 1878720512,
+      "lm_head_bytes": 805306368,
+      "bf16_rest_bytes": 594506,
+      "read_bytes_per_step": 2684621386,
+      "ceiling_tok_s": 97.29491143970199,
+      "extra_resident_bytes": 0
+    },
+    {
+      "scenario": "int8 linears + int8 lm_head",
+      "linears": "int8",
+      "lm_head": "int8",
+      "linear_bytes": 1878720512,
+      "lm_head_bytes": 403177472,
+      "bf16_rest_bytes": 594506,
+      "read_bytes_per_step": 2282492490,
+      "ceiling_tok_s": 114.43630204452501,
+      "extra_resident_bytes": 403177472
+    },
+    {
+      "scenario": "int4 linears, lm_head bf16",
+      "linears": "int4",
+      "lm_head": "bf16",
+      "linear_bytes": 967735296,
+      "lm_head_bytes": 805306368,
+      "bf16_rest_bytes": 594506,
+      "read_bytes_per_step": 1773636170,
+      "ceiling_tok_s": 147.26808373557242,
+      "extra_resident_bytes": 0
+    },
+    {
+      "scenario": "int4 linears + int4 lm_head",
+      "linears": "int4",
+      "lm_head": "int4",
+      "linear_bytes": 967735296,
+      "lm_head_bytes": 207618048,
+      "bf16_rest_bytes": 594506,
+      "read_bytes_per_step": 1175947850,
+      "ceiling_tok_s": 222.11869344376112,
+      "extra_resident_bytes": 207618048
+    }
+  ],
+  "kv_cache_excluded": true
+}
