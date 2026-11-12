@@ -2,8 +2,6 @@
 
     pytest -s tests/test_quant_primitives.py    # -s prints the real-weight error table
 
-The int8 tests fail with NotImplementedError until quantize_int8 / dequantize_int8 are written.
-
 The real-weight tests use q_proj, o_proj, gate_proj and down_proj of text layer 0. They are
 range-fetched from the Hub's model.safetensors (~50 MB, not the 10 GB file) into
 ~/.cache/gemma4-gpu/ on first use; without network access those tests skip.
@@ -23,7 +21,7 @@ import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import quant.primitives as P  # noqa: E402  (module attribute, so the TODO bodies are picked up)
+import quant.primitives as P  # noqa: E402
 
 MODEL_ID = "google/gemma-4-E2B-it"
 REVISION = "4adf15748de9e1a0097b6274cee9c15836c41c37"   # pinned so the numbers reproduce
@@ -202,7 +200,7 @@ def test_refuses_non_2d(fmt):
         getattr(P, f"quantize_{fmt}")(torch.randn(2, 3, 128))
 
 
-# ---------------------------------------------- int8 (fail with NotImplementedError until TODOs)
+# -------------------------------------------------------------------------------------- int8
 
 @pytest.mark.parametrize("dtype", DTYPES, ids=["bf16", "fp32"])
 @pytest.mark.parametrize("shape", SHAPES)

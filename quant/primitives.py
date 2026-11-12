@@ -68,28 +68,23 @@ def quantize_int8(w):
     Returns (q, scale): q int8 [out, in] in [-127, 127]; scale bf16 [out].
     """
     _check_weight(w)
-    # TODO(armaan): write this body. One step per comment:
-    #   1. Upcast: w32 = w as fp32. All math below is fp32.
-    #   2. Per-row absmax: the largest |value| in each row (reduce over the input dim).
-    #   3. Scale: absmax / 127, stored in bf16. _bf16_scale(absmax, INT8_QMAX) does this and
-    #      handles the two traps - an all-zero row, and bf16 rounding the scale down so the
-    #      biggest value no longer fits. Read it before you use it.
-    #   4. Divide each row by its OWN stored scale (the bf16 one, back in fp32), so the error
-    #      bound holds for the scale that is actually saved. Mind the broadcast shape.
-    #   5. Round to the nearest integer.
-    #   6. Clamp to [-127, 127]. (-128 is left unused so the range stays symmetric.)
-    #   7. Cast to int8 and return (q, scale).
-    raise NotImplementedError("quantize_int8: TODO - write the body (see the steps above)")
+    w32 = w.to(torch.float32)
+    max_val_row_vec, _ = torch.max(torch.abs(w32), dim=1)
+
+    scale = _bf16_scale(max_val_row_vec, INT8_QMAX)
+
+    q = (w32/scale.unsqueeze(1)).round()
+
+    q = torch.clamp(q, min=-INT8_QMAX, max=INT8_QMAX)
+
+    return (q.to(torch.int8), scale)
 
 
 def dequantize_int8(q, scale, dtype=torch.float32):
     """Inverse of quantize_int8: q * scale per row. Returns dtype (fp32 by default)."""
-    # TODO(armaan): write this body. One step per comment:
-    #   1. Upcast q to fp32.
-    #   2. Upcast scale to fp32 and shape it so it broadcasts over each row ([out] -> [out, 1]).
-    #   3. Multiply.
-    #   4. Cast to dtype and return.
-    raise NotImplementedError("dequantize_int8: TODO - write the body (see the steps above)")
+    q32 = q.to(torch.float32)
+    scale32 = scale.to(torch.float32)
+    return (torch.mul(q32, scale32.unsqueeze(1))).to(dtype)
 
 
 # ------------------------------------------------------------------------- int4, group-wise
