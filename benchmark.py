@@ -9,7 +9,8 @@ import torch
 from transformers import AutoProcessor
 
 from hostinfo import host_info, print_host
-from variants import MODEL_ID, VARIANTS, build, finalize, resolve_max_cache_len
+from variants import (MODEL_ID, VARIANTS, build, finalize, model_weight_bytes,
+                      resolve_max_cache_len)
 
 FILLER = (
     "The quick brown fox jumps over the lazy dog while the compiler emits vectorized "
@@ -91,7 +92,12 @@ def main():
     host = print_host()
     gpu = torch.cuda.get_device_name(0)
     weights_gb = torch.cuda.memory_allocated() / 1e9
-    print(f"torch={torch.__version__}  weights={weights_gb:.2f} GB")
+    # peak since process start, before any per-row reset: includes the build (and for the
+    # quantized variants the transient quantization buffers)
+    build_peak_gb = torch.cuda.max_memory_allocated() / 1e9
+    model_weight_gb = model_weight_bytes(model) / 1e9
+    print(f"torch={torch.__version__}  weights={weights_gb:.2f} GB  "
+          f"model params+buffers={model_weight_gb:.2f} GB  build peak={build_peak_gb:.2f} GB")
     print(f"variant={args.variant}  max_cache_len={meta['max_cache_len']}  "
           f"compile_requested={meta['compile']['requested']}\n")
 
@@ -146,6 +152,10 @@ def main():
                 "torch": torch.__version__,
                 "dtype": "bfloat16",
                 "weights_gb": weights_gb,
+                "model_weight_gb": model_weight_gb,
+                "build_peak_mem_gb": build_peak_gb,
+                "max_memory_allocated_gb": max(
+                    [build_peak_gb] + [r["peak_mem_gb"] for r in rows if r["status"] == "ok"]),
                 "decode_tokens": args.decode_tokens,
                 "trials": args.trials,
                 "warmup": args.warmup,

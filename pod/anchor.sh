@@ -61,4 +61,5 @@ done
 
 # 3. Pick the anchor by the pre-stated rule.
 run p3_pick $PY pod/pick_anchor.py out
-log "ALL DONE"; touch out/DONE
+# ANCHOR_DONE, not DONE: pod/quant_naive.sh runs this first and owns out/DONE.
+log "ANCHOR DONE"; touch out/ANCHOR_DONE

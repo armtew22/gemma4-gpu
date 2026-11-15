@@ -18,6 +18,7 @@ every tool. Behaviour below was read from the installed transformers 5.19.0 sour
 
 import math
 from collections import Counter
+from functools import partial
 
 import torch
 import transformers
@@ -269,6 +270,148 @@ def wrap_graph(model, max_cache_len, meta):
     return runner
 
 
+def _fused_loop(max_cache_len, text_config):
+    kwargs, meta = _graph_common(max_cache_len, text_config, fused=True)
+    meta["compile"]["reason"] = ("no torch.compile and no CUDA graph: each decode step runs "
+                                 "eagerly in the graph runner's own loop")
+    meta["decode"]["loop"] = ("graph_decode.GraphDecoder(eager_steps=True): eager prefill, one "
+                              "eager step per decode token - no capture")
+    return kwargs, meta
+
+
+def wrap_fused_loop(model, max_cache_len, meta):
+    """The graph runner's decode loop, static cache and dict mask, stepping eagerly."""
+    from graph_decode import GraphDecoder
+
+    runner = GraphDecoder(model, max_cache_len, capture=False, eager_steps=True)
+    meta["loop"] = runner.meta
+    return runner
+
+
+# --- naive weight-only quantization (quant/linear.py) -----------------------------------
+# Every text-decoder nn.Linear except lm_head - the same 276 matrices as eval_drift.py's
+# --perturb-target all-linears - becomes a QuantLinear built with quant/primitives.py. lm_head
+# stays bf16 by default: it is tied to the embedding, so quantizing it adds a copy instead of
+# replacing one (quantize_lm_head=True does it anyway). forward() dequantizes the whole weight
+# to bf16 every call, so these save memory at rest, not bytes per token.
+
+QUANT_GROUP_SIZE = 128
+EXPECTED_TEXT_LINEARS = 276
+
+
+def _quant_naive(fmt):
+    def builder(max_cache_len, text_config):
+        kwargs, meta = _eager(max_cache_len, text_config)
+        meta["quant"] = {
+            "format": fmt,
+            "scheme": ("symmetric, per output channel" if fmt == "int8"
+                       else f"symmetric, group-wise along the input dim, group {QUANT_GROUP_SIZE}"),
+            "group_size": QUANT_GROUP_SIZE if fmt == "int4" else None,
+            "scales": "bf16",
+            "forward": "dequantize the whole weight to bf16, then F.linear (naive)",
+        }
+        return kwargs, meta
+    return builder
+
+
+def _text_linear_names(model, quantize_lm_head):
+    import torch.nn as nn
+    names = [n for n, m in model.named_modules()
+             if isinstance(m, nn.Linear) and ".language_model." in f".{n}"
+             and not n.endswith("lm_head")]
+    if len(names) != EXPECTED_TEXT_LINEARS:
+        raise SystemExit(f"found {len(names)} text-decoder linears, expected "
+                         f"{EXPECTED_TEXT_LINEARS} - the model is not the one this was audited on")
+    if quantize_lm_head:
+        if not isinstance(getattr(model, "lm_head", None), nn.Linear):
+            raise SystemExit("quantize_lm_head: model has no nn.Linear lm_head")
+        names.append("lm_head")
+    return names
+
+
+def patch_quant(model, fmt, group_size=QUANT_GROUP_SIZE, quantize_lm_head=False, verify=True):
+    """Replace the text-decoder linears with QuantLinear and free their bf16 weights."""
+    import gc
+    import weakref
+
+    import torch.nn.functional as F
+
+    from quant.linear import QuantLinear
+
+    names = _text_linear_names(model, quantize_lm_head)
+    modules = dict(model.named_modules())
+    tied = {id(p) for n, p in model.named_parameters(remove_duplicate=False)
+            if not n.startswith("lm_head")}
+    counts, bytes_before, bytes_after, refs, check = Counter(), 0, 0, [], None
+    on_cuda = model.device.type == "cuda"
+    mem_before = torch.cuda.memory_allocated() if on_cuda else None
+
+    for i, name in enumerate(names):
+        linear = modules[name]
+        w = linear.weight
+        bytes_before += w.numel() * w.element_size()
+        ql = QuantLinear.from_linear(linear, fmt, group_size)
+        bytes_after += ql.stored_bytes()
+        if i == 0 and verify:
+            check = _verify_quant(name, w, ql, F)
+        counts[name.rsplit(".", 1)[-1]] += 1
+        parent, _, child = name.rpartition(".")
+        setattr(modules[parent] if parent else model, child, ql)
+        if not (name == "lm_head" and id(w) in tied):
+            refs.append((name, weakref.ref(w)))
+        del linear, w, ql
+
+    modules = None
+    gc.collect()
+    alive = [n for n, r in refs if r() is not None]
+    if alive:
+        raise SystemExit(f"{len(alive)} replaced bf16 weights are still referenced (e.g. "
+                         f"{alive[:3]}) - the memory saving would not be real")
+    if on_cuda:
+        torch.cuda.empty_cache()
+
+    report = {
+        "format": fmt,
+        "group_size": group_size if fmt == "int4" else None,
+        "replaced_total": len(names),
+        "replaced": dict(counts),
+        "lm_head": "quantized (tied bf16 embedding kept)" if quantize_lm_head else "bf16",
+        "weight_bytes_before": bytes_before,
+        "weight_bytes_after": bytes_after,
+        "bf16_weights_freed": len(refs),
+    }
+    if on_cuda:
+        report["cuda_allocated_drop_bytes"] = mem_before - torch.cuda.memory_allocated()
+    if verify:
+        report["build_check"] = check
+    return report
+
+
+@torch.no_grad()
+def _verify_quant(name, w, ql, F):
+    """For one layer: forward == F.linear on the dequantized weight, bit for bit, and the
+    dequantized weight is within scale/2 of the original."""
+    gen = torch.Generator(device=w.device).manual_seed(0)
+    x = torch.randn(3, w.shape[1], device=w.device, generator=gen).to(w.dtype)
+    deq = ql.dequantized_weight()
+    if not torch.equal(ql(x), F.linear(x, deq, ql.bias)):
+        raise SystemExit(f"QuantLinear({name}) forward differs from F.linear on its dequantized "
+                         "weight")
+    exact = ql.dequantized_weight(torch.float32)
+    if ql.fmt == "int8":
+        half = ql.scale.float().unsqueeze(1) / 2
+    else:
+        half = ql.scale.float().repeat_interleave(ql.group_size, dim=1) / 2
+    err = (exact - w.float()).abs()
+    worst = (err - half * (1 + 2**-20) - w.float().abs() * 2**-23).max().item()
+    if worst > 0:
+        raise SystemExit(f"QuantLinear({name}) dequantized weight exceeds scale/2 by {worst:.3g}")
+    return {"layer": name, "forward_equals_F_linear_on_dequantized": True,
+            "max_abs_error_vs_bf16_weight": err.max().item(),
+            "max_abs_error_of_bf16_dequant": (deq.float() - w.float()).abs().max().item()}
+
+
+
 
 VARIANTS = {
     "eager": {"builder": _eager, "static_cache": False},
@@ -282,11 +425,21 @@ VARIANTS = {
     "graph": {"builder": _graph, "static_cache": True, "patch": patch_fused_rmsnorm,
               "wrap": wrap_graph},
     "graph_eager": {"builder": _graph_eager, "static_cache": True, "wrap": wrap_graph},
+    # The graph runner's loop without the graph: separates "the CUDA graph" from "dropping
+    # generate()" (fused_rmsnorm -> fused_loop -> graph).
+    "fused_loop": {"builder": _fused_loop, "static_cache": True, "patch": patch_fused_rmsnorm,
+                   "wrap": wrap_fused_loop},
+    # Naive weight-only quantization. Not generate-only: the weights change in every forward,
+    # so prefill-mode drift sees it.
+    "int8_naive": {"builder": _quant_naive("int8"), "static_cache": False,
+                   "patch": partial(patch_quant, fmt="int8")},
+    "int4_naive": {"builder": _quant_naive("int4"), "static_cache": False,
+                   "patch": partial(patch_quant, fmt="int4")},
 }
 
 # Variants whose distinguishing behaviour exists only inside generate(). A tool that scores
 # with a plain forward pass (eval_drift.py) would silently run these as eager.
-GENERATE_ONLY_VARIANTS = frozenset({"static", "compile", "graph", "graph_eager"})
+GENERATE_ONLY_VARIANTS = frozenset({"static", "compile", "graph", "graph_eager", "fused_loop"})
 
 
 def describe(variant, max_cache_len, config):
@@ -333,6 +486,19 @@ def build(variant, max_cache_len=None):
     if wrap is not None:
         model = wrap(model, max_cache_len, meta)
     return model, kwargs, meta
+
+
+def model_weight_bytes(model):
+    """Bytes held by the model's parameters and buffers, each tensor counted once (tied
+    weights share storage). Unwraps the graph runner."""
+    module = model.model if getattr(model, "is_graph_runner", False) else model
+    seen, total = set(), 0
+    for t in list(module.parameters()) + list(module.buffers()):
+        key = (t.device, t.data_ptr())
+        if key not in seen:
+            seen.add(key)
+            total += t.numel() * t.element_size()
+    return total
 
 
 def finalize(model, meta):

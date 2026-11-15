@@ -617,6 +617,34 @@ def classify_band_v2(kl, top1, pass_kl, pass_top1, fail_kl=None, fail_top1=None)
     return "PASS" if passed else "INVESTIGATE"
 
 
+# --- band v3 (2026-11-11): v2's PASS + the all-linears FAIL anchor ------------------------
+# The FAIL line comes from pod/pick_anchor.py's anchor_pick.json, picked by the rule fixed in
+# report.md ("A FAIL anchor that clears the floor") before the ladder ran. No file, no v3; a
+# file with no anchor is refused rather than turned into PASS / NOT-PASS verdicts.
+
+def load_band_v3(path):
+    with open(path) as f:
+        pick = json.load(f)
+    anchor = pick.get("anchor")
+    if anchor is None:
+        raise SystemExit(f"{path}: no FAIL anchor was found by the pre-stated rule - refusing to "
+                         "issue band v3 verdicts. Score without --band-v3-anchor for raw drift.")
+    return {"pass_kl_below": BAND_V2_PASS_KL, "pass_top1_at_least": BAND_V2_PASS_TOP1,
+            "fail_kl_at_least": anchor["fail_kl_at_least"],
+            "fail_top1_at_most": anchor["fail_top1_at_most"],  # None: KL-only FAIL
+            "fail_anchor": {"target": anchor["target"], "scale": anchor["scale"]},
+            "source": path}
+
+
+def classify_band_v3(kl, top1, band):
+    fail_t1 = band["fail_top1_at_most"]
+    if kl >= band["fail_kl_at_least"] or (fail_t1 is not None and top1 <= fail_t1):
+        return "FAIL"
+    if kl < band["pass_kl_below"] and top1 >= band["pass_top1_at_least"]:
+        return "PASS"
+    return "INVESTIGATE"
+
+
 def band_report(kl, top1, args):
     """Both bands for one result. v1 is kept so past verdicts reproduce."""
     v1 = {
@@ -752,6 +780,9 @@ def main():
                    help="unset until the v2 anchor is measured; band v2 then reports only "
                         "PASS / NOT-PASS")
     p.add_argument("--band-v2-fail-top1", type=float, default=BAND_V2_FAIL_TOP1)
+    p.add_argument("--band-v3-anchor", metavar="ANCHOR_PICK_JSON",
+                   help="pod/pick_anchor.py output; adds band v3 verdicts (v2 PASS + that FAIL "
+                        "line). Refuses if the file records no anchor.")
     p.add_argument("--num-tokens", type=int, default=50_000)
     p.add_argument("--window", type=int, default=1024)
     p.add_argument("--topk", type=int, default=100)
@@ -780,6 +811,7 @@ def main():
         )
     if args.prefill_reference and args.mode != "decode":
         raise SystemExit("--prefill-reference is a decode-mode sanity check; add --mode decode")
+    band_v3_spec = load_band_v3(args.band_v3_anchor) if args.band_v3_anchor else None
     if args.perturb_preset == "v2-anchor":
         if args.perturb > 0:
             raise SystemExit("--perturb-preset sets its own scale; drop --perturb")
@@ -939,6 +971,14 @@ def main():
     print(f"band v2 verdict       {band_v2['verdict']}"
           + ("" if band_v2["fail_anchor_measured"] else "   (FAIL anchor not measured yet)"))
     print(f"band v1 verdict       {band_v1['verdict']}   (2026-10-13 pre-registration)")
+    band_v3 = None
+    if band_v3_spec:
+        band_v3 = {**band_v3_spec, "verdict": classify_band_v3(
+            result["mean_kl"], result["top1_agreement_pct"], band_v3_spec)}
+        t1 = band_v3["fail_top1_at_most"]
+        print(f"band v3 verdict       {band_v3['verdict']}   (FAIL: KL >= "
+              f"{band_v3['fail_kl_at_least']:.2g}" + (f" or top-1 <= {t1}%" if t1 is not None
+                                                      else ", KL-only") + ")")
 
     default_out = f"drift_{args.variant}_decode.json" if args.mode == "decode" else (
         f"drift_{args.variant}.json")
@@ -957,6 +997,7 @@ def main():
                 **result,
                 "band_v1": band_v1,
                 "band_v2": band_v2,
+                **({"band_v3": band_v3} if band_v3 else {}),
                 "band_default": "v2",
                 **({"prefill_sanity": sanity["result"]} if sanity else {}),
             },

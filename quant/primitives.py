@@ -56,7 +56,9 @@ def _bf16_scale(absmax, qmax):
     s = absmax / qmax
     s = torch.where(absmax == 0, torch.ones_like(s), s)
     sb = s.to(torch.bfloat16)
-    up = torch.nextafter(sb, torch.full_like(sb, float("inf")))
+    # the next bf16 value up: for positive finite bf16 that is the bit pattern + 1 (checked
+    # equal to torch.nextafter on all 32,639 of them), and it runs on any device
+    up = (sb.view(torch.int16) + 1).view(torch.bfloat16)
     return torch.where(sb.float() < s, up, sb)
 
 

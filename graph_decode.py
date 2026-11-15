@@ -60,6 +60,11 @@ same mask).
 
 The decode loop also drops generate()'s per-step stopping-criteria host sync, so comparing
 "graph_eager" with "static" measures the graph and the loop together, not the graph alone.
+
+Eager-step mode (eager_steps=True, the "fused_loop" variant): the same loop, static cache and
+dict mask, but each decode step runs _step() eagerly - no capture. It separates the CUDA graph
+from dropping generate(): fused_rmsnorm -> fused_loop -> graph. The self-check then runs A and
+C only (there is no graph to replay).
 """
 
 import time
@@ -83,7 +88,10 @@ class GraphDecoder:
 
     is_graph_runner = True
 
-    def __init__(self, model, max_cache_len, capture=True, warmup_steps=3, self_check=True):
+    def __init__(self, model, max_cache_len, capture=True, warmup_steps=3, self_check=True,
+                 eager_steps=False):
+        if capture and eager_steps:
+            raise ValueError("capture and eager_steps are exclusive")
         self.model = model
         self.config = model.config
         self.max_cache_len = max_cache_len
@@ -103,13 +111,13 @@ class GraphDecoder:
         self.graph = None
         self.static_logits = None
         self.annotate = False       # profile_decode.py turns this on for its profiled run
-        self.allow_eager_steps = False   # tests only: run the step eagerly instead of replaying
+        self.allow_eager_steps = eager_steps   # run the step eagerly instead of replaying
         self.meta = {"max_cache_len": max_cache_len, "batch_size": 1, "warmup_steps": warmup_steps}
 
         if capture:
             self._capture(warmup_steps)
-            if self_check:
-                self.meta["self_check"] = self._self_check()
+        if (capture or eager_steps) and self_check:
+            self.meta["self_check"] = self._self_check()
 
     @property
     def device(self):
@@ -206,7 +214,9 @@ class GraphDecoder:
 
     @torch.no_grad()
     def _self_check(self, steps=4):
-        """A eager step == B graph replay == C generate()-style eager forward, bit for bit."""
+        """A eager step == B graph replay == C generate()-style eager forward, bit for bit.
+
+        Without a captured graph (eager_steps) only A == C is checked."""
         prompt = torch.tensor([[2, 1000, 2000, 3000, 4000, 5000, 6000, 7000]], device=self.device)
         feed = [111, 222, 333, 444][:steps]
         p = prompt.shape[1]
@@ -232,7 +242,9 @@ class GraphDecoder:
                 logits.append(out[:, -1].float().clone())
             return torch.stack(logits)
 
-        a, b, c = run("A"), run("B"), run("C")
+        a = run("A")
+        b = run("B") if self.graph is not None else a
+        c = run("C")
         self.cache.reset()
         ab, ac = (a - b).abs().max().item(), (a - c).abs().max().item()
         if not torch.equal(a, b):
@@ -241,7 +253,9 @@ class GraphDecoder:
         if not torch.equal(a, c):
             raise SystemExit(f"graph runner refuses to build: the dict mask gives different logits "
                              f"from generate()'s 2D-mask path (max abs {ac:.3g})")
-        return {"steps": steps, "replay_vs_eager_step": "bit-identical",
+        return {"steps": steps,
+                "replay_vs_eager_step": ("bit-identical" if self.graph is not None
+                                         else "not applicable: eager steps, no graph"),
                 "dict_mask_vs_generate_mask": "bit-identical"}
 
     # --- decode loop ----------------------------------------------------------------------
