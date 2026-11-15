@@ -1,0 +1,18 @@
+19:28:16.252 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+19:28:16.256 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:28:19.770 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+19:28:22.561 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+19:28:22.565 
+19:28:25.341 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  19%|█▉        | 371/1951 [00:00<00:00, 3692.78it/s]Loading weights:  38%|███▊      | 741/1951 [00:00<00:00, 3322.99it/s]Loading weights:  55%|█████▌    | 1076/1951 [00:01<00:01, 682.12it/s]Loading weights:  65%|██████▌   | 1274/1951 [00:01<00:00, 683.19it/s]Loading weights:  80%|████████  | 1570/1951 [00:01<00:00, 947.80it/s]Loading weights: 100%|█████████▉| 1950/1951 [00:01<00:00, 1346.13it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1135.80it/s]
+19:28:26.681 variant: int8_naive  cache=DynamicCache  compile_requested=False
+19:33:11.248 
+19:33:11.252 tokens scored         1912
+19:33:11.255 mean KL(ref||cur)     1.149e-02  nats, over the ref top-100
+19:33:11.258 top-1 agreement       95.1883 %
+19:33:11.261 perplexity            295.6147
+19:33:11.264 top-100 coverage       98.296 %  (current model's mass inside the reference top-k)
+19:33:11.266 wall                  284.6s
+19:33:11.268 band v2 verdict       NOT-PASS   (FAIL anchor not measured yet)
+19:33:11.271 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+19:33:11.273 band v3 verdict       FAIL   (FAIL: KL >= 0.01 or top-1 <= 95.9%)
+19:33:11.381 wrote out/drift_decode_Q8_int8_naive.json

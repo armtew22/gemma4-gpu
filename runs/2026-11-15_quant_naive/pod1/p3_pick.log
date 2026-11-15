@@ -1,0 +1,23 @@
+19:21:36.234 target          scale       decode KL / top-1      prefill KL / top-1  >= 8.1e-03 both
+19:21:36.238 all-linears      1e-3     2.094e-03 /  98.74%     2.524e-03 /  98.17%  
+19:21:36.241 all-linears      3e-3     3.195e-03 /  98.54%     3.479e-03 /  97.91%  
+19:21:36.245 all-linears      1e-2     1.046e-02 /  95.61%     1.162e-02 /  95.87%  yes
+19:21:36.247 all-linears      3e-2     6.642e-02 /  89.17%     7.375e-02 /  89.54%  yes
+19:21:36.251 all-linears      1e-1     6.936e-01 /  69.30%     7.025e-01 /  69.31%  yes
+19:21:36.254 all-o-proj       1e-3     1.872e-03 /  98.48%     2.487e-03 /  98.16%  
+19:21:36.257 all-o-proj       3e-3     2.183e-03 /  98.54%     2.784e-03 /  98.12%  
+19:21:36.260 all-o-proj       1e-2     3.494e-03 /  97.86%     4.732e-03 /  97.49%  
+19:21:36.263 all-o-proj       3e-2     1.395e-02 /  94.98%     1.875e-02 /  94.81%  yes
+19:21:36.266 all-o-proj       1e-1     1.325e-01 /  86.24%     1.640e-01 /  84.85%  yes
+19:21:36.269 all-down-proj    1e-3     1.891e-03 /  98.69%     2.498e-03 /  98.21%  
+19:21:36.272 all-down-proj    3e-3     2.164e-03 /  98.43%     2.581e-03 /  98.17%  
+19:21:36.275 all-down-proj    1e-2     3.149e-03 /  97.96%     3.324e-03 /  97.79%  
+19:21:36.278 all-down-proj    3e-2     1.112e-02 /  95.97%     1.193e-02 /  95.86%  yes
+19:21:36.280 all-down-proj    1e-1     1.007e-01 /  87.19%     9.741e-02 /  88.15%  yes
+19:21:36.283 
+19:21:36.285 smallest qualifying scale  all-linears      1e-2   (ANCHOR TARGET)
+19:21:36.288 smallest qualifying scale  all-o-proj       3e-2   (diagnostic)
+19:21:36.291 smallest qualifying scale  all-down-proj    3e-2   (diagnostic)
+19:21:36.294 
+19:21:36.296 ANCHOR  all-linears @ 0.01   FAIL: KL >= 0.01 or top-1 <= 95.9%
+19:21:36.299 wrote out/anchor_pick.json

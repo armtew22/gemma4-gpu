@@ -1,0 +1,18 @@
+18:50:09.515 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+18:50:09.519 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+18:50:12.985 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+18:50:15.721 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+18:50:15.725 
+18:50:18.256 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  20%|██        | 392/1951 [00:00<00:00, 3905.08it/s]Loading weights:  40%|████      | 783/1951 [00:00<00:01, 801.69it/s] Loading weights:  50%|████▉     | 975/1951 [00:00<00:01, 925.16it/s]Loading weights:  59%|█████▉    | 1147/1951 [00:01<00:00, 914.34it/s]Loading weights:  66%|██████▌   | 1286/1951 [00:01<00:00, 886.57it/s]Loading weights:  87%|████████▋ | 1704/1951 [00:01<00:00, 1471.59it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1285.25it/s]
+18:50:18.761 variant: eager  cache=DynamicCache  compile_requested=False
+18:50:33.957 PERTURBED 276 matrices (model.language_model.layers.0.self_attn.q_proj.weight .. model.language_model.per_layer_model_projection.weight) scale=0.01 relative to each weight's std; shapes {'(2048, 1536)': 28, '(256, 1536)': 59, '(1536, 2048)': 28, '(6144, 1536)': 30, '(1536, 6144)': 15, '(1536, 256)': 35, '(4096, 1536)': 7, '(512, 1536)': 6, '(1536, 4096)': 7, '(12288, 1536)': 40, '(1536, 12288)': 20, '(8960, 1536)': 1}
+18:52:07.230 
+18:52:07.233 tokens scored         1912
+18:52:07.236 mean KL(ref||cur)     1.046e-02  nats, over the ref top-100
+18:52:07.239 top-1 agreement       95.6067 %
+18:52:07.242 perplexity            295.9408
+18:52:07.245 top-100 coverage       98.329 %  (current model's mass inside the reference top-k)
+18:52:07.248 wall                  93.3s
+18:52:07.251 band v2 verdict       NOT-PASS   (FAIL anchor not measured yet)
+18:52:07.253 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+18:52:07.377 wrote out/ladder_all-linears_decode_1e-2.json

@@ -1,0 +1,50 @@
+19:26:03.975 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  20%|█▉        | 389/1951 [00:00<00:00, 3889.43it/s]Loading weights:  40%|███▉      | 778/1951 [00:00<00:01, 712.14it/s] Loading weights:  49%|████▉     | 965/1951 [00:01<00:01, 793.13it/s]Loading weights:  57%|█████▋    | 1117/1951 [00:01<00:01, 766.78it/s]Loading weights:  63%|██████▎   | 1237/1951 [00:01<00:00, 729.82it/s]Loading weights:  68%|██████▊   | 1336/1951 [00:01<00:00, 768.93it/s]Loading weights:  90%|████████▉ | 1751/1951 [00:01<00:00, 1398.09it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1086.60it/s]
+19:26:05.625 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+19:26:05.628 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:26:05.632 torch=2.8.0+cu128  prompt=128  decode_tokens=32
+19:26:05.635 variant=int8_naive  max_cache_len=None  compile_requested=False
+19:26:05.638 
+19:27:08.958 wall clock    147.17 ms per decode step   (6.8 tok/s)
+19:27:08.962 
+19:27:30.412 forwards seen: 32  (1 prefill 'gen_fwd_000' + 31 decode)
+19:27:30.415 analyzed 29 decode steps, skipping the first 2
+19:27:30.419 
+19:27:30.422 per decode step, averaged
+19:27:30.426   CUDA kernels launched     4189.0
+19:27:30.430   GPU kernel time           143.68 ms
+19:27:30.433   wall time                 147.17 ms
+19:27:30.436   GPU busy                    97.6 %
+19:27:30.439   GPU idle                     2.4 %
+19:27:30.442 
+19:27:30.446 category                     ms/step    share   kernels
+19:27:30.449 -------------------------------------------------------
+19:27:30.452 elementwise/activation        95.752    66.6%    2583.0
+19:27:30.455 memory copies                 33.960    23.6%    1024.0
+19:27:30.458 matmul/gemm                   12.699     8.8%     277.0
+19:27:30.461 other                          0.725     0.5%     242.0
+19:27:30.464 attention                      0.541     0.4%      63.0
+19:27:30.466 
+19:27:30.469 top 15 kernels by total time (per step)
+19:27:30.472   ms/step   calls    avg us  name
+19:27:30.475 ----------------------------------------------------------------------------------------------------
+19:27:30.478    54.327   556.0      97.7  void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp
+19:27:30.481    38.790   522.0      74.3  void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16
+19:27:30.484    33.959  1023.0      33.2  void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k
+19:27:30.487     9.693   142.0      68.3  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:27:30.490     2.827   100.0      28.3  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:27:30.493     0.725   242.0       3.0  void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:
+19:27:30.496     0.380   242.0       1.6  void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke
+19:27:30.500     0.349   242.0       1.4  void at::native::vectorized_elementwise_kernel<4, at::native::(anonymo
+19:27:30.503     0.344   242.0       1.4  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+19:27:30.505     0.306   107.0       2.9  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+19:27:30.508     0.287   191.0       1.5  void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu
+19:27:30.511     0.245   156.0       1.6  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+19:27:30.514     0.231    28.0       8.2  void pytorch_flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<2
+19:27:30.517     0.193     7.0      27.6  fmha_cutlassF_bf16_aligned_32x128_gmem_sm80(PyTorchMemEffAttention::At
+19:27:30.521     0.180    35.0       5.1  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:27:30.523 
+19:27:30.526 VERDICT  GPU busy 97.6%  ->  mostly memory/compute-bound: quantization is the lever
+19:27:30.529 thresholds: busy >= 80% memory/compute-bound | < 60% overhead-bound | 60-80% mixed
+19:27:30.531 
+19:27:30.534 trace written to out/trace_Q8_int8_naive.json - open in ui.perfetto.dev and look at the gaps between kernels by eye
+19:27:30.538 wrote out/profile_Q8_int8_naive.json

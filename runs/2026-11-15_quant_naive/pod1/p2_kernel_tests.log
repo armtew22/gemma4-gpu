@@ -1,0 +1,153 @@
+19:21:42.132 
+19:21:42.136   N= 1536 scale=True  bfloat16 rows=   1  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:42.279 .
+19:21:42.282   N= 1536 scale=True  float32  rows=   1  max_abs=4.77e-07 max_rel=2.33e-07 bit-exact=7.94%
+19:21:42.548 .
+19:21:42.551   N=  256 scale=True  bfloat16 rows=   1  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:42.665 .
+19:21:42.669   N=  256 scale=True  float32  rows=   1  max_abs=3.58e-07 max_rel=1.98e-07 bit-exact=11.33%
+19:21:42.772 .
+19:21:42.775   N=  256 scale=False bfloat16 rows=   1  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:42.881 .
+19:21:42.885   N=  256 scale=False float32  rows=   1  max_abs=2.38e-07 max_rel=1.62e-07 bit-exact=4.30%
+19:21:42.998 .
+19:21:43.001   N=  512 scale=True  bfloat16 rows=   1  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.119 .
+19:21:43.122   N=  512 scale=True  float32  rows=   1  max_abs=4.77e-07 max_rel=2.36e-07 bit-exact=10.16%
+19:21:43.239 .
+19:21:43.242   N=  512 scale=False bfloat16 rows=   1  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.362 .
+19:21:43.365   N=  512 scale=False float32  rows=   1  max_abs=4.77e-07 max_rel=1.85e-07 bit-exact=2.54%
+19:21:43.368 .
+19:21:43.372   N= 1536 scale=True  bfloat16 rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.375 .
+19:21:43.378   N= 1536 scale=True  float32  rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.381 .
+19:21:43.384   N=  256 scale=True  bfloat16 rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.386 .
+19:21:43.389   N=  256 scale=True  float32  rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.392 .
+19:21:43.395   N=  256 scale=False bfloat16 rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.398 .
+19:21:43.401   N=  256 scale=False float32  rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.404 .
+19:21:43.407   N=  512 scale=True  bfloat16 rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.410 .
+19:21:43.413   N=  512 scale=True  float32  rows=   3  max_abs=3.58e-07 max_rel=2.21e-07 bit-exact=69.73%
+19:21:43.416 .
+19:21:43.419   N=  512 scale=False bfloat16 rows=   3  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.423 .
+19:21:43.426   N=  512 scale=False float32  rows=   3  max_abs=2.38e-07 max_rel=1.63e-07 bit-exact=68.42%
+19:21:43.429 .
+19:21:43.432   N= 1536 scale=True  bfloat16 rows=   7  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.435 .
+19:21:43.438   N= 1536 scale=True  float32  rows=   7  max_abs=7.15e-07 max_rel=2.36e-07 bit-exact=87.01%
+19:21:43.441 .
+19:21:43.444   N=  256 scale=True  bfloat16 rows=   7  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.448 .
+19:21:43.451   N=  256 scale=True  float32  rows=   7  max_abs=7.15e-07 max_rel=3.07e-07 bit-exact=59.93%
+19:21:43.453 .
+19:21:43.456   N=  256 scale=False bfloat16 rows=   7  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.459 .
+19:21:43.462   N=  256 scale=False float32  rows=   7  max_abs=2.38e-07 max_rel=1.70e-07 bit-exact=59.32%
+19:21:43.464 .
+19:21:43.467   N=  512 scale=True  bfloat16 rows=   7  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.470 .
+19:21:43.473   N=  512 scale=True  float32  rows=   7  max_abs=4.77e-07 max_rel=2.37e-07 bit-exact=73.94%
+19:21:43.477 .
+19:21:43.479   N=  512 scale=False bfloat16 rows=   7  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.482 .
+19:21:43.485   N=  512 scale=False float32  rows=   7  max_abs=2.38e-07 max_rel=1.78e-07 bit-exact=60.02%
+19:21:43.488 .
+19:21:43.491   N= 1536 scale=True  bfloat16 rows=   8  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.494 .
+19:21:43.497   N= 1536 scale=True  float32  rows=   8  max_abs=7.15e-07 max_rel=2.38e-07 bit-exact=54.60%
+19:21:43.499 .
+19:21:43.502   N=  256 scale=True  bfloat16 rows=   8  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.505 .
+19:21:43.508   N=  256 scale=True  float32  rows=   8  max_abs=4.77e-07 max_rel=2.38e-07 bit-exact=66.46%
+19:21:43.511 .
+19:21:43.514   N=  256 scale=False bfloat16 rows=   8  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.517 .
+19:21:43.520   N=  256 scale=False float32  rows=   8  max_abs=7.15e-07 max_rel=2.43e-07 bit-exact=63.72%
+19:21:43.522 .
+19:21:43.525   N=  512 scale=True  bfloat16 rows=   8  max_abs=3.91e-03 max_rel=6.21e-03 bit-exact=99.95%
+19:21:43.528 .
+19:21:43.531   N=  512 scale=True  float32  rows=   8  max_abs=4.77e-07 max_rel=2.33e-07 bit-exact=66.46%
+19:21:43.533 .
+19:21:43.536   N=  512 scale=False bfloat16 rows=   8  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.539 .
+19:21:43.542   N=  512 scale=False float32  rows=   8  max_abs=4.77e-07 max_rel=1.70e-07 bit-exact=53.10%
+19:21:43.545 .
+19:21:43.549   N= 1536 scale=True  bfloat16 rows=  33  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.551 .
+19:21:43.554   N= 1536 scale=True  float32  rows=  33  max_abs=7.15e-07 max_rel=2.42e-07 bit-exact=61.50%
+19:21:43.557 .
+19:21:43.559   N=  256 scale=True  bfloat16 rows=  33  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.562 .
+19:21:43.565   N=  256 scale=True  float32  rows=  33  max_abs=4.77e-07 max_rel=2.40e-07 bit-exact=61.54%
+19:21:43.568 .
+19:21:43.571   N=  256 scale=False bfloat16 rows=  33  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.574 .
+19:21:43.577   N=  256 scale=False float32  rows=  33  max_abs=4.77e-07 max_rel=2.54e-07 bit-exact=62.41%
+19:21:43.579 .
+19:21:43.582   N=  512 scale=True  bfloat16 rows=  33  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.585 .
+19:21:43.588   N=  512 scale=True  float32  rows=  33  max_abs=7.15e-07 max_rel=3.33e-07 bit-exact=52.90%
+19:21:43.592 .
+19:21:43.595   N=  512 scale=False bfloat16 rows=  33  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.599 .
+19:21:43.602   N=  512 scale=False float32  rows=  33  max_abs=4.77e-07 max_rel=1.80e-07 bit-exact=48.48%
+19:21:43.604 .
+19:21:43.607   N= 1536 scale=True  bfloat16 rows= 129  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.610 .
+19:21:43.613   N= 1536 scale=True  float32  rows= 129  max_abs=9.54e-07 max_rel=3.15e-07 bit-exact=59.96%
+19:21:43.616 .
+19:21:43.619   N=  256 scale=True  bfloat16 rows= 129  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.621 .
+19:21:43.624   N=  256 scale=True  float32  rows= 129  max_abs=7.15e-07 max_rel=3.51e-07 bit-exact=60.66%
+19:21:43.627 .
+19:21:43.630   N=  256 scale=False bfloat16 rows= 129  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.633 .
+19:21:43.636   N=  256 scale=False float32  rows= 129  max_abs=4.77e-07 max_rel=1.90e-07 bit-exact=55.31%
+19:21:43.639 .
+19:21:43.641   N=  512 scale=True  bfloat16 rows= 129  max_abs=1.95e-03 max_rel=4.29e-03 bit-exact=100.00%
+19:21:43.644 .
+19:21:43.647   N=  512 scale=True  float32  rows= 129  max_abs=9.54e-07 max_rel=3.50e-07 bit-exact=53.79%
+19:21:43.650 .
+19:21:43.653   N=  512 scale=False bfloat16 rows= 129  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.655 .
+19:21:43.658   N=  512 scale=False float32  rows= 129  max_abs=4.77e-07 max_rel=2.52e-07 bit-exact=54.46%
+19:21:43.661 .
+19:21:43.664   N= 1536 scale=True  bfloat16 rows=1000  max_abs=1.56e-02 max_rel=7.69e-03 bit-exact=100.00%
+19:21:43.666 .
+19:21:43.669   N= 1536 scale=True  float32  rows=1000  max_abs=9.54e-07 max_rel=3.48e-07 bit-exact=61.72%
+19:21:43.672 .
+19:21:43.675   N=  256 scale=True  bfloat16 rows=1000  max_abs=3.91e-03 max_rel=5.24e-03 bit-exact=100.00%
+19:21:43.678 .
+19:21:43.681   N=  256 scale=True  float32  rows=1000  max_abs=9.54e-07 max_rel=3.39e-07 bit-exact=59.98%
+19:21:43.683 .
+19:21:43.686   N=  256 scale=False bfloat16 rows=1000  max_abs=0.00e+00 max_rel=0.00e+00 bit-exact=100.00%
+19:21:43.688 .
+19:21:43.691   N=  256 scale=False float32  rows=1000  max_abs=7.15e-07 max_rel=2.67e-07 bit-exact=57.73%
+19:21:43.693 .
+19:21:43.696   N=  512 scale=True  bfloat16 rows=1000  max_abs=7.81e-03 max_rel=6.54e-03 bit-exact=100.00%
+19:21:43.699 .
+19:21:43.701   N=  512 scale=True  float32  rows=1000  max_abs=9.54e-07 max_rel=3.50e-07 bit-exact=58.68%
+19:21:43.703 .
+19:21:43.706   N=  512 scale=False bfloat16 rows=1000  max_abs=7.81e-03 max_rel=5.81e-03 bit-exact=100.00%
+19:21:43.708 .
+19:21:43.711   N=  512 scale=False float32  rows=1000  max_abs=9.54e-07 max_rel=2.67e-07 bit-exact=54.02%
+19:21:43.713 .......
+19:21:43.716 76 passed in 5.33s
+19:21:43.768 
+19:21:43.771 shape                         eager us  fused us  speedup
+19:21:43.774 ----------------------------------------------------------
+19:21:43.820 hidden norm, 1 x 1536            113.1      65.1    1.74x
+19:21:43.870 q/k norm sliding, 8 x 256        113.2      64.3    1.76x
+19:21:43.916 v norm sliding, 8 x 256           95.1      63.0    1.51x
+19:21:43.968 q/k norm full, 8 x 512           113.5      70.3    1.62x
+19:21:44.013 v norm full, 8 x 512              94.5      62.8    1.50x
+19:21:44.063 prefill hidden, 128 x 1536       113.3      65.0    1.74x
+19:21:44.066 
+19:21:44.069 At batch 1 both are launch-bound, so expect the win to show as fewer launches per call (~8 -> 1), not as a faster single kernel.

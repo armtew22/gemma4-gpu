@@ -1,0 +1,50 @@
+19:48:21.487 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  23%|██▎       | 446/1951 [00:00<00:00, 4451.34it/s]Loading weights:  46%|████▌     | 892/1951 [00:00<00:01, 787.16it/s] Loading weights:  57%|█████▋    | 1105/1951 [00:01<00:01, 775.65it/s]Loading weights:  64%|██████▍   | 1255/1951 [00:01<00:00, 713.51it/s]Loading weights:  75%|███████▍  | 1461/1951 [00:01<00:00, 891.16it/s]Loading weights:  94%|█████████▍| 1838/1951 [00:01<00:00, 1347.14it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1094.34it/s]
+19:48:23.800 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+19:48:23.804 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:48:23.807 torch=2.8.0+cu128  prompt=128  decode_tokens=32
+19:48:23.810 variant=graph  max_cache_len=256  compile_requested=False
+19:48:23.814 
+19:48:33.219 wall clock     20.97 ms per decode step   (47.7 tok/s)
+19:48:33.222 
+19:48:36.404 forwards seen: 32  (1 prefill 'gen_fwd_000' + 31 decode)
+19:48:36.407 analyzed 29 decode steps, skipping the first 2
+19:48:36.410 
+19:48:36.412 per decode step, averaged
+19:48:36.415   CUDA kernels launched     1302.0
+19:48:36.417   GPU kernel time            21.08 ms
+19:48:36.419   wall time                  20.97 ms
+19:48:36.421   GPU busy                   100.5 %
+19:48:36.423   GPU idle                    -0.5 %
+19:48:36.425 
+19:48:36.427 category                     ms/step    share   kernels
+19:48:36.430 -------------------------------------------------------
+19:48:36.433 matmul/gemm                   18.578    88.1%     277.0
+19:48:36.437 elementwise/activation         1.290     6.1%     745.0
+19:48:36.439 attention                      0.788     3.7%      35.0
+19:48:36.442 norm                           0.419     2.0%     242.0
+19:48:36.444 memory copies                  0.005     0.0%       3.0
+19:48:36.446 
+19:48:36.449 top 15 kernels by total time (per step)
+19:48:36.451   ms/step   calls    avg us  name
+19:48:36.454 ----------------------------------------------------------------------------------------------------
+19:48:36.456    13.907   142.0      97.9  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:48:36.458     4.446   100.0      44.5  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:48:36.460     0.788    35.0      22.5  fmha_cutlassF_bf16_aligned_32x128_gmem_sm80(PyTorchMemEffAttention::At
+19:48:36.462     0.419   242.0       1.7  rmsnorm_fwd_kernel
+19:48:36.465     0.242   107.0       2.3  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+19:48:36.468     0.225    35.0       6.4  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:48:36.471     0.216   156.0       1.4  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+19:48:36.474     0.141   100.0       1.4  void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu
+19:48:36.476     0.116    70.0       1.7  void at::native::vectorized_elementwise_kernel<4, at::native::GeluCUDA
+19:48:36.479     0.105    35.0       3.0  void at::native::(anonymous namespace)::CatArrayBatchedCopy<at::native
+19:48:36.481     0.085    70.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::FillFunc
+19:48:36.484     0.082    35.0       2.4  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+19:48:36.487     0.073    36.0       2.0  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+19:48:36.490     0.061    30.0       2.0  void at::native::index_elementwise_kernel<128, 4, at::native::index_co
+19:48:36.492     0.025    15.0       1.7  void at::native::(anonymous namespace)::CatArrayBatchedCopy_alignedK_c
+19:48:36.495 
+19:48:36.497 VERDICT  GPU busy 100.5%  ->  mostly memory/compute-bound: quantization is the lever
+19:48:36.500 thresholds: busy >= 80% memory/compute-bound | < 60% overhead-bound | 60-80% mixed
+19:48:36.503 
+19:48:36.506 trace written to out/trace_G_graph.json - open in ui.perfetto.dev and look at the gaps between kernels by eye
+19:48:36.508 wrote out/profile_G_graph.json

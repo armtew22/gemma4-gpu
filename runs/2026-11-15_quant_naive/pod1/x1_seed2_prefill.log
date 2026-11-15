@@ -1,0 +1,18 @@
+19:56:17.231 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+19:56:17.234 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:56:20.655 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+19:56:23.716 eval set: 48 x 1024 tokens, bos=yes, sha256=b4e6ebfe8865633b
+19:56:23.719 
+19:56:26.307 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  20%|██        | 391/1951 [00:00<00:00, 3908.62it/s]Loading weights:  40%|████      | 782/1951 [00:00<00:01, 768.66it/s] Loading weights:  50%|████▉     | 972/1951 [00:01<00:01, 897.51it/s]Loading weights:  59%|█████▊    | 1145/1951 [00:01<00:00, 880.37it/s]Loading weights:  66%|██████▌   | 1283/1951 [00:01<00:00, 855.43it/s]Loading weights:  87%|████████▋ | 1699/1951 [00:01<00:00, 1429.54it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1251.64it/s]
+19:56:26.796 variant: eager  cache=DynamicCache  compile_requested=False
+19:56:41.965 PERTURBED 276 matrices (model.language_model.layers.0.self_attn.q_proj.weight .. model.language_model.per_layer_model_projection.weight) scale=0.01 relative to each weight's std; shapes {'(2048, 1536)': 28, '(256, 1536)': 59, '(1536, 2048)': 28, '(6144, 1536)': 30, '(1536, 6144)': 15, '(1536, 256)': 35, '(4096, 1536)': 7, '(512, 1536)': 6, '(1536, 4096)': 7, '(12288, 1536)': 40, '(1536, 12288)': 20, '(8960, 1536)': 1}
+19:56:51.441 
+19:56:51.444 tokens scored         49152
+19:56:51.446 mean KL(ref||cur)     1.089e-02  nats, over the ref top-100
+19:56:51.449 top-1 agreement       96.0795 %
+19:56:51.451 perplexity            181.6300
+19:56:51.453 top-100 coverage       99.071 %  (current model's mass inside the reference top-k)
+19:56:51.455 wall                  9.5s
+19:56:51.457 band v2 verdict       NOT-PASS   (FAIL anchor not measured yet)
+19:56:51.459 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+19:56:51.597 wrote out/seed_all-linears_prefill_0.01_s2.json

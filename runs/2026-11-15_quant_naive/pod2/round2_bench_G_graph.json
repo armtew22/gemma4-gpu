@@ -1,0 +1,118 @@
+{
+  "model": "google/gemma-4-E2B-it",
+  "variant": "graph",
+  "variant_meta": {
+    "cache": {
+      "class": "StaticCache",
+      "source": "StaticCache built by graph_decode.GraphDecoder with generate()'s own arguments (config=text_config, max_cache_len, offloading=False)",
+      "compileable": true,
+      "num_cache_layers": 15,
+      "layer_classes": {
+        "StaticSlidingWindowLayer": 12,
+        "StaticLayer": 3
+      },
+      "layer_max_cache_len": {
+        "StaticSlidingWindowLayer": [
+          256
+        ],
+        "StaticLayer": [
+          256
+        ]
+      },
+      "max_cache_len_effective": null
+    },
+    "max_cache_len": 256,
+    "compile": {
+      "requested": false,
+      "disable_compile": null,
+      "reason": "no torch.compile: each decode step replays a manually captured CUDA graph",
+      "config": null,
+      "engaged": false
+    },
+    "decode": {
+      "loop": "graph_decode.GraphDecoder: eager prefill, one CUDA graph replay per decode step",
+      "norms": "fused Triton RMSNorm"
+    },
+    "variant": "graph",
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.19.0",
+    "num_hidden_layers": 35,
+    "generate_kwargs": {},
+    "generate_only": true,
+    "patch": {
+      "replaced_total": 242,
+      "replaced": {
+        "Gemma4RMSNorm N=256 with_scale=True": 41,
+        "Gemma4RMSNorm N=256 with_scale=False": 12,
+        "Gemma4RMSNorm N=1536 with_scale=True": 176,
+        "Gemma4RMSNorm N=512 with_scale=True": 10,
+        "Gemma4RMSNorm N=512 with_scale=False": 3
+      },
+      "left_on_eager": {
+        "Gemma4RMSNorm (vision/audio): not on the text decode path, untested inputs": 222,
+        "LayerNorm: not an RMSNorm": 2
+      },
+      "build_check": {
+        "max_abs_error_vs_reference": {
+          "Gemma4RMSNorm N=256 with_scale=True": 0.0,
+          "Gemma4RMSNorm N=256 with_scale=False": 0.0,
+          "Gemma4RMSNorm N=1536 with_scale=True": 0.0,
+          "Gemma4RMSNorm N=512 with_scale=True": 0.0,
+          "Gemma4RMSNorm N=512 with_scale=False": 0.0
+        }
+      }
+    },
+    "graph": {
+      "max_cache_len": 256,
+      "batch_size": 1,
+      "warmup_steps": 3,
+      "capture_ms": 150.65624471753836,
+      "self_check": {
+        "steps": 4,
+        "replay_vs_eager_step": "bit-identical",
+        "dict_mask_vs_generate_mask": "bit-identical"
+      }
+    },
+    "consistency_problems": []
+  },
+  "host": {
+    "hostname": "4160a62e3e7b",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 9254 24-Core Processor",
+    "vcpu_count": 48,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "595.91.07",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "gpu": "NVIDIA L4",
+  "torch": "2.8.0+cu128",
+  "dtype": "bfloat16",
+  "weights_gb": 10.239930368,
+  "model_weight_gb": 10.208601186,
+  "build_peak_mem_gb": 10.2609024,
+  "max_memory_allocated_gb": 10.2609024,
+  "decode_tokens": 64,
+  "trials": 10,
+  "warmup": 3,
+  "rows": [
+    {
+      "prompt_len": 128,
+      "batch_size": 1,
+      "status": "ok",
+      "ttft_ms": 32.89804235100746,
+      "prefill_tok_s": 3890.809022442643,
+      "decode_tok_s_per_seq": 47.854576160219196,
+      "decode_tok_s_total": 47.854576160219196,
+      "peak_mem_gb": 10.256323072,
+      "ttft_ms_min": 32.6688913628459,
+      "ttft_ms_max": 33.32220017910004
+    }
+  ]
+}

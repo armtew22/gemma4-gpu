@@ -842,6 +842,137 @@ bit-identical over 4 steps.
   - graph_eager drift exactly equal to static's: **confirmed**.
 - Cost ~$0.20 (one pod, ~20 min).
 
+## Naive quantization staircase and the drift anchor — raw results (2026-11-15)
+
+Raw numbers; the full writeup is separate. Two L4 pods, run in parallel, every step in a fresh
+process. Settings as in earlier staircases: batch 1, 128-token prompt, 64 decode tokens, cache
+256. Software on both: driver 595.91.07, torch 2.8.0+cu128, transformers 5.19.0, Triton 3.4.0.
+Files are in `runs/2026-11-15_quant_naive/pod1/` and `pod2/`.
+
+- **Pod 1** (AMD EPYC 7F52, 64 visible cores) ran the full session:
+  - `pod/quant_naive.sh`: the anchor ladder, then the staircase;
+  - an anchor seed check;
+  - int4 with lm_head also quantized;
+  - three more benchmark rounds, with the order rotated each round.
+- **Pod 2** (AMD EPYC 9254, 48 visible cores) ran speed only: three rotated benchmark rounds
+  and one profile per variant.
+- **Host classes.** The 7F52 is a high-clock part of the same generation as the slow EPYC 7542
+  (Zen 2), so I classed it as slow. Its eager busy figure of 50% puts it between the 7542
+  (41%) and the 9254 (75%).
+- Kernel tests passed 76/76 on both pods. Every build-time check and self-check passed. Both
+  references passed their floor checks on pod 1 (KL 0, top-1 100%). No stop rule fired.
+
+### The anchor
+
+The rule fixed on 2026-11-11 found an anchor: **all-linears at 1e-2**. That gives band v3
+FAIL at **KL ≥ 0.010 or top-1 ≤ 95.9%**, with PASS unchanged from v2.
+
+| target | scale | decode KL / top-1 | prefill KL / top-1 | ≥ 8.1e-3 in both |
+| --- | --- | --- | --- | --- |
+| all-linears | 1e-3 | 2.094e-3 / 98.74% | 2.524e-3 / 98.17% | |
+| all-linears | 3e-3 | 3.195e-3 / 98.54% | 3.479e-3 / 97.91% | |
+| **all-linears** | **1e-2** | **1.046e-2 / 95.61%** | **1.162e-2 / 95.87%** | **yes — the anchor** |
+| all-linears | 3e-2 | 6.642e-2 / 89.17% | 7.375e-2 / 89.54% | yes |
+| all-linears | 1e-1 | 6.936e-1 / 69.30% | 7.025e-1 / 69.31% | yes |
+| all-o-proj | 1e-3 | 1.872e-3 / 98.48% | 2.487e-3 / 98.16% | |
+| all-o-proj | 3e-3 | 2.183e-3 / 98.54% | 2.784e-3 / 98.12% | |
+| all-o-proj | 1e-2 | 3.494e-3 / 97.86% | 4.732e-3 / 97.49% | |
+| all-o-proj | 3e-2 | 1.395e-2 / 94.98% | 1.875e-2 / 94.81% | yes |
+| all-o-proj | 1e-1 | 1.325e-1 / 86.24% | 1.640e-1 / 84.85% | yes |
+| all-down-proj | 1e-3 | 1.891e-3 / 98.69% | 2.498e-3 / 98.21% | |
+| all-down-proj | 3e-3 | 2.164e-3 / 98.43% | 2.581e-3 / 98.17% | |
+| all-down-proj | 1e-2 | 3.149e-3 / 97.96% | 3.324e-3 / 97.79% | |
+| all-down-proj | 3e-2 | 1.112e-2 / 95.97% | 1.193e-2 / 95.86% | yes |
+| all-down-proj | 1e-1 | 1.007e-1 / 87.19% | 9.741e-2 / 88.15% | yes |
+
+- **Seed check** (it does not change the pick). Re-running all-linears at 1e-2 with seeds 1
+  and 2 gave decode KL 1.113e-2 and 9.897e-3 (top-1 95.71% and 95.82%), and prefill KL
+  1.268e-2 and 1.089e-2 (95.75% and 96.08%). Across the three seeds, KL spreads about ±7% and
+  top-1 about ±0.2 points. Every seed still reads FAIL, but **seed 2's decode KL lands just
+  under the 0.010 line**; only its top-1 puts it in FAIL. The line sits at the anchor's own
+  noise edge, as the round-down rule intends.
+- **The q_proj repro matches 2026-10-28 on a different host**: 3.2536e-3 / 98.065% against
+  3.254e-3 / 98.07%.
+
+### Pod 1 — EPYC 7F52 (slow class)
+
+tok/s is the mean ± std over 4 rounds for A, Q8, Q4, FL and G, and a single run for A2 and
+Q4H. ms/step and busy come from the profile run. Weight is the model's parameters plus
+buffers. Peak is the run-time peak; the build peak is in brackets.
+
+| variant | tok/s | ms/step | TTFT | GPU kernels/step | CPU launches/step | GPU busy | weight GB | peak GB | prefill KL / top-1 | decode KL / top-1 | band v3 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A eager | 21.50 ± 0.42 | 46.83 | 53.8 ms | 3,085 | 3,084 | 49.9% | 10.21 | 10.24 | — | — | — |
+| Q8 int8_naive | 6.79 ± 0.01 | 147.17 | 165.0 ms | 4,189 | 4,188 | 97.6% | 8.33 | 8.55 (12.29) | 1.241e-2 / 95.84% | 1.149e-2 / 95.19% | **FAIL** |
+| Q4 int4_naive | 5.69 ± 0.01 | 175.79 | 195.7 ms | 6,121 | 6,120 | 95.9% | 7.42 | 7.63 (11.41) | 1.076 / 60.88% | 1.123 / 59.73% | **FAIL** |
+| FL fused_loop | 26.84 ± 0.59 | 37.47 | 40.7 ms | 1,302 | 1,301 | 55.1% | 10.21 | 10.24 | n/a | 1.935e-3 / 98.54% | PASS |
+| G graph | 47.52 ± 0.10 | 20.97 | 42.8 ms | 1,302 | **1** | 100.5% | 10.21 | 10.26 | n/a | 1.935e-3 / 98.54% | PASS |
+| A2 eager | 21.55 | 47.60 | 53.3 ms | 3,085 | 3,084 | 49.1% | 10.21 | 10.24 | — | — | — |
+| Q4H int4 + lm_head | 4.45 | — | 245.0 ms | — | — | — | 7.63 | 11.67 (16.44) | 1.107 / 60.53% | 1.156 / 60.04% | **FAIL** |
+
+### Pod 2 — EPYC 9254 (fast class), speed only
+
+| variant | tok/s (3 rounds) | ms/step | TTFT | GPU kernels/step | CPU launches/step | GPU busy | weight GB | peak GB |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A eager | 32.34 ± 0.11 | 30.97 | 39.7 ms | 3,085 | 3,084 | 75.5% | 10.21 | 10.24 |
+| Q8 int8_naive | 6.85 ± 0.01 | 146.08 | 161.1 ms | 4,189 | 4,188 | 98.2% | 8.33 | 8.55 (12.29) |
+| Q4 int4_naive | 5.80 ± 0.00 | 172.48 | 189.9 ms | 6,121 | 6,120 | 98.0% | 7.42 | 7.63 (11.41) |
+| FL fused_loop | 41.54 ± 0.61 | 23.59 | 31.8 ms | 1,302 | 1,301 | 87.6% | 10.21 | 10.24 |
+| G graph | 47.85 ± 0.01 | 20.83 | 32.8 ms | 1,302 | **1** | 100.2% | 10.21 | 10.26 |
+
+**Speed relative to eager on the same pod:**
+
+| | Q8 | Q4 | FL | G |
+| --- | --- | --- | --- | --- |
+| pod 1 (7F52) | 0.32× | 0.26× | 1.25× | **2.21×** |
+| pod 2 (9254) | 0.21× | 0.18× | 1.28× | **1.48×** |
+
+**graph runs at 47.52 tok/s on pod 1 and 47.85 on pod 2, within 0.7%**, while eager differs
+1.5× between the same two hosts. The graph removes the host from the result. Graph vs
+fused_loop — the CUDA graph on its own — is 1.77× on the slow host and 1.15× on the fast one.
+
+- **Naive quantization is 3–5× slower than eager and GPU-bound** (busy ≥ 96%). GPU kernel
+  time is 143 ms per step for int8 and 169 ms for int4, against 23 ms for eager. Every step
+  expands each weight to fp32, multiplies and casts it to bf16, then reads it again. It moves
+  far more bytes per token than bf16 does, not fewer.
+- **Weight memory drops exactly as `scripts/quant_bytes.py` predicted**: −1.88 GB for int8 and
+  −2.79 GB for int4. Run-time peak falls from 10.24 GB to 8.55 and 7.63 GB. **The build peak
+  rises** to 12.29 and 11.41 GB: `patch_quant` frees the bf16 weights only after every layer
+  is quantized, because its module map keeps the old linears alive until the loop ends. Not
+  fixed here.
+- **int8 fails band v3, at almost exactly the anchor's damage.** Its decode KL is 1.149e-2
+  against the anchor's 1.046e-2 (seed range 0.99–1.11e-2), and perplexity rises 1.7% in
+  decode and 1.3% in prefill. This matches the consequence stated on 2026-11-11 before
+  anything was scored: int8's per-weight error measured about 1e-2 on the same scale, and
+  the anchor landed at 1e-2. In other words, band v3's FAIL means "as damaging as 1% noise on
+  every linear", and naive int8 is that.
+- **int4 with round-to-nearest is unusable here**: KL about 1.1, top-1 about 60%. That fits
+  the noise ladder: int4's per-weight error is about 0.12–0.13 on the same scale, and 1e-1
+  noise already reaches KL 0.69. Quantizing lm_head as well makes it worse on every axis:
+  4.45 tok/s, a 16.44 GB build peak, and higher KL.
+- **fused_loop's decode drift is identical to graph's** (1.9348e-3 / 98.5356%): the same
+  computation with and without capture. fused_rmsnorm was not run in this session.
+
+**Predictions in `pod/anchor.sh`:**
+- all-q-proj @ 1e-2 reproduces 2026-10-28: **confirmed** (3.2536e-3 vs 3.254e-3).
+- o_proj, down_proj and q_proj give similar KL at each noise scale: **confirmed** where all
+  three were measured. At 1e-2 decode they are 3.49e-3, 3.15e-3 and 3.25e-3. The q_norm
+  explanation stays retired.
+- all-linears reaches 8.1e-3 by 3e-2: **confirmed** (already at 1e-2).
+
+**Predictions in `pod/quant_naive.sh`:**
+- int8_naive and int4_naive are slower than eager: **confirmed** on both hosts.
+- Weight memory drops: **confirmed**, by exactly the predicted bytes. Build peak rises,
+  which wasn't predicted.
+- int8_naive lands in or near band v3 PASS: **not confirmed.** It is FAIL in both modes.
+- int4_naive lands in INVESTIGATE or FAIL: **confirmed** (FAIL, by a wide margin).
+- fused_loop sits between fused_rmsnorm and graph: **between eager and graph on both pods;
+  against fused_rmsnorm only across sessions.** fused_rmsnorm wasn't in this run. On the same
+  EPYC 9254 model it measured 36.63 tok/s on 2026-10-28, below FL's 41.54.
+
+Cost: about $1.60 — pod 1 for about 1 h 53 min and pod 2 for about 27 min, both at $0.69/hr.
+The 16 creation attempts that found no stock were free.
+
 ## Model variants
 
 `variants.py` is the single place every tool builds its model, so a variant name means the
@@ -1030,8 +1161,8 @@ bandwidth (irreducible at bf16), 4.93 ms small kernels, 7.17 ms launch-gap idle.
 1.7–2.4e-3. Band v1 fails all of them; band v2's PASS rule (KL < 2.7e-3, top-1 ≥ 98.0%) holds,
 but **band v2 has no usable FAIL line** — its q_proj anchor sits at the same floor.
 
-**Next:** (1) run `pod/anchor.sh`: the all-linears FAIL anchor, picked by the rule fixed on
-2026-11-11, measured before judging another variant;
+**Next:** (1) ~~run `pod/anchor.sh`~~ done 2026-11-15: band v3 FAIL at KL >= 0.010 or
+top-1 <= 95.9% (all-linears @ 1e-2);
 (2) run `fused_rmsnorm` on a CPU-bound host, where the launch savings should matter more;
 (3) the full week 3 writeup and chart; (4) the quantized dequant-GEMV Triton kernel.
 
@@ -1149,6 +1280,14 @@ Built `graph_decode.py`, a static-cache decode loop that replays one captured CU
 step and refuses to build rather than guess. Same-day pod run on a CPU-bound host: `graph` at
 **48.4 tok/s, 2.65× eager**, one CPU launch per step, 84% of the roofline. graph_eager
 reproduces static's drift exactly. *Commits: `a3e871f`.*
+
+### 2026-11-15 — drift anchor measured, naive int8/int4 staircase
+Measured the all-linears anchor ladder. The pre-stated rule picked 1e-2, so band v3 FAIL is
+KL >= 0.010 or top-1 <= 95.9%. Ran the naive int8/int4 variants and fused_loop on a
+slow-class and a fast-class host. Naive quantization saves memory (-1.9 / -2.8 GB of
+weights) and is 3-5x slower, as predicted. int8 FAILs band v3 at almost exactly the anchor's
+damage; int4 round-to-nearest is unusable (KL ~1.1). graph runs at 47.5 / 47.9 tok/s on the two
+hosts, which removes the host dependence. *Commits: `658b910`.*
 
 ### A note on corrections
 Five conclusions have been overturned by measurement: the 23.7 tok/s baseline, the 25.6 tok/s

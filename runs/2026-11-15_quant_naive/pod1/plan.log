@@ -1,0 +1,154 @@
+[18:40:19] START p0_decode_floor: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --reference ref_decode_eager.pt --expect no-drift --out out/drift_decode_eager_floor.json
+[18:42:25] END   p0_decode_floor rc=0
+[18:42:25] START p0_prefill_floor: /opt/venv/bin/python eval_drift.py --variant eager --reference ref_50k_bos.pt --expect no-drift --out out/drift_prefill_eager_floor.json
+[18:42:50] END   p0_prefill_floor rc=0
+[18:42:50] START p1_repro_q_proj: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-2 --perturb-target all-q-proj --reference ref_decode_eager.pt --out out/repro_all-q-proj_decode_1e-2.json
+[18:44:38] END   p1_repro_q_proj rc=0
+[18:44:38] START ladder_all-linears_decode_1e-3: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-3 --perturb-target all-linears --reference ref_decode_eager.pt --out out/ladder_all-linears_decode_1e-3.json
+[18:46:42] END   ladder_all-linears_decode_1e-3 rc=0
+[18:46:42] START ladder_all-linears_prefill_1e-3: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-3 --perturb-target all-linears --reference ref_50k_bos.pt --out out/ladder_all-linears_prefill_1e-3.json
+[18:47:22] END   ladder_all-linears_prefill_1e-3 rc=0
+[18:47:22] START ladder_all-linears_decode_3e-3: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 3e-3 --perturb-target all-linears --reference ref_decode_eager.pt --out out/ladder_all-linears_decode_3e-3.json
+[18:49:25] END   ladder_all-linears_decode_3e-3 rc=0
+[18:49:25] START ladder_all-linears_prefill_3e-3: /opt/venv/bin/python eval_drift.py --variant eager --perturb 3e-3 --perturb-target all-linears --reference ref_50k_bos.pt --out out/ladder_all-linears_prefill_3e-3.json
+[18:50:05] END   ladder_all-linears_prefill_3e-3 rc=0
+[18:50:05] START ladder_all-linears_decode_1e-2: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-2 --perturb-target all-linears --reference ref_decode_eager.pt --out out/ladder_all-linears_decode_1e-2.json
+[18:52:08] END   ladder_all-linears_decode_1e-2 rc=0
+[18:52:08] START ladder_all-linears_prefill_1e-2: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-2 --perturb-target all-linears --reference ref_50k_bos.pt --out out/ladder_all-linears_prefill_1e-2.json
+[18:52:48] END   ladder_all-linears_prefill_1e-2 rc=0
+[18:52:48] START ladder_all-linears_decode_3e-2: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 3e-2 --perturb-target all-linears --reference ref_decode_eager.pt --out out/ladder_all-linears_decode_3e-2.json
+[18:54:51] END   ladder_all-linears_decode_3e-2 rc=0
+[18:54:51] START ladder_all-linears_prefill_3e-2: /opt/venv/bin/python eval_drift.py --variant eager --perturb 3e-2 --perturb-target all-linears --reference ref_50k_bos.pt --out out/ladder_all-linears_prefill_3e-2.json
+[18:55:31] END   ladder_all-linears_prefill_3e-2 rc=0
+[18:55:31] START ladder_all-linears_decode_1e-1: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-1 --perturb-target all-linears --reference ref_decode_eager.pt --out out/ladder_all-linears_decode_1e-1.json
+[18:57:36] END   ladder_all-linears_decode_1e-1 rc=0
+[18:57:36] START ladder_all-linears_prefill_1e-1: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-1 --perturb-target all-linears --reference ref_50k_bos.pt --out out/ladder_all-linears_prefill_1e-1.json
+[18:58:16] END   ladder_all-linears_prefill_1e-1 rc=0
+[18:58:16] START ladder_all-o-proj_decode_1e-3: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-3 --perturb-target all-o-proj --reference ref_decode_eager.pt --out out/ladder_all-o-proj_decode_1e-3.json
+[19:00:04] END   ladder_all-o-proj_decode_1e-3 rc=0
+[19:00:04] START ladder_all-o-proj_prefill_1e-3: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-3 --perturb-target all-o-proj --reference ref_50k_bos.pt --out out/ladder_all-o-proj_prefill_1e-3.json
+[19:00:31] END   ladder_all-o-proj_prefill_1e-3 rc=0
+[19:00:31] START ladder_all-o-proj_decode_3e-3: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 3e-3 --perturb-target all-o-proj --reference ref_decode_eager.pt --out out/ladder_all-o-proj_decode_3e-3.json
+[19:02:21] END   ladder_all-o-proj_decode_3e-3 rc=0
+[19:02:21] START ladder_all-o-proj_prefill_3e-3: /opt/venv/bin/python eval_drift.py --variant eager --perturb 3e-3 --perturb-target all-o-proj --reference ref_50k_bos.pt --out out/ladder_all-o-proj_prefill_3e-3.json
+[19:02:48] END   ladder_all-o-proj_prefill_3e-3 rc=0
+[19:02:48] START ladder_all-o-proj_decode_1e-2: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-2 --perturb-target all-o-proj --reference ref_decode_eager.pt --out out/ladder_all-o-proj_decode_1e-2.json
+[19:04:40] END   ladder_all-o-proj_decode_1e-2 rc=0
+[19:04:40] START ladder_all-o-proj_prefill_1e-2: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-2 --perturb-target all-o-proj --reference ref_50k_bos.pt --out out/ladder_all-o-proj_prefill_1e-2.json
+[19:05:07] END   ladder_all-o-proj_prefill_1e-2 rc=0
+[19:05:07] START ladder_all-o-proj_decode_3e-2: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 3e-2 --perturb-target all-o-proj --reference ref_decode_eager.pt --out out/ladder_all-o-proj_decode_3e-2.json
+[19:06:58] END   ladder_all-o-proj_decode_3e-2 rc=0
+[19:06:58] START ladder_all-o-proj_prefill_3e-2: /opt/venv/bin/python eval_drift.py --variant eager --perturb 3e-2 --perturb-target all-o-proj --reference ref_50k_bos.pt --out out/ladder_all-o-proj_prefill_3e-2.json
+[19:07:24] END   ladder_all-o-proj_prefill_3e-2 rc=0
+[19:07:24] START ladder_all-o-proj_decode_1e-1: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-1 --perturb-target all-o-proj --reference ref_decode_eager.pt --out out/ladder_all-o-proj_decode_1e-1.json
+[19:09:15] END   ladder_all-o-proj_decode_1e-1 rc=0
+[19:09:15] START ladder_all-o-proj_prefill_1e-1: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-1 --perturb-target all-o-proj --reference ref_50k_bos.pt --out out/ladder_all-o-proj_prefill_1e-1.json
+[19:09:42] END   ladder_all-o-proj_prefill_1e-1 rc=0
+[19:09:42] START ladder_all-down-proj_decode_1e-3: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-3 --perturb-target all-down-proj --reference ref_decode_eager.pt --out out/ladder_all-down-proj_decode_1e-3.json
+[19:11:35] END   ladder_all-down-proj_decode_1e-3 rc=0
+[19:11:35] START ladder_all-down-proj_prefill_1e-3: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-3 --perturb-target all-down-proj --reference ref_50k_bos.pt --out out/ladder_all-down-proj_prefill_1e-3.json
+[19:12:04] END   ladder_all-down-proj_prefill_1e-3 rc=0
+[19:12:04] START ladder_all-down-proj_decode_3e-3: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 3e-3 --perturb-target all-down-proj --reference ref_decode_eager.pt --out out/ladder_all-down-proj_decode_3e-3.json
+[19:13:57] END   ladder_all-down-proj_decode_3e-3 rc=0
+[19:13:57] START ladder_all-down-proj_prefill_3e-3: /opt/venv/bin/python eval_drift.py --variant eager --perturb 3e-3 --perturb-target all-down-proj --reference ref_50k_bos.pt --out out/ladder_all-down-proj_prefill_3e-3.json
+[19:14:26] END   ladder_all-down-proj_prefill_3e-3 rc=0
+[19:14:26] START ladder_all-down-proj_decode_1e-2: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-2 --perturb-target all-down-proj --reference ref_decode_eager.pt --out out/ladder_all-down-proj_decode_1e-2.json
+[19:16:21] END   ladder_all-down-proj_decode_1e-2 rc=0
+[19:16:21] START ladder_all-down-proj_prefill_1e-2: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-2 --perturb-target all-down-proj --reference ref_50k_bos.pt --out out/ladder_all-down-proj_prefill_1e-2.json
+[19:16:51] END   ladder_all-down-proj_prefill_1e-2 rc=0
+[19:16:51] START ladder_all-down-proj_decode_3e-2: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 3e-2 --perturb-target all-down-proj --reference ref_decode_eager.pt --out out/ladder_all-down-proj_decode_3e-2.json
+[19:18:44] END   ladder_all-down-proj_decode_3e-2 rc=0
+[19:18:45] START ladder_all-down-proj_prefill_3e-2: /opt/venv/bin/python eval_drift.py --variant eager --perturb 3e-2 --perturb-target all-down-proj --reference ref_50k_bos.pt --out out/ladder_all-down-proj_prefill_3e-2.json
+[19:19:14] END   ladder_all-down-proj_prefill_3e-2 rc=0
+[19:19:14] START ladder_all-down-proj_decode_1e-1: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 1e-1 --perturb-target all-down-proj --reference ref_decode_eager.pt --out out/ladder_all-down-proj_decode_1e-1.json
+[19:21:06] END   ladder_all-down-proj_decode_1e-1 rc=0
+[19:21:06] START ladder_all-down-proj_prefill_1e-1: /opt/venv/bin/python eval_drift.py --variant eager --perturb 1e-1 --perturb-target all-down-proj --reference ref_50k_bos.pt --out out/ladder_all-down-proj_prefill_1e-1.json
+[19:21:36] END   ladder_all-down-proj_prefill_1e-1 rc=0
+[19:21:36] START p3_pick: /opt/venv/bin/python pod/pick_anchor.py out
+[19:21:36] END   p3_pick rc=0
+[19:21:36] ANCHOR DONE
+[19:21:36] band v3 FAIL line fixed: all-linears 0.01 KL >= 0.01 top-1 <= 95.9
+[19:21:36] START p2_kernel_tests: /opt/venv/bin/python tests/test_rmsnorm.py
+[19:21:45] END   p2_kernel_tests rc=0
+[19:21:45] START A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A_eager.json
+[19:22:38] END   A_bench rc=0
+[19:22:38] START A_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A_eager.json --out out/profile_A_eager.json
+[19:23:29] END   A_profile rc=0
+[19:23:35] START Q8_bench: /opt/venv/bin/python benchmark.py --variant int8_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_Q8_int8_naive.json
+[19:25:53] END   Q8_bench rc=0
+[19:25:53] START Q8_profile: /opt/venv/bin/python profile_decode.py --variant int8_naive --prompt-len 128 --max-cache-len 256 --trace out/trace_Q8_int8_naive.json --out out/profile_Q8_int8_naive.json
+[19:27:32] END   Q8_profile rc=0
+[19:27:40] START Q8_drift_prefill: /opt/venv/bin/python eval_drift.py --variant int8_naive --reference ref_50k_bos.pt --band-v3-anchor out/anchor_pick.json --out out/drift_prefill_Q8_int8_naive.json
+[19:28:12] END   Q8_drift_prefill rc=0
+[19:28:12] START Q8_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant int8_naive --reference ref_decode_eager.pt --band-v3-anchor out/anchor_pick.json --out out/drift_decode_Q8_int8_naive.json
+[19:33:12] END   Q8_drift_decode rc=0
+[19:33:12] START Q4_bench: /opt/venv/bin/python benchmark.py --variant int4_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_Q4_int4_naive.json
+[19:35:53] END   Q4_bench rc=0
+[19:35:53] START Q4_profile: /opt/venv/bin/python profile_decode.py --variant int4_naive --prompt-len 128 --max-cache-len 256 --trace out/trace_Q4_int4_naive.json --out out/profile_Q4_int4_naive.json
+[19:37:56] END   Q4_profile rc=0
+[19:38:10] START Q4_drift_prefill: /opt/venv/bin/python eval_drift.py --variant int4_naive --reference ref_50k_bos.pt --band-v3-anchor out/anchor_pick.json --out out/drift_prefill_Q4_int4_naive.json
+[19:38:42] END   Q4_drift_prefill rc=0
+[19:38:42] START Q4_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant int4_naive --reference ref_decode_eager.pt --band-v3-anchor out/anchor_pick.json --out out/drift_decode_Q4_int4_naive.json
+[19:44:38] END   Q4_drift_decode rc=0
+[19:44:38] START FL_bench: /opt/venv/bin/python benchmark.py --variant fused_loop --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_FL_fused_loop.json
+[19:45:24] END   FL_bench rc=0
+[19:45:24] START FL_profile: /opt/venv/bin/python profile_decode.py --variant fused_loop --prompt-len 128 --max-cache-len 256 --trace out/trace_FL_fused_loop.json --out out/profile_FL_fused_loop.json
+[19:46:02] END   FL_profile rc=0
+[19:46:05] START FL_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant fused_loop --reference ref_decode_eager.pt --band-v3-anchor out/anchor_pick.json --out out/drift_decode_FL_fused_loop.json
+[19:47:38] END   FL_drift_decode rc=0
+[19:47:38] START G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_G_graph.json
+[19:48:11] END   G_bench rc=0
+[19:48:11] START G_profile: /opt/venv/bin/python profile_decode.py --variant graph --prompt-len 128 --max-cache-len 256 --trace out/trace_G_graph.json --out out/profile_G_graph.json
+[19:48:37] END   G_profile rc=0
+[19:48:38] START G_drift_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant graph --reference ref_decode_eager.pt --band-v3-anchor out/anchor_pick.json --out out/drift_decode_G_graph.json
+[19:49:37] END   G_drift_decode rc=0
+[19:49:37] START A2_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_A2_eager.json
+[19:50:28] END   A2_bench rc=0
+[19:50:28] START A2_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A2_eager.json --out out/profile_A2_eager.json
+[19:51:17] END   A2_profile rc=0
+[19:51:24] ALL DONE
+[19:51:24] START x1_seed1_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 0.01 --perturb-target all-linears --perturb-seed 1 --reference ref_decode_eager.pt --out out/seed_all-linears_decode_0.01_s1.json
+[19:53:29] END   x1_seed1_decode rc=0
+[19:53:29] START x1_seed1_prefill: /opt/venv/bin/python eval_drift.py --variant eager --perturb 0.01 --perturb-target all-linears --perturb-seed 1 --reference ref_50k_bos.pt --out out/seed_all-linears_prefill_0.01_s1.json
+[19:54:10] END   x1_seed1_prefill rc=0
+[19:54:10] START x1_seed2_decode: /opt/venv/bin/python eval_drift.py --mode decode --variant eager --perturb 0.01 --perturb-target all-linears --perturb-seed 2 --reference ref_decode_eager.pt --out out/seed_all-linears_decode_0.01_s2.json
+[19:56:12] END   x1_seed2_decode rc=0
+[19:56:12] START x1_seed2_prefill: /opt/venv/bin/python eval_drift.py --variant eager --perturb 0.01 --perturb-target all-linears --perturb-seed 2 --reference ref_50k_bos.pt --out out/seed_all-linears_prefill_0.01_s2.json
+[19:56:53] END   x1_seed2_prefill rc=0
+[19:56:53] START x2_bench: /opt/venv/bin/python run_lm_head.py benchmark.py --variant int4_naive_lm_head --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/bench_Q4H_int4_naive_lm_head.json
+[20:00:16] END   x2_bench rc=0
+[20:00:16] START x2_drift_prefill: /opt/venv/bin/python run_lm_head.py eval_drift.py --variant int4_naive_lm_head --reference ref_50k_bos.pt --band-v3-anchor out/anchor_pick.json --out out/drift_prefill_Q4H_int4_naive_lm_head.json
+[20:00:52] END   x2_drift_prefill rc=0
+[20:00:52] START x2_drift_decode: /opt/venv/bin/python run_lm_head.py eval_drift.py --mode decode --variant int4_naive_lm_head --reference ref_decode_eager.pt --band-v3-anchor out/anchor_pick.json --out out/drift_decode_Q4H_int4_naive_lm_head.json
+[20:08:22] END   x2_drift_decode rc=0
+[20:08:22] START r1_Q8_bench: /opt/venv/bin/python benchmark.py --variant int8_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_Q8_int8_naive.json
+[20:10:41] END   r1_Q8_bench rc=0
+[20:10:41] START r1_Q4_bench: /opt/venv/bin/python benchmark.py --variant int4_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_Q4_int4_naive.json
+[20:13:23] END   r1_Q4_bench rc=0
+[20:13:23] START r1_FL_bench: /opt/venv/bin/python benchmark.py --variant fused_loop --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_FL_fused_loop.json
+[20:14:08] END   r1_FL_bench rc=0
+[20:14:08] START r1_G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_G_graph.json
+[20:14:41] END   r1_G_bench rc=0
+[20:14:41] START r1_A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_A_eager.json
+[20:15:32] END   r1_A_bench rc=0
+[20:15:32] START r2_Q4_bench: /opt/venv/bin/python benchmark.py --variant int4_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_Q4_int4_naive.json
+[20:18:14] END   r2_Q4_bench rc=0
+[20:18:14] START r2_FL_bench: /opt/venv/bin/python benchmark.py --variant fused_loop --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_FL_fused_loop.json
+[20:18:58] END   r2_FL_bench rc=0
+[20:18:58] START r2_G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_G_graph.json
+[20:19:31] END   r2_G_bench rc=0
+[20:19:31] START r2_A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_A_eager.json
+[20:20:24] END   r2_A_bench rc=0
+[20:20:24] START r2_Q8_bench: /opt/venv/bin/python benchmark.py --variant int8_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_Q8_int8_naive.json
+[20:22:41] END   r2_Q8_bench rc=0
+[20:22:41] START r3_FL_bench: /opt/venv/bin/python benchmark.py --variant fused_loop --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_FL_fused_loop.json
+[20:23:27] END   r3_FL_bench rc=0
+[20:23:27] START r3_G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_G_graph.json
+[20:23:59] END   r3_G_bench rc=0
+[20:23:59] START r3_A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_A_eager.json
+[20:24:51] END   r3_A_bench rc=0
+[20:24:51] START r3_Q8_bench: /opt/venv/bin/python benchmark.py --variant int8_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_Q8_int8_naive.json
+[20:27:09] END   r3_Q8_bench rc=0
+[20:27:09] START r3_Q4_bench: /opt/venv/bin/python benchmark.py --variant int4_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_Q4_int4_naive.json
+[20:29:51] END   r3_Q4_bench rc=0
+[20:29:51] EXTRA DONE

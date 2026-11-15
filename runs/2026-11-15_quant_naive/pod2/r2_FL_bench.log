@@ -1,0 +1,9 @@
+19:46:16.279 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  23%|██▎       | 451/1951 [00:00<00:00, 4507.16it/s]Loading weights:  46%|████▌     | 902/1951 [00:00<00:00, 1155.06it/s]Loading weights:  58%|█████▊    | 1133/1951 [00:00<00:00, 1160.82it/s]Loading weights:  67%|██████▋   | 1312/1951 [00:01<00:00, 1069.87it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1637.66it/s]
+19:46:17.564 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+19:46:17.567 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:46:17.569 torch=2.8.0+cu128  weights=10.22 GB  model params+buffers=10.21 GB  build peak=10.24 GB
+19:46:17.571 variant=fused_loop  max_cache_len=256  compile_requested=False
+19:46:17.573 
+19:46:37.813 prompt=  128 batch= 1  ttft=   31.6ms  prefill=  4056.7 tok/s  decode=  42.1 tok/s/seq     42.1 tok/s total  peak=10.24 GB
+19:46:37.816 
+19:46:37.818 wrote out/round2_bench_FL_fused_loop.json

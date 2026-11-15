@@ -1,0 +1,50 @@
+19:54:12.479 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  22%|██▏       | 436/1951 [00:00<00:00, 4355.97it/s]Loading weights:  45%|████▍     | 872/1951 [00:00<00:00, 1104.65it/s]Loading weights:  56%|█████▌    | 1095/1951 [00:00<00:00, 1137.03it/s]Loading weights:  65%|██████▌   | 1272/1951 [00:01<00:00, 1014.85it/s]Loading weights:  87%|████████▋ | 1692/1951 [00:01<00:00, 1563.41it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1541.34it/s]
+19:54:12.948 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+19:54:12.952 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:54:12.955 torch=2.8.0+cu128  prompt=128  decode_tokens=32
+19:54:12.957 variant=eager  max_cache_len=None  compile_requested=False
+19:54:12.958 
+19:54:26.748 wall clock     30.97 ms per decode step   (32.3 tok/s)
+19:54:26.751 
+19:54:36.944 forwards seen: 32  (1 prefill 'gen_fwd_000' + 31 decode)
+19:54:36.947 analyzed 29 decode steps, skipping the first 2
+19:54:36.950 
+19:54:36.952 per decode step, averaged
+19:54:36.955   CUDA kernels launched     3085.0
+19:54:36.959   GPU kernel time            23.39 ms
+19:54:36.961   wall time                  30.97 ms
+19:54:36.964   GPU busy                    75.5 %
+19:54:36.966   GPU idle                    24.5 %
+19:54:36.967 
+19:54:36.969 category                     ms/step    share   kernels
+19:54:36.970 -------------------------------------------------------
+19:54:36.972 matmul/gemm                   18.463    79.0%     277.0
+19:54:36.973 elementwise/activation         2.857    12.2%    2031.0
+19:54:36.975 memory copies                  1.037     4.4%     472.0
+19:54:36.978 other                          0.589     2.5%     242.0
+19:54:36.981 attention                      0.439     1.9%      63.0
+19:54:36.982 
+19:54:36.984 top 15 kernels by total time (per step)
+19:54:36.985   ms/step   calls    avg us  name
+19:54:36.986 ----------------------------------------------------------------------------------------------------
+19:54:36.988    13.849   142.0      97.5  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:54:36.991     4.417   100.0      44.2  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:54:36.995     1.036   471.0       2.2  void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k
+19:54:36.997     0.589   242.0       2.4  void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:
+19:54:37.000     0.453   280.0       1.6  void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp
+19:54:37.002     0.310   242.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke
+19:54:37.003     0.298   246.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16
+19:54:37.005     0.294   242.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::(anonymo
+19:54:37.006     0.282   242.0       1.2  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+19:54:37.009     0.239   191.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu
+19:54:37.011     0.229   107.0       2.1  void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp
+19:54:37.013     0.200   156.0       1.3  void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc
+19:54:37.015     0.198    35.0       5.7  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int,
+19:54:37.016     0.190    28.0       6.8  void pytorch_flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<2
+19:54:37.019     0.154     7.0      21.9  fmha_cutlassF_bf16_aligned_32x128_gmem_sm80(PyTorchMemEffAttention::At
+19:54:37.020 
+19:54:37.022 VERDICT  GPU busy 75.5%  ->  mixed
+19:54:37.023 thresholds: busy >= 80% memory/compute-bound | < 60% overhead-bound | 60-80% mixed
+19:54:37.025 
+19:54:37.027 trace written to out/trace_A_eager.json - open in ui.perfetto.dev and look at the gaps between kernels by eye
+19:54:37.028 wrote out/profile_A_eager.json

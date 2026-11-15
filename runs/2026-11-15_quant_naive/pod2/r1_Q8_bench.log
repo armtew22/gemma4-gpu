@@ -1,0 +1,9 @@
+19:35:40.585 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  26%|██▌       | 504/1951 [00:00<00:00, 5038.13it/s]Loading weights:  52%|█████▏    | 1008/1951 [00:00<00:00, 1239.90it/s]Loading weights:  65%|██████▍   | 1264/1951 [00:01<00:00, 1098.61it/s]Loading weights:  81%|████████  | 1573/1951 [00:01<00:00, 1406.93it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1604.65it/s]
+19:35:41.777 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+19:35:41.779 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:35:41.787 torch=2.8.0+cu128  weights=8.34 GB  model params+buffers=8.33 GB  build peak=12.29 GB
+19:35:41.790 variant=int8_naive  max_cache_len=None  compile_requested=False
+19:35:41.792 
+19:37:45.025 prompt=  128 batch= 1  ttft=  160.8ms  prefill=   795.8 tok/s  decode=   6.9 tok/s/seq      6.9 tok/s total  peak= 8.55 GB
+19:37:45.028 
+19:37:45.029 wrote out/round1_bench_Q8_int8_naive.json

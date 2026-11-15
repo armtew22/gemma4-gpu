@@ -1,0 +1,21 @@
+18:42:29.870 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+18:42:29.873 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+18:42:33.484 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+18:42:36.340 eval set: 48 x 1024 tokens, bos=yes, sha256=b4e6ebfe8865633b
+18:42:36.343 
+18:42:38.924 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  19%|█▉        | 374/1951 [00:00<00:00, 3736.33it/s]Loading weights:  38%|███▊      | 748/1951 [00:00<00:00, 3595.27it/s]Loading weights:  57%|█████▋    | 1108/1951 [00:01<00:01, 732.44it/s]Loading weights:  68%|██████▊   | 1321/1951 [00:01<00:00, 764.36it/s]Loading weights:  88%|████████▊ | 1712/1951 [00:01<00:00, 1151.43it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1222.78it/s]
+18:42:39.419 variant: eager  cache=DynamicCache  compile_requested=False
+18:42:48.715 
+18:42:48.717 tokens scored         49152
+18:42:48.720 mean KL(ref||cur)     0.000e+00  nats, over the ref top-100
+18:42:48.723 top-1 agreement       100.0000 %
+18:42:48.725 perplexity            184.5578
+18:42:48.727 top-100 coverage       99.065 %  (current model's mass inside the reference top-k)
+18:42:48.730 wall                  9.3s
+18:42:48.732 band v2 verdict       PASS   (FAIL anchor not measured yet)
+18:42:48.736 band v1 verdict       PASS   (2026-10-13 pre-registration)
+18:42:48.876 wrote out/drift_prefill_eager_floor.json
+18:42:48.879 
+18:42:48.882 EXPECT no-drift  KL 0.000e+00 <= 1e-05   PASS
+18:42:48.886 EXPECT no-drift  top-1 100.0000% >= 99.99%   PASS
+18:42:48.889 EXPECT no-drift  PASS - reports zero drift when nothing changed

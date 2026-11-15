@@ -1,0 +1,43 @@
+[19:34:03] START p1_kernel_tests: /opt/venv/bin/python tests/test_rmsnorm.py
+[19:34:09] END   p1_kernel_tests rc=0
+[19:34:09] START r1_A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_A_eager.json
+[19:35:32] END   r1_A_bench rc=0
+[19:35:32] START r1_Q8_bench: /opt/venv/bin/python benchmark.py --variant int8_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_Q8_int8_naive.json
+[19:37:45] END   r1_Q8_bench rc=0
+[19:37:45] START r1_Q4_bench: /opt/venv/bin/python benchmark.py --variant int4_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_Q4_int4_naive.json
+[19:40:21] END   r1_Q4_bench rc=0
+[19:40:21] START r1_FL_bench: /opt/venv/bin/python benchmark.py --variant fused_loop --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_FL_fused_loop.json
+[19:40:52] END   r1_FL_bench rc=0
+[19:40:52] START r1_G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round1_bench_G_graph.json
+[19:41:20] END   r1_G_bench rc=0
+[19:41:20] START r2_Q8_bench: /opt/venv/bin/python benchmark.py --variant int8_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_Q8_int8_naive.json
+[19:43:33] END   r2_Q8_bench rc=0
+[19:43:33] START r2_Q4_bench: /opt/venv/bin/python benchmark.py --variant int4_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_Q4_int4_naive.json
+[19:46:08] END   r2_Q4_bench rc=0
+[19:46:08] START r2_FL_bench: /opt/venv/bin/python benchmark.py --variant fused_loop --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_FL_fused_loop.json
+[19:46:38] END   r2_FL_bench rc=0
+[19:46:38] START r2_G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_G_graph.json
+[19:47:06] END   r2_G_bench rc=0
+[19:47:06] START r2_A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round2_bench_A_eager.json
+[19:47:41] END   r2_A_bench rc=0
+[19:47:41] START r3_Q4_bench: /opt/venv/bin/python benchmark.py --variant int4_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_Q4_int4_naive.json
+[19:50:17] END   r3_Q4_bench rc=0
+[19:50:17] START r3_FL_bench: /opt/venv/bin/python benchmark.py --variant fused_loop --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_FL_fused_loop.json
+[19:50:47] END   r3_FL_bench rc=0
+[19:50:47] START r3_G_bench: /opt/venv/bin/python benchmark.py --variant graph --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_G_graph.json
+[19:51:15] END   r3_G_bench rc=0
+[19:51:15] START r3_A_bench: /opt/venv/bin/python benchmark.py --variant eager --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_A_eager.json
+[19:51:51] END   r3_A_bench rc=0
+[19:51:51] START r3_Q8_bench: /opt/venv/bin/python benchmark.py --variant int8_naive --prompt-lens 128 --batch-sizes 1 --decode-tokens 64 --max-cache-len 256 --out out/round3_bench_Q8_int8_naive.json
+[19:54:04] END   r3_Q8_bench rc=0
+[19:54:04] START A_profile: /opt/venv/bin/python profile_decode.py --variant eager --prompt-len 128 --max-cache-len 256 --trace out/trace_A_eager.json --out out/profile_A_eager.json
+[19:54:38] END   A_profile rc=0
+[19:54:41] START Q8_profile: /opt/venv/bin/python profile_decode.py --variant int8_naive --prompt-len 128 --max-cache-len 256 --trace out/trace_Q8_int8_naive.json --out out/profile_Q8_int8_naive.json
+[19:56:11] END   Q8_profile rc=0
+[19:56:16] START Q4_profile: /opt/venv/bin/python profile_decode.py --variant int4_naive --prompt-len 128 --max-cache-len 256 --trace out/trace_Q4_int4_naive.json --out out/profile_Q4_int4_naive.json
+[19:58:04] END   Q4_profile rc=0
+[19:58:12] START FL_profile: /opt/venv/bin/python profile_decode.py --variant fused_loop --prompt-len 128 --max-cache-len 256 --trace out/trace_FL_fused_loop.json --out out/profile_FL_fused_loop.json
+[19:58:38] END   FL_profile rc=0
+[19:58:39] START G_profile: /opt/venv/bin/python profile_decode.py --variant graph --prompt-len 128 --max-cache-len 256 --trace out/trace_G_graph.json --out out/profile_G_graph.json
+[19:59:01] END   G_profile rc=0
+[19:59:02] ALL DONE

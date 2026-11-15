@@ -1,0 +1,9 @@
+19:33:22.549 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  19%|█▉        | 379/1951 [00:00<00:00, 3741.33it/s]Loading weights:  39%|███▊      | 754/1951 [00:00<00:00, 2151.96it/s]Loading weights:  52%|█████▏    | 1006/1951 [00:01<00:01, 651.30it/s]Loading weights:  59%|█████▉    | 1156/1951 [00:01<00:01, 673.04it/s]Loading weights:  65%|██████▌   | 1277/1951 [00:01<00:00, 705.46it/s]Loading weights:  84%|████████▍ | 1638/1951 [00:01<00:00, 1141.59it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1132.88it/s]
+19:33:24.228 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+19:33:24.232 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:33:24.240 torch=2.8.0+cu128  weights=7.43 GB  model params+buffers=7.42 GB  build peak=11.41 GB
+19:33:24.243 variant=int4_naive  max_cache_len=None  compile_requested=False
+19:33:24.246 
+19:35:52.843 prompt=  128 batch= 1  ttft=  196.3ms  prefill=   652.2 tok/s  decode=   5.7 tok/s/seq      5.7 tok/s total  peak= 7.63 GB
+19:35:52.847 
+19:35:52.850 wrote out/bench_Q4_int4_naive.json

@@ -1,0 +1,116 @@
+{
+  "model": "google/gemma-4-E2B-it",
+  "variant": "int8_naive",
+  "variant_meta": {
+    "cache": {
+      "class": "DynamicCache",
+      "source": "generate() default: cache_implementation is None -> DynamicCache(config=text_config)",
+      "compileable": false,
+      "num_cache_layers": 15,
+      "layer_classes": {
+        "DynamicSlidingWindowLayer": 12,
+        "DynamicLayer": 3
+      },
+      "layer_max_cache_len": {
+        "DynamicSlidingWindowLayer": [
+          null
+        ],
+        "DynamicLayer": [
+          null
+        ]
+      },
+      "max_cache_len_effective": null
+    },
+    "max_cache_len": null,
+    "compile": {
+      "requested": false,
+      "disable_compile": null,
+      "reason": "generate() auto-compiles only with a compileable cache; DynamicCache is not compileable",
+      "config": null,
+      "engaged": false
+    },
+    "max_cache_len_ignored": 256,
+    "quant": {
+      "format": "int8",
+      "scheme": "symmetric, per output channel",
+      "group_size": null,
+      "scales": "bf16",
+      "forward": "dequantize the whole weight to bf16, then F.linear (naive)"
+    },
+    "variant": "int8_naive",
+    "model": "google/gemma-4-E2B-it",
+    "dtype": "bfloat16",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.19.0",
+    "num_hidden_layers": 35,
+    "generate_kwargs": {},
+    "generate_only": false,
+    "patch": {
+      "format": "int8",
+      "group_size": null,
+      "replaced_total": 276,
+      "replaced": {
+        "q_proj": 35,
+        "k_proj": 15,
+        "v_proj": 15,
+        "o_proj": 35,
+        "gate_proj": 35,
+        "up_proj": 35,
+        "down_proj": 35,
+        "per_layer_input_gate": 35,
+        "per_layer_projection": 35,
+        "per_layer_model_projection": 1
+      },
+      "lm_head": "bf16",
+      "weight_bytes_before": 3753639936,
+      "weight_bytes_after": 1878720512,
+      "bf16_weights_freed": 276,
+      "cuda_allocated_drop_bytes": 1864564736,
+      "build_check": {
+        "layer": "model.language_model.layers.0.self_attn.q_proj",
+        "forward_equals_F_linear_on_dequantized": true,
+        "max_abs_error_vs_bf16_weight": 0.0018157958984375,
+        "max_abs_error_of_bf16_dequant": 0.001953125
+      }
+    },
+    "consistency_problems": []
+  },
+  "host": {
+    "hostname": "fdb5f227eb7c",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 7F52 16-Core Processor",
+    "vcpu_count": 64,
+    "gpu_name": "NVIDIA L4",
+    "gpu_memory": "23034 MiB",
+    "gpu_driver": "595.91.07",
+    "gpu_sm_clock_max": "2040 MHz",
+    "gpu_power_limit": "72.00 W",
+    "torch": "2.8.0+cu128",
+    "torch_gpu_name": "NVIDIA L4",
+    "transformers": "5.19.0"
+  },
+  "gpu": "NVIDIA L4",
+  "torch": "2.8.0+cu128",
+  "dtype": "bfloat16",
+  "weights_gb": 8.344551936,
+  "model_weight_gb": 8.333681762,
+  "build_peak_mem_gb": 12.291257856,
+  "max_memory_allocated_gb": 12.291257856,
+  "decode_tokens": 64,
+  "trials": 10,
+  "warmup": 3,
+  "rows": [
+    {
+      "prompt_len": 128,
+      "batch_size": 1,
+      "status": "ok",
+      "ttft_ms": 164.99914799351245,
+      "prefill_tok_s": 775.7615815387894,
+      "decode_tok_s_per_seq": 6.7858990148770095,
+      "decode_tok_s_total": 6.7858990148770095,
+      "peak_mem_gb": 8.545811968,
+      "ttft_ms_min": 164.46808888576925,
+      "ttft_ms_max": 165.75333918444812
+    }
+  ]
+}

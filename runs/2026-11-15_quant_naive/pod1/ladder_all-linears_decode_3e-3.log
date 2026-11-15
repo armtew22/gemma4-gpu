@@ -1,0 +1,18 @@
+18:47:26.092 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+18:47:26.095 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+18:47:29.499 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+18:47:32.192 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+18:47:32.196 
+18:47:34.701 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  21%|██        | 404/1951 [00:00<00:00, 4017.68it/s]Loading weights:  41%|████▏     | 806/1951 [00:00<00:01, 809.63it/s] Loading weights:  51%|█████▏    | 1002/1951 [00:01<00:01, 934.38it/s]Loading weights:  60%|██████    | 1177/1951 [00:01<00:00, 899.73it/s]Loading weights:  67%|██████▋   | 1316/1951 [00:01<00:00, 897.84it/s]Loading weights:  89%|████████▉ | 1745/1951 [00:01<00:00, 1500.96it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1277.08it/s]
+18:47:35.217 variant: eager  cache=DynamicCache  compile_requested=False
+18:47:50.200 PERTURBED 276 matrices (model.language_model.layers.0.self_attn.q_proj.weight .. model.language_model.per_layer_model_projection.weight) scale=0.003 relative to each weight's std; shapes {'(2048, 1536)': 28, '(256, 1536)': 59, '(1536, 2048)': 28, '(6144, 1536)': 30, '(1536, 6144)': 15, '(1536, 256)': 35, '(4096, 1536)': 7, '(512, 1536)': 6, '(1536, 4096)': 7, '(12288, 1536)': 40, '(1536, 12288)': 20, '(8960, 1536)': 1}
+18:49:23.904 
+18:49:23.908 tokens scored         1912
+18:49:23.912 mean KL(ref||cur)     3.195e-03  nats, over the ref top-100
+18:49:23.915 top-1 agreement       98.5356 %
+18:49:23.918 perplexity            291.7593
+18:49:23.921 top-100 coverage       98.274 %  (current model's mass inside the reference top-k)
+18:49:23.924 wall                  93.7s
+18:49:23.927 band v2 verdict       NOT-PASS   (FAIL anchor not measured yet)
+18:49:23.930 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+18:49:24.059 wrote out/ladder_all-linears_decode_3e-3.json

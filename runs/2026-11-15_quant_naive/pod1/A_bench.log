@@ -1,0 +1,10 @@
+19:21:49.936 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+19:21:55.855 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  19%|█▉        | 371/1951 [00:00<00:00, 3659.81it/s]Loading weights:  38%|███▊      | 737/1951 [00:00<00:00, 3443.01it/s]Loading weights:  56%|█████▌    | 1083/1951 [00:01<00:01, 751.19it/s]Loading weights:  66%|██████▌   | 1288/1951 [00:01<00:00, 773.70it/s]Loading weights:  87%|████████▋ | 1694/1951 [00:01<00:00, 1193.20it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1275.76it/s]
+19:21:56.505 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+19:21:56.509 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:21:56.514 torch=2.8.0+cu128  weights=10.21 GB  model params+buffers=10.21 GB  build peak=10.21 GB
+19:21:56.517 variant=eager  max_cache_len=None  compile_requested=False
+19:21:56.521 
+19:22:36.918 prompt=  128 batch= 1  ttft=   54.0ms  prefill=  2368.4 tok/s  decode=  21.3 tok/s/seq     21.3 tok/s total  peak=10.24 GB
+19:22:36.922 
+19:22:36.926 wrote out/bench_A_eager.json

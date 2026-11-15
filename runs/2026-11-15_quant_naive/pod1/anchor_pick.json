@@ -1,0 +1,32 @@
+{
+  "rule": "(report.md, \"A FAIL anchor that clears the floor\"), fixed before the ladder ran:\n  1. Target: all-linears. Chosen in advance because quantization, the next variants, changes\n     exactly these matrices. all-o-proj and all-down-proj are diagnostics only (was q_proj\n     special?) and can never become the anchor.\n  2. Ladder: relative noise 1e-3, 3e-3, 1e-2, 3e-2, 1e-1 (x each matrix's std), seed 0.\n  3. Anchor = the SMALLEST ladder scale whose mean KL is >= 3 x the 2.7e-3 PASS ceiling\n     (8.1e-3) in BOTH decode and prefill mode.\n  4. FAIL lines from the anchor, with the v2 rounding rule so the anchor itself reads FAIL:\n     KL rounded DOWN to 2 significant figures, top-1 rounded UP to 0.1%, per mode; then the\n     lower KL line and the higher top-1 line of the two modes.\n  5. If that top-1 line is not strictly below the 98.0% PASS floor, FAIL is KL-only: a top-1\n     line at or above the PASS floor would FAIL results that PASS.\n  6. If no ladder scale qualifies, there is no anchor. Report it; do not extend the ladder\n     without review.",
+  "threshold_kl": 0.0081,
+  "anchor_target": "all-linears",
+  "missing_runs": [],
+  "smallest_qualifying_scale": {
+    "all-linears": "1e-2",
+    "all-o-proj": "3e-2",
+    "all-down-proj": "3e-2"
+  },
+  "anchor": {
+    "target": "all-linears",
+    "scale": 0.01,
+    "per_mode": {
+      "decode": {
+        "kl": 0.010463151971665386,
+        "top1": 95.60669456066945,
+        "fail_kl": 0.01,
+        "fail_top1": 95.7
+      },
+      "prefill": {
+        "kl": 0.011623003697119808,
+        "top1": 95.86588541666667,
+        "fail_kl": 0.011,
+        "fail_top1": 95.9
+      }
+    },
+    "fail_kl_at_least": 0.01,
+    "fail_top1_at_most": 95.9,
+    "kl_only": false
+  }
+}

@@ -1,0 +1,18 @@
+19:07:29.041 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+19:07:29.045 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:07:32.582 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+19:07:35.386 eval set: decode, 8 x 256 tokens, prompt 17 incl. BOS, 1912 scored decode steps, sha256=3405f78b69903bfa
+19:07:35.389 
+19:07:38.137 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  20%|█▉        | 387/1951 [00:00<00:00, 3856.62it/s]Loading weights:  40%|███▉      | 773/1951 [00:00<00:01, 757.12it/s] Loading weights:  49%|████▉     | 961/1951 [00:01<00:01, 834.01it/s]Loading weights:  57%|█████▋    | 1114/1951 [00:01<00:01, 799.31it/s]Loading weights:  63%|██████▎   | 1235/1951 [00:01<00:00, 758.06it/s]Loading weights:  68%|██████▊   | 1336/1951 [00:01<00:00, 785.41it/s]Loading weights:  89%|████████▉ | 1738/1951 [00:01<00:00, 1394.30it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1120.58it/s]
+19:07:38.634 variant: eager  cache=DynamicCache  compile_requested=False
+19:07:40.196 PERTURBED 35 matrices (model.language_model.layers.0.self_attn.o_proj.weight .. model.language_model.layers.34.self_attn.o_proj.weight) scale=0.1 relative to each weight's std; shapes {'(1536, 2048)': 28, '(1536, 4096)': 7}
+19:09:13.656 
+19:09:13.659 tokens scored         1912
+19:09:13.723 mean KL(ref||cur)     1.325e-01  nats, over the ref top-100
+19:09:13.727 top-1 agreement       86.2448 %
+19:09:13.730 perplexity            261.1608
+19:09:13.733 top-100 coverage       97.883 %  (current model's mass inside the reference top-k)
+19:09:13.736 wall                  93.5s
+19:09:13.739 band v2 verdict       NOT-PASS   (FAIL anchor not measured yet)
+19:09:13.741 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+19:09:13.868 wrote out/ladder_all-o-proj_decode_1e-1.json

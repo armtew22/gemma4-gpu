@@ -1,0 +1,18 @@
+18:46:46.833 host   AMD EPYC 7F52 16-Core Processor  (64 vCPU)
+18:46:46.836 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+18:46:50.326 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+18:46:53.032 eval set: 48 x 1024 tokens, bos=yes, sha256=b4e6ebfe8865633b
+18:46:53.035 
+18:46:55.770 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  20%|█▉        | 387/1951 [00:00<00:00, 3842.70it/s]Loading weights:  40%|███▉      | 772/1951 [00:00<00:01, 763.90it/s] Loading weights:  49%|████▉     | 959/1951 [00:01<00:01, 856.51it/s]Loading weights:  57%|█████▋    | 1117/1951 [00:01<00:01, 827.70it/s]Loading weights:  64%|██████▎   | 1242/1951 [00:01<00:00, 748.97it/s]Loading weights:  70%|██████▉   | 1360/1951 [00:01<00:00, 818.62it/s]Loading weights:  88%|████████▊ | 1718/1951 [00:01<00:00, 1336.95it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1127.68it/s]
+18:46:56.258 variant: eager  cache=DynamicCache  compile_requested=False
+18:47:10.957 PERTURBED 276 matrices (model.language_model.layers.0.self_attn.q_proj.weight .. model.language_model.per_layer_model_projection.weight) scale=0.001 relative to each weight's std; shapes {'(2048, 1536)': 28, '(256, 1536)': 59, '(1536, 2048)': 28, '(6144, 1536)': 30, '(1536, 6144)': 15, '(1536, 256)': 35, '(4096, 1536)': 7, '(512, 1536)': 6, '(1536, 4096)': 7, '(12288, 1536)': 40, '(1536, 12288)': 20, '(8960, 1536)': 1}
+18:47:20.418 
+18:47:20.422 tokens scored         49152
+18:47:20.425 mean KL(ref||cur)     2.524e-03  nats, over the ref top-100
+18:47:20.429 top-1 agreement       98.1710 %
+18:47:20.432 perplexity            184.6258
+18:47:20.436 top-100 coverage       99.067 %  (current model's mass inside the reference top-k)
+18:47:20.439 wall                  9.5s
+18:47:20.442 band v2 verdict       PASS   (FAIL anchor not measured yet)
+18:47:20.446 band v1 verdict       FAIL   (2026-10-13 pre-registration)
+18:47:20.590 wrote out/ladder_all-linears_prefill_1e-3.json

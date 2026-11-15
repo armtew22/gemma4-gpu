@@ -1,0 +1,9 @@
+19:46:46.263 Loading weights:   0%|          | 0/1951 [00:00<?, ?it/s]Loading weights:  24%|██▍       | 470/1951 [00:00<00:00, 4696.78it/s]Loading weights:  48%|████▊     | 940/1951 [00:00<00:00, 1167.15it/s]Loading weights:  60%|██████    | 1179/1951 [00:00<00:00, 1128.74it/s]Loading weights:  70%|██████▉   | 1357/1951 [00:01<00:00, 1123.05it/s]Loading weights:  92%|█████████▏| 1789/1951 [00:01<00:00, 1691.86it/s]Loading weights: 100%|██████████| 1951/1951 [00:01<00:00, 1565.93it/s]
+19:46:47.929 host   AMD EPYC 9254 24-Core Processor  (48 vCPU)
+19:46:47.932 gpu    NVIDIA L4  23034 MiB  driver 595.91.07
+19:46:47.937 torch=2.8.0+cu128  weights=10.24 GB  model params+buffers=10.21 GB  build peak=10.26 GB
+19:46:47.941 variant=graph  max_cache_len=256  compile_requested=False
+19:46:47.943 
+19:47:05.819 prompt=  128 batch= 1  ttft=   32.9ms  prefill=  3890.8 tok/s  decode=  47.9 tok/s/seq     47.9 tok/s total  peak=10.26 GB
+19:47:05.822 
+19:47:05.825 wrote out/round2_bench_G_graph.json
