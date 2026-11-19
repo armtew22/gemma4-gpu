@@ -89,6 +89,54 @@ def dequantize_int8(q, scale, dtype=torch.float32):
     return (torch.mul(q32, scale32.unsqueeze(1))).to(dtype)
 
 
+# ------------------------------------------------------------------------- int8, group-wise
+
+def _check_int8_groups(in_features, group_size):
+    # No packing, so any positive divisor works (int4 also needs it even).
+    if group_size < 1:
+        raise ValueError(f"group_size must be >= 1, got {group_size}")
+    if in_features % group_size:
+        raise ValueError(
+            f"in_features {in_features} is not a multiple of group_size {group_size}; "
+            "pick a group_size that divides it"
+        )
+
+
+def quantize_int8_grouped(w, group_size):
+    """Symmetric int8, one scale per group_size consecutive inputs of each row.
+
+    Returns (q, scales): q int8 [out, in] in [-127, 127]; scales bf16 [out, in / group_size].
+    group_size = in_features is per-row int8 and must reproduce quantize_int8 exactly.
+    """
+    _check_weight(w)
+    out_f, in_f = w.shape
+    _check_int8_groups(in_f, group_size)
+    # TODO(armaan): write this body. One step per comment:
+    #   1. Upcast to fp32 and reshape to [out, in / group_size, group_size].
+    #   2. Per-group absmax: reduce over the LAST dim -> [out, in / group_size].
+    #   3. Scales: _bf16_scale(absmax, INT8_QMAX), as in quantize_int8.
+    #   4. Divide each group by its own stored scale (back in fp32). The scale needs a trailing
+    #      dim of size 1 to broadcast over the group.
+    #   5. Round to the nearest integer.
+    #   6. Clamp to [-127, 127].
+    #   7. Reshape back to [out, in], cast to int8, return (q, scales).
+    raise NotImplementedError("quantize_int8_grouped: TODO - write the body (see the steps above)")
+
+
+def dequantize_int8_grouped(q, scales, group_size, dtype=torch.float32):
+    """Inverse of quantize_int8_grouped. Returns dtype (fp32 by default)."""
+    out_f, in_f = q.shape
+    _check_int8_groups(in_f, group_size)
+    if tuple(scales.shape) != (out_f, in_f // group_size):
+        raise ValueError(f"scales shape {tuple(scales.shape)} != {(out_f, in_f // group_size)}")
+    # TODO(armaan): write this body. One step per comment:
+    #   1. Upcast q to fp32 and reshape to [out, in / group_size, group_size].
+    #   2. Upcast scales to fp32 and give them a trailing dim of size 1.
+    #   3. Multiply.
+    #   4. Reshape back to [out, in], cast to dtype and return.
+    raise NotImplementedError("dequantize_int8_grouped: TODO - write the body (see the steps above)")
+
+
 # ------------------------------------------------------------------------- int4, group-wise
 
 def pack_int4(codes):

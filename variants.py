@@ -314,7 +314,48 @@ def _quant_naive(fmt):
     return builder
 
 
-def _text_linear_names(model, quantize_lm_head):
+def _quant_sweep(fmt, group_size, families):
+    """Builder for the quality-sweep variants (format, group size, families)."""
+    def builder(max_cache_len, text_config):
+        kwargs, meta = _eager(max_cache_len, text_config)
+        meta["quant"] = {
+            "format": fmt,
+            "scheme": ("symmetric, per output channel" if fmt == "int8"
+                       else f"symmetric, group-wise along the input dim, group {group_size}"),
+            "group_size": group_size,
+            "families": families,
+            "scales": "bf16",
+            "forward": "dequantize the whole weight to bf16, then F.linear (naive)",
+        }
+        return kwargs, meta
+    return builder
+
+
+def _sweep_variant(fmt, group_size=None, families="all"):
+    return {"builder": _quant_sweep(fmt, group_size, families), "static_cache": False,
+            "patch": partial(patch_quant, fmt=fmt, group_size=group_size or QUANT_GROUP_SIZE,
+                             families=families)}
+
+
+# Text-linear families, by module name. Counts are this model's, checked on every build.
+LINEAR_FAMILIES = {
+    "attn": ("q_proj", "k_proj", "v_proj", "o_proj"),
+    "mlp": ("gate_proj", "up_proj", "down_proj"),
+    "ple": ("per_layer_input_gate", "per_layer_projection", "per_layer_model_projection"),
+}
+EXPECTED_FAMILY_COUNTS = {"attn": 100, "mlp": 105, "ple": 71}
+
+
+def _linear_family(name):
+    leaf = name.rsplit(".", 1)[-1]
+    for family, leaves in LINEAR_FAMILIES.items():
+        if leaf in leaves:
+            return family
+    raise SystemExit(f"text linear {name!r} belongs to no family - add it to LINEAR_FAMILIES")
+
+
+def _text_linear_names(model, quantize_lm_head, families="all"):
+    """The text-decoder linears to quantize, and the per-family census of all 276."""
     import torch.nn as nn
     names = [n for n, m in model.named_modules()
              if isinstance(m, nn.Linear) and ".language_model." in f".{n}"
@@ -322,15 +363,26 @@ def _text_linear_names(model, quantize_lm_head):
     if len(names) != EXPECTED_TEXT_LINEARS:
         raise SystemExit(f"found {len(names)} text-decoder linears, expected "
                          f"{EXPECTED_TEXT_LINEARS} - the model is not the one this was audited on")
+    census = Counter(_linear_family(n) for n in names)
+    if dict(census) != EXPECTED_FAMILY_COUNTS:
+        raise SystemExit(f"text-linear families {dict(census)} != {EXPECTED_FAMILY_COUNTS}")
+    selected = tuple(LINEAR_FAMILIES) if families == "all" else tuple(families)
+    unknown = set(selected) - set(LINEAR_FAMILIES)
+    if unknown:
+        raise SystemExit(f"unknown families {sorted(unknown)}; known: {sorted(LINEAR_FAMILIES)}")
+    names = [n for n in names if _linear_family(n) in selected]
     if quantize_lm_head:
         if not isinstance(getattr(model, "lm_head", None), nn.Linear):
             raise SystemExit("quantize_lm_head: model has no nn.Linear lm_head")
         names.append("lm_head")
-    return names
+    return names, selected, dict(census)
 
 
-def patch_quant(model, fmt, group_size=QUANT_GROUP_SIZE, quantize_lm_head=False, verify=True):
-    """Replace the text-decoder linears with QuantLinear and free their bf16 weights."""
+def patch_quant(model, fmt, group_size=QUANT_GROUP_SIZE, quantize_lm_head=False, verify=True,
+                families="all"):
+    """Replace text-decoder linears with QuantLinear, freeing each bf16 weight as soon as its
+    layer is quantized. families: "all", or a subset of LINEAR_FAMILIES ("attn", "mlp",
+    "ple"); unselected linears stay bf16."""
     import gc
     import weakref
 
@@ -338,16 +390,18 @@ def patch_quant(model, fmt, group_size=QUANT_GROUP_SIZE, quantize_lm_head=False,
 
     from quant.linear import QuantLinear
 
-    names = _text_linear_names(model, quantize_lm_head)
+    names, selected, census = _text_linear_names(model, quantize_lm_head, families)
     modules = dict(model.named_modules())
     tied = {id(p) for n, p in model.named_parameters(remove_duplicate=False)
             if not n.startswith("lm_head")}
-    counts, bytes_before, bytes_after, refs, check = Counter(), 0, 0, [], None
+    counts, fam_counts = Counter(), Counter()
+    bytes_before, bytes_after, freed, gc_needed, check = 0, 0, [], 0, None
     on_cuda = model.device.type == "cuda"
     mem_before = torch.cuda.memory_allocated() if on_cuda else None
+    mem_high = mem_before
 
     for i, name in enumerate(names):
-        linear = modules[name]
+        linear = modules.pop(name)  # drop the map's reference too, or nothing frees until the end
         w = linear.weight
         bytes_before += w.numel() * w.element_size()
         ql = QuantLinear.from_linear(linear, fmt, group_size)
@@ -355,33 +409,44 @@ def patch_quant(model, fmt, group_size=QUANT_GROUP_SIZE, quantize_lm_head=False,
         if i == 0 and verify:
             check = _verify_quant(name, w, ql, F)
         counts[name.rsplit(".", 1)[-1]] += 1
+        fam_counts["lm_head" if name == "lm_head" else _linear_family(name)] += 1
         parent, _, child = name.rpartition(".")
         setattr(modules[parent] if parent else model, child, ql)
-        if not (name == "lm_head" and id(w) in tied):
-            refs.append((name, weakref.ref(w)))
+        keep = name == "lm_head" and id(w) in tied   # the tied embedding still needs it
+        ref = weakref.ref(w)
         del linear, w, ql
-
-    modules = None
-    gc.collect()
-    alive = [n for n, r in refs if r() is not None]
-    if alive:
-        raise SystemExit(f"{len(alive)} replaced bf16 weights are still referenced (e.g. "
-                         f"{alive[:3]}) - the memory saving would not be real")
+        if not keep:
+            if ref() is not None:
+                gc.collect()
+                gc_needed += 1
+            if ref() is not None:
+                raise SystemExit(f"{name}: its bf16 weight is still referenced after replacement "
+                                 "- the memory saving would not be real")
+            freed.append(name)
+        if on_cuda:
+            mem_high = max(mem_high, torch.cuda.memory_allocated())
     if on_cuda:
         torch.cuda.empty_cache()
 
     report = {
         "format": fmt,
-        "group_size": group_size if fmt == "int4" else None,
+        "group_size": group_size if fmt in ("int4", "int8_grouped") else None,
+        "families": list(selected),
+        "family_census": census,
         "replaced_total": len(names),
+        "replaced_by_family": dict(fam_counts),
+        "left_bf16_by_family": {f: census[f] - fam_counts.get(f, 0) for f in census},
         "replaced": dict(counts),
         "lm_head": "quantized (tied bf16 embedding kept)" if quantize_lm_head else "bf16",
         "weight_bytes_before": bytes_before,
         "weight_bytes_after": bytes_after,
-        "bf16_weights_freed": len(refs),
+        "bf16_weights_freed": len(freed),
+        "freed_per_layer": True,
+        "gc_collects_needed": gc_needed,
     }
     if on_cuda:
         report["cuda_allocated_drop_bytes"] = mem_before - torch.cuda.memory_allocated()
+        report["cuda_allocated_high_during_patch_bytes"] = mem_high - mem_before
     if verify:
         report["build_check"] = check
     return report
@@ -435,6 +500,15 @@ VARIANTS = {
                    "patch": partial(patch_quant, fmt="int8")},
     "int4_naive": {"builder": _quant_naive("int4"), "static_cache": False,
                    "patch": partial(patch_quant, fmt="int4")},
+    # Quality sweep (2026-11-18): why does naive int8 fail band v3? Smaller groups, and one
+    # family at a time. All naive (dequantize whole weight -> F.linear); a fused kernel would
+    # compute the same dequantized values, so their drift carries over.
+    "int8g128": _sweep_variant("int8_grouped", 128),
+    "int8g32": _sweep_variant("int8_grouped", 32),
+    "int8_attn": _sweep_variant("int8", families=("attn",)),
+    "int8_mlp": _sweep_variant("int8", families=("mlp",)),
+    "int8_ple": _sweep_variant("int8", families=("ple",)),
+    "int4g32": _sweep_variant("int4", 32),
 }
 
 # Variants whose distinguishing behaviour exists only inside generate(). A tool that scores

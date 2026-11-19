@@ -9,7 +9,7 @@ range-fetched from the Hub's model.safetensors (~50 MB, not the 10 GB file) into
 Relative error definitions used in the real-weight table:
   fro   ||W_hat - W||_F / ||W||_F
   mean  mean|W_hat - W| / mean|W|
-  max   max over rows (int8) or groups (int4) of  max|W_hat - W| / absmax(W)  - bounded by
+  max   max over rows (int8) or groups (int8gN, int4) of  max|W_hat - W| / absmax(W)  - bounded by
         1 / (2 * qmax), times the bf16 round-up of the scale (at most 1 + 2^-7)
 """
 
@@ -185,13 +185,14 @@ def test_int4_scale_rounded_up_to_bf16():
 
 # ------------------------------------------------------------------- refusals, both formats
 
-@pytest.mark.parametrize("fmt", ["int8", "int4"])
+@pytest.mark.parametrize("fmt", ["int8", "int4", "int8_grouped"])
 @pytest.mark.parametrize("bad", [float("nan"), float("inf")])
 def test_refuses_non_finite(fmt, bad):
     w = torch.randn(2, 128)
     w[1, 5] = bad
+    args = (64,) if fmt == "int8_grouped" else ()
     with pytest.raises(ValueError, match="inf or NaN"):
-        getattr(P, f"quantize_{fmt}")(w)
+        getattr(P, f"quantize_{fmt}")(w, *args)
 
 
 @pytest.mark.parametrize("fmt", ["int8", "int4"])
@@ -258,6 +259,95 @@ def test_int8_dequant_dtype():
     assert P.dequantize_int8(q, scale, dtype=torch.bfloat16).dtype == torch.bfloat16
 
 
+# ------------------------------------------------------------------------- int8, group-wise
+
+def _int8g_scale_per_elem(scales, shape, group_size):
+    return scales.float().repeat_interleave(group_size, dim=1).reshape(shape)
+
+
+@pytest.mark.parametrize("group_size", GROUPS)
+@pytest.mark.parametrize("dtype", DTYPES, ids=["bf16", "fp32"])
+@pytest.mark.parametrize("shape", SHAPES)
+def test_int8g_roundtrip_bound(shape, dtype, group_size):
+    w = _weight(shape, dtype)
+    q, scales = P.quantize_int8_grouped(w, group_size)
+    assert q.dtype == torch.int8 and q.shape == shape
+    assert scales.dtype == torch.bfloat16 and scales.shape == (shape[0], shape[1] // group_size)
+    assert q.min() >= -127 and q.max() <= 127
+    deq = P.dequantize_int8_grouped(q, scales, group_size)
+    assert deq.dtype == torch.float32 and deq.shape == shape
+    _assert_within_half_scale(deq, w, _int8g_scale_per_elem(scales, shape, group_size))
+
+
+@pytest.mark.parametrize("shape", SHAPES)
+@pytest.mark.parametrize("dtype", DTYPES, ids=["bf16", "fp32"])
+def test_int8g_full_row_group_equals_per_row_int8(shape, dtype):
+    # group_size = in_features is one group per row: it must BE quantize_int8, bit for bit.
+    w = _weight(shape, dtype, seed=4)
+    w[0, 3] = 0.5  # an outlier, so the row scale is not typical
+    qg, sg = P.quantize_int8_grouped(w, shape[1])
+    q, s = P.quantize_int8(w)
+    assert torch.equal(qg, q)
+    assert sg.shape == (shape[0], 1) and torch.equal(sg[:, 0], s)
+    assert torch.equal(P.dequantize_int8_grouped(qg, sg, shape[1]), P.dequantize_int8(q, s))
+
+
+@pytest.mark.parametrize("group_size", GROUPS)
+def test_int8g_exact_on_grid(group_size):
+    out_f, in_f = 6, 4 * group_size
+    g = torch.Generator().manual_seed(5)
+    s = (2.0 ** torch.randint(-14, -4, (out_f, in_f // group_size), generator=g)).float()
+    s = (s * (1 + torch.randint(0, 128, s.shape, generator=g) / 128)).to(torch.bfloat16).float()
+    codes = torch.randint(-127, 128, (out_f, in_f // group_size, group_size), generator=g)
+    codes[..., 0] = 127
+    codes[..., 1] = -127
+    w = (codes.float() * s.unsqueeze(-1)).reshape(out_f, in_f)
+    q, scales = P.quantize_int8_grouped(w, group_size)
+    assert torch.equal(scales.float(), s)
+    assert torch.equal(P.dequantize_int8_grouped(q, scales, group_size), w)
+
+
+def test_int8g_zero_group_and_zero_row_no_nan():
+    w = _weight((4, 512), torch.float32)
+    w[1, 128:256] = 0
+    w[3] = 0
+    q, scales = P.quantize_int8_grouped(w, 128)
+    deq = P.dequantize_int8_grouped(q, scales, 128)
+    assert torch.isfinite(deq).all() and torch.isfinite(scales.float()).all()
+    assert torch.equal(deq[1, 128:256], torch.zeros(128))
+    assert torch.equal(deq[3], torch.zeros(512))
+
+
+def test_int8g_outlier_stays_in_its_group():
+    w = _weight((2, 512), torch.float32)
+    clean = P.dequantize_int8_grouped(*P.quantize_int8_grouped(w, 128), 128)
+    w_out = w.clone()
+    w_out[0, 300] = 1e3        # group 2 of row 0
+    q, scales = P.quantize_int8_grouped(w_out, 128)
+    deq = P.dequantize_int8_grouped(q, scales, 128)
+    _assert_within_half_scale(deq, w_out, _int8g_scale_per_elem(scales, w.shape, 128))
+    mask = torch.ones_like(w, dtype=torch.bool)
+    mask[0, 256:384] = False
+    assert torch.equal(deq[mask], clean[mask])
+
+
+@pytest.mark.parametrize("in_f,group_size", [(200, 128), (130, 64), (1536, 100), (128, 0)])
+def test_int8g_refuses_bad_group(in_f, group_size):
+    with pytest.raises(ValueError, match="group_size"):
+        P.quantize_int8_grouped(torch.randn(4, in_f), group_size)
+
+
+def test_int8g_dequant_refuses_wrong_scale_shape():
+    with pytest.raises(ValueError, match="scales shape"):
+        P.dequantize_int8_grouped(torch.zeros(4, 256, dtype=torch.int8),
+                                  torch.ones(4, 3, dtype=torch.bfloat16), 128)
+
+
+def test_int8g_dequant_dtype():
+    q, scales = P.quantize_int8_grouped(_weight((2, 256), torch.float32), 128)
+    assert P.dequantize_int8_grouped(q, scales, 128, dtype=torch.bfloat16).dtype == torch.bfloat16
+
+
 # ---------------------------------------------------------------------- real Gemma 4 weights
 
 def _fetch_sample():
@@ -314,7 +404,7 @@ def _rel_errors(w, deq, unit_absmax, unit_err_max):
 
 
 @pytest.mark.parametrize("name", list(REAL))
-@pytest.mark.parametrize("fmt", ["int8", "int4"])
+@pytest.mark.parametrize("fmt", ["int8", "int8g128", "int8g32", "int4", "int4g32"])
 def test_real_weight_error(real_weights, fmt, name):
     w = real_weights[name]
     out_f, in_f = w.shape
@@ -325,18 +415,28 @@ def test_real_weight_error(real_weights, fmt, name):
         absmax = w.float().abs().amax(dim=1)
         err_max = (deq - w.float()).abs().amax(dim=1)
         qmax = 127
+    elif fmt.startswith("int8g"):
+        gs = int(fmt[5:])
+        q, scales = P.quantize_int8_grouped(w, gs)
+        deq = P.dequantize_int8_grouped(q, scales, gs)
+        per_elem = _int8g_scale_per_elem(scales, w.shape, gs)
+        groups = (out_f, in_f // gs, gs)
+        absmax = w.float().abs().reshape(groups).amax(dim=-1)
+        err_max = (deq - w.float()).abs().reshape(groups).amax(dim=-1)
+        qmax = 127
     else:
-        packed, scales = P.quantize_int4(w, P.DEFAULT_GROUP_SIZE)
-        deq = P.dequantize_int4(packed, scales, w.shape)
-        per_elem = _int4_scale_per_elem(scales, w.shape, P.DEFAULT_GROUP_SIZE)
-        groups = (out_f, in_f // P.DEFAULT_GROUP_SIZE, P.DEFAULT_GROUP_SIZE)
+        gs = int(fmt[5:]) if fmt.startswith("int4g") else P.DEFAULT_GROUP_SIZE
+        packed, scales = P.quantize_int4(w, gs)
+        deq = P.dequantize_int4(packed, scales, w.shape, gs)
+        per_elem = _int4_scale_per_elem(scales, w.shape, gs)
+        groups = (out_f, in_f // gs, gs)
         absmax = w.float().abs().reshape(groups).amax(dim=-1)
         err_max = (deq - w.float()).abs().reshape(groups).amax(dim=-1)
         qmax = 7
     _assert_within_half_scale(deq, w, per_elem)
     fro, mean, mx = _rel_errors(w, deq, absmax, err_max)
     assert mx <= (1 + 2**-7) / (2 * qmax) * (1 + 1e-6)
-    print(f"\n  {fmt}  layer0 {name:9s} {str(tuple(w.shape)):14s} "
+    print(f"\n  {fmt:8s} layer0 {name:9s} {str(tuple(w.shape)):14s} "
           f"rel err  fro {fro:.4e}  mean {mean:.4e}  max {mx:.4e}", end="")
 
 
